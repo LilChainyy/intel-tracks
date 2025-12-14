@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Playlist } from '@/types/playlist';
 import { MatchBadge } from './MatchBadge';
+import { ThemeIllustration } from '@/components/playlist/ThemeIllustration';
 
 interface PlaylistCardProps {
   playlist: Playlist;
@@ -18,14 +19,9 @@ export function PlaylistCard({ playlist, onClick, showMatchScore = false }: Play
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
-      {/* Hero Image */}
-      <div className="relative h-32 overflow-hidden">
-        <img
-          src={playlist.heroImage}
-          alt={playlist.title}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+      {/* Theme Illustration */}
+      <div className="relative h-32 bg-background flex items-center justify-center">
+        <ThemeIllustration themeId={playlist.id} className="w-20 h-20" />
         
         {/* Match Badge */}
         {showBadge && (
