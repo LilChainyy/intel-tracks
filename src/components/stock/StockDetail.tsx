@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, ExternalLink, Plus, Lock } from 'lucide-react';
-import { useApp } from '@/context/AppContext';
+import { ArrowLeft, ExternalLink, Bookmark, Lock } from 'lucide-react';
+import { useApp, SavedStock } from '@/context/AppContext';
 
 export function StockDetail() {
-  const { selectedStock, setCurrentScreen } = useApp();
+  const { selectedStock, setCurrentScreen, toggleSaveStock, isStockSaved } = useApp();
 
   if (!selectedStock) return null;
 
@@ -11,6 +11,8 @@ export function StockDetail() {
   const stock = playlist.stocks.find((s) => s.ticker === ticker);
 
   if (!stock) return null;
+
+  const isSaved = isStockSaved(stock.ticker);
 
   const handleBack = () => {
     setCurrentScreen('playlist');
@@ -20,6 +22,18 @@ export function StockDetail() {
     if (!stock.isPrivate) {
       window.open(`https://finance.yahoo.com/quote/${stock.ticker}`, '_blank');
     }
+  };
+
+  const handleSaveStock = () => {
+    const savedStock: SavedStock = {
+      ticker: stock.ticker,
+      name: stock.name,
+      playlistId: playlist.id,
+      playlistTitle: playlist.title,
+      logoUrl: stock.logoUrl,
+      ytdChange: stock.ytdChange
+    };
+    toggleSaveStock(savedStock);
   };
 
   return (
@@ -112,9 +126,16 @@ export function StockDetail() {
           </button>
         )}
 
-        <button className="btn-primary flex items-center justify-center gap-2">
-          <Plus className="w-4 h-4" />
-          Add to Watchlist
+        <button 
+          onClick={handleSaveStock}
+          className={`w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all ${
+            isSaved
+              ? 'bg-secondary text-secondary-foreground'
+              : 'bg-foreground text-background'
+          }`}
+        >
+          <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+          {isSaved ? 'Saved' : 'Save Stock'}
         </button>
       </motion.div>
     </div>

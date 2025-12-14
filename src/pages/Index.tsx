@@ -5,6 +5,7 @@ import { DiscoveryScreen } from '@/components/discovery/DiscoveryScreen';
 import { PlaylistDetail } from '@/components/playlist/PlaylistDetail';
 import { StockDetail } from '@/components/stock/StockDetail';
 import { ProfileScreen } from '@/components/profile/ProfileScreen';
+import { FollowingScreen } from '@/components/following/FollowingScreen';
 import { BottomNav } from '@/components/navigation/BottomNav';
 
 function AppContent() {
@@ -22,6 +23,8 @@ function AppContent() {
         return <StockDetail />;
       case 'profile':
         return <ProfileScreen />;
+      case 'following':
+        return <FollowingScreen />;
       default:
         return <QuizFlow />;
     }
