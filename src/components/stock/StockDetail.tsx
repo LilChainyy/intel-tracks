@@ -82,10 +82,7 @@ export function StockDetail() {
             />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-lg">{playlist.emoji}</span>
-              <span className="font-medium text-foreground">{playlist.title}</span>
-            </div>
+            <span className="font-medium text-foreground">{playlist.title}</span>
             <p className="text-xs text-muted-foreground">{playlist.stocks.length} stocks</p>
           </div>
         </div>
