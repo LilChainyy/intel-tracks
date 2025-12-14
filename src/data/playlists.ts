@@ -41,11 +41,11 @@ There are multiple ways to play this theme:
     timeHorizon: 'long',
     stylefit: 'casual',
     stocks: [
-      { ticker: 'CCJ', name: 'Cameco Corporation', description: "World's largest publicly traded uranium company", isPrivate: false, logoUrl: 'https://logo.clearbit.com/cameco.com' },
-      { ticker: 'VST', name: 'Vistra Corp', description: 'Integrated retail electricity and power generation company', isPrivate: false, logoUrl: 'https://logo.clearbit.com/vistracorp.com' },
-      { ticker: 'CEG', name: 'Constellation Energy', description: "Nation's largest producer of clean energy", isPrivate: false, logoUrl: 'https://logo.clearbit.com/constellationenergy.com' },
-      { ticker: 'SMR', name: 'NuScale Power', description: 'Pioneer in small modular reactor technology', isPrivate: false, logoUrl: 'https://logo.clearbit.com/nuscalepower.com' },
-      { ticker: 'LEU', name: 'Centrus Energy', description: 'Supplier of enriched uranium fuel for nuclear power plants', isPrivate: false, logoUrl: 'https://logo.clearbit.com/centrusenergy.com' }
+      { ticker: 'CCJ', name: 'Cameco Corporation', description: "World's largest publicly traded uranium company", isPrivate: false, logoUrl: 'https://logo.clearbit.com/cameco.com', ytdChange: 45.2 },
+      { ticker: 'VST', name: 'Vistra Corp', description: 'Integrated retail electricity and power generation company', isPrivate: false, logoUrl: 'https://logo.clearbit.com/vistracorp.com', ytdChange: 89.7 },
+      { ticker: 'CEG', name: 'Constellation Energy', description: "Nation's largest producer of clean energy", isPrivate: false, logoUrl: 'https://logo.clearbit.com/constellationenergy.com', ytdChange: 67.3 },
+      { ticker: 'SMR', name: 'NuScale Power', description: 'Pioneer in small modular reactor technology', isPrivate: false, logoUrl: 'https://logo.clearbit.com/nuscalepower.com', ytdChange: -23.4 },
+      { ticker: 'LEU', name: 'Centrus Energy', description: 'Supplier of enriched uranium fuel for nuclear power plants', isPrivate: false, logoUrl: 'https://logo.clearbit.com/centrusenergy.com', ytdChange: 112.5 }
     ]
   },
   {
@@ -77,10 +77,10 @@ Netflix has achieved what others couldn't: profitable streaming at scale. Key ad
     timeHorizon: 'medium',
     stylefit: 'casual',
     stocks: [
-      { ticker: 'NFLX', name: 'Netflix', description: 'Leading streaming entertainment service', isPrivate: false, logoUrl: 'https://logo.clearbit.com/netflix.com' },
-      { ticker: 'DIS', name: 'Walt Disney Company', description: 'Entertainment giant with Disney+, Hulu, ESPN+', isPrivate: false, logoUrl: 'https://logo.clearbit.com/disney.com' },
-      { ticker: 'WBD', name: 'Warner Bros. Discovery', description: 'Global media and entertainment company', isPrivate: false, logoUrl: 'https://logo.clearbit.com/wbd.com' },
-      { ticker: 'PARA', name: 'Paramount Global', description: 'Media company with Paramount+', isPrivate: false, logoUrl: 'https://logo.clearbit.com/paramount.com' }
+      { ticker: 'NFLX', name: 'Netflix', description: 'Leading streaming entertainment service', isPrivate: false, logoUrl: 'https://logo.clearbit.com/netflix.com', ytdChange: 75.3 },
+      { ticker: 'DIS', name: 'Walt Disney Company', description: 'Entertainment giant with Disney+, Hulu, ESPN+', isPrivate: false, logoUrl: 'https://logo.clearbit.com/disney.com', ytdChange: 12.8 },
+      { ticker: 'WBD', name: 'Warner Bros. Discovery', description: 'Global media and entertainment company', isPrivate: false, logoUrl: 'https://logo.clearbit.com/wbd.com', ytdChange: -18.5 },
+      { ticker: 'PARA', name: 'Paramount Global', description: 'Media company with Paramount+', isPrivate: false, logoUrl: 'https://logo.clearbit.com/paramount.com', ytdChange: -32.1 }
     ]
   },
   {
@@ -108,11 +108,11 @@ The post-Cold War era of declining defense spending is definitively over. Three 
     timeHorizon: 'long',
     stylefit: 'passive',
     stocks: [
-      { ticker: 'LMT', name: 'Lockheed Martin', description: "World's largest defense contractor", isPrivate: false, logoUrl: 'https://logo.clearbit.com/lockheedmartin.com' },
-      { ticker: 'RTX', name: 'RTX Corporation', description: 'Aerospace and defense conglomerate', isPrivate: false, logoUrl: 'https://logo.clearbit.com/rtx.com' },
-      { ticker: 'NOC', name: 'Northrop Grumman', description: 'Global aerospace and defense technology company', isPrivate: false, logoUrl: 'https://logo.clearbit.com/northropgrumman.com' },
-      { ticker: 'GD', name: 'General Dynamics', description: 'Aerospace and defense products manufacturer', isPrivate: false, logoUrl: 'https://logo.clearbit.com/gd.com' },
-      { ticker: 'LHX', name: 'L3Harris Technologies', description: 'Defense technology company', isPrivate: false, logoUrl: 'https://logo.clearbit.com/l3harris.com' }
+      { ticker: 'LMT', name: 'Lockheed Martin', description: "World's largest defense contractor", isPrivate: false, logoUrl: 'https://logo.clearbit.com/lockheedmartin.com', ytdChange: 18.4 },
+      { ticker: 'RTX', name: 'RTX Corporation', description: 'Aerospace and defense conglomerate', isPrivate: false, logoUrl: 'https://logo.clearbit.com/rtx.com', ytdChange: 24.7 },
+      { ticker: 'NOC', name: 'Northrop Grumman', description: 'Global aerospace and defense technology company', isPrivate: false, logoUrl: 'https://logo.clearbit.com/northropgrumman.com', ytdChange: 15.2 },
+      { ticker: 'GD', name: 'General Dynamics', description: 'Aerospace and defense products manufacturer', isPrivate: false, logoUrl: 'https://logo.clearbit.com/gd.com', ytdChange: 22.1 },
+      { ticker: 'LHX', name: 'L3Harris Technologies', description: 'Defense technology company', isPrivate: false, logoUrl: 'https://logo.clearbit.com/l3harris.com', ytdChange: 19.8 }
     ]
   },
   {
@@ -140,10 +140,10 @@ The space economy is expanding beyond low-earth orbit satellites.`,
     timeHorizon: 'long',
     stylefit: 'active',
     stocks: [
-      { ticker: 'RKLB', name: 'Rocket Lab', description: 'End-to-end space company', isPrivate: false, logoUrl: 'https://logo.clearbit.com/rocketlabusa.com' },
-      { ticker: 'ASTS', name: 'AST SpaceMobile', description: 'Building first space-based cellular broadband network', isPrivate: false, logoUrl: 'https://logo.clearbit.com/ast-science.com' },
-      { ticker: 'PL', name: 'Planet Labs', description: 'Earth imaging company with 200+ satellites', isPrivate: false, logoUrl: 'https://logo.clearbit.com/planet.com' },
-      { ticker: 'LUNR', name: 'Intuitive Machines', description: 'Lunar services and technology company', isPrivate: false, logoUrl: 'https://logo.clearbit.com/intuitivemachines.com' }
+      { ticker: 'RKLB', name: 'Rocket Lab', description: 'End-to-end space company', isPrivate: false, logoUrl: 'https://logo.clearbit.com/rocketlabusa.com', ytdChange: 156.3 },
+      { ticker: 'ASTS', name: 'AST SpaceMobile', description: 'Building first space-based cellular broadband network', isPrivate: false, logoUrl: 'https://logo.clearbit.com/ast-science.com', ytdChange: 234.8 },
+      { ticker: 'PL', name: 'Planet Labs', description: 'Earth imaging company with 200+ satellites', isPrivate: false, logoUrl: 'https://logo.clearbit.com/planet.com', ytdChange: -12.4 },
+      { ticker: 'LUNR', name: 'Intuitive Machines', description: 'Lunar services and technology company', isPrivate: false, logoUrl: 'https://logo.clearbit.com/intuitivemachines.com', ytdChange: 89.2 }
     ]
   },
   {
@@ -173,10 +173,10 @@ Pets have evolved from animals in the backyard to family members who sleep in be
     timeHorizon: 'medium',
     stylefit: 'casual',
     stocks: [
-      { ticker: 'CHWY', name: 'Chewy', description: 'Online pet retailer and pharmacy', isPrivate: false, logoUrl: 'https://logo.clearbit.com/chewy.com' },
-      { ticker: 'IDXX', name: 'IDEXX Laboratories', description: 'Veterinary diagnostics and software', isPrivate: false, logoUrl: 'https://logo.clearbit.com/idexx.com' },
-      { ticker: 'ZTS', name: 'Zoetis', description: 'World leader in animal health', isPrivate: false, logoUrl: 'https://logo.clearbit.com/zoetis.com' },
-      { ticker: 'TRUP', name: 'Trupanion', description: 'Medical insurance for pets', isPrivate: false, logoUrl: 'https://logo.clearbit.com/trupanion.com' }
+      { ticker: 'CHWY', name: 'Chewy', description: 'Online pet retailer and pharmacy', isPrivate: false, logoUrl: 'https://logo.clearbit.com/chewy.com', ytdChange: 28.4 },
+      { ticker: 'IDXX', name: 'IDEXX Laboratories', description: 'Veterinary diagnostics and software', isPrivate: false, logoUrl: 'https://logo.clearbit.com/idexx.com', ytdChange: 8.7 },
+      { ticker: 'ZTS', name: 'Zoetis', description: 'World leader in animal health', isPrivate: false, logoUrl: 'https://logo.clearbit.com/zoetis.com', ytdChange: 5.2 },
+      { ticker: 'TRUP', name: 'Trupanion', description: 'Medical insurance for pets', isPrivate: false, logoUrl: 'https://logo.clearbit.com/trupanion.com', ytdChange: 42.1 }
     ]
   },
   {
@@ -205,10 +205,10 @@ Luxury winners: RH proving aspirational consumers will pay for quality`,
     timeHorizon: 'medium',
     stylefit: 'passive',
     stocks: [
-      { ticker: 'COST', name: 'Costco', description: 'Membership warehouse retailer', isPrivate: false, logoUrl: 'https://logo.clearbit.com/costco.com' },
-      { ticker: 'WMT', name: 'Walmart', description: "World's largest retailer", isPrivate: false, logoUrl: 'https://logo.clearbit.com/walmart.com' },
-      { ticker: 'DG', name: 'Dollar General', description: 'Discount retailer', isPrivate: false, logoUrl: 'https://logo.clearbit.com/dollargeneral.com' },
-      { ticker: 'RH', name: 'RH (Restoration Hardware)', description: 'Luxury home furnishings', isPrivate: false, logoUrl: 'https://logo.clearbit.com/rh.com' }
+      { ticker: 'COST', name: 'Costco', description: 'Membership warehouse retailer', isPrivate: false, logoUrl: 'https://logo.clearbit.com/costco.com', ytdChange: 45.8 },
+      { ticker: 'WMT', name: 'Walmart', description: "World's largest retailer", isPrivate: false, logoUrl: 'https://logo.clearbit.com/walmart.com', ytdChange: 32.4 },
+      { ticker: 'DG', name: 'Dollar General', description: 'Discount retailer', isPrivate: false, logoUrl: 'https://logo.clearbit.com/dollargeneral.com', ytdChange: -18.7 },
+      { ticker: 'RH', name: 'RH (Restoration Hardware)', description: 'Luxury home furnishings', isPrivate: false, logoUrl: 'https://logo.clearbit.com/rh.com', ytdChange: 12.3 }
     ]
   },
   {
@@ -240,11 +240,11 @@ Early data suggests GLP-1s may help with:
     timeHorizon: 'long',
     stylefit: 'active',
     stocks: [
-      { ticker: 'LLY', name: 'Eli Lilly', description: 'Pharmaceutical giant with Mounjaro/Zepbound', isPrivate: false, logoUrl: 'https://logo.clearbit.com/lilly.com' },
-      { ticker: 'NVO', name: 'Novo Nordisk', description: 'Leader in obesity and diabetes care', isPrivate: false, logoUrl: 'https://logo.clearbit.com/novonordisk.com' },
-      { ticker: 'WELL', name: 'Welltower', description: 'Senior housing and healthcare real estate', isPrivate: false, logoUrl: 'https://logo.clearbit.com/welltower.com' },
-      { ticker: 'VTR', name: 'Ventas', description: 'Healthcare real estate investment trust', isPrivate: false, logoUrl: 'https://logo.clearbit.com/ventasreit.com' },
-      { ticker: 'CRSP', name: 'CRISPR Therapeutics', description: 'Gene editing therapies', isPrivate: false, logoUrl: 'https://logo.clearbit.com/crisprtx.com' }
+      { ticker: 'LLY', name: 'Eli Lilly', description: 'Pharmaceutical giant with Mounjaro/Zepbound', isPrivate: false, logoUrl: 'https://logo.clearbit.com/lilly.com', ytdChange: 52.3 },
+      { ticker: 'NVO', name: 'Novo Nordisk', description: 'Leader in obesity and diabetes care', isPrivate: false, logoUrl: 'https://logo.clearbit.com/novonordisk.com', ytdChange: 38.7 },
+      { ticker: 'WELL', name: 'Welltower', description: 'Senior housing and healthcare real estate', isPrivate: false, logoUrl: 'https://logo.clearbit.com/welltower.com', ytdChange: 22.1 },
+      { ticker: 'VTR', name: 'Ventas', description: 'Healthcare real estate investment trust', isPrivate: false, logoUrl: 'https://logo.clearbit.com/ventasreit.com', ytdChange: 15.8 },
+      { ticker: 'CRSP', name: 'CRISPR Therapeutics', description: 'Gene editing therapies', isPrivate: false, logoUrl: 'https://logo.clearbit.com/crisprtx.com', ytdChange: -8.4 }
     ]
   },
   {
@@ -275,11 +275,11 @@ $10,000 invested in Coca-Cola in 1988 is worth over $500,000 today with dividend
     timeHorizon: 'forever',
     stylefit: 'passive',
     stocks: [
-      { ticker: 'JNJ', name: 'Johnson & Johnson', description: 'Diversified healthcare company', isPrivate: false, logoUrl: 'https://logo.clearbit.com/jnj.com' },
-      { ticker: 'PG', name: 'Procter & Gamble', description: 'Consumer goods giant', isPrivate: false, logoUrl: 'https://logo.clearbit.com/pg.com' },
-      { ticker: 'KO', name: 'Coca-Cola', description: "World's largest beverage company", isPrivate: false, logoUrl: 'https://logo.clearbit.com/coca-cola.com' },
-      { ticker: 'PEP', name: 'PepsiCo', description: 'Global food and beverage company', isPrivate: false, logoUrl: 'https://logo.clearbit.com/pepsico.com' },
-      { ticker: 'MCD', name: "McDonald's", description: "World's largest fast-food chain", isPrivate: false, logoUrl: 'https://logo.clearbit.com/mcdonalds.com' }
+      { ticker: 'JNJ', name: 'Johnson & Johnson', description: 'Diversified healthcare company', isPrivate: false, logoUrl: 'https://logo.clearbit.com/jnj.com', ytdChange: 8.2 },
+      { ticker: 'PG', name: 'Procter & Gamble', description: 'Consumer goods giant', isPrivate: false, logoUrl: 'https://logo.clearbit.com/pg.com', ytdChange: 12.5 },
+      { ticker: 'KO', name: 'Coca-Cola', description: "World's largest beverage company", isPrivate: false, logoUrl: 'https://logo.clearbit.com/coca-cola.com', ytdChange: 15.3 },
+      { ticker: 'PEP', name: 'PepsiCo', description: 'Global food and beverage company', isPrivate: false, logoUrl: 'https://logo.clearbit.com/pepsico.com', ytdChange: 11.8 },
+      { ticker: 'MCD', name: "McDonald's", description: "World's largest fast-food chain", isPrivate: false, logoUrl: 'https://logo.clearbit.com/mcdonalds.com', ytdChange: 9.4 }
     ]
   },
   {
@@ -341,10 +341,10 @@ Jack Bogle's insight: you can't control returns, but you can control costs. Ever
     timeHorizon: 'forever',
     stylefit: 'passive',
     stocks: [
-      { ticker: 'VOO', name: 'Vanguard S&P 500 ETF', description: 'Tracks the S&P 500 index', isPrivate: false, logoUrl: 'https://logo.clearbit.com/vanguard.com' },
-      { ticker: 'VTI', name: 'Vanguard Total Stock Market ETF', description: 'Total US stock market exposure', isPrivate: false, logoUrl: 'https://logo.clearbit.com/vanguard.com' },
-      { ticker: 'QQQ', name: 'Invesco QQQ Trust', description: 'Tracks the Nasdaq-100 index', isPrivate: false, logoUrl: 'https://logo.clearbit.com/invesco.com' },
-      { ticker: 'SCHD', name: 'Schwab US Dividend Equity ETF', description: 'High dividend yield stocks', isPrivate: false, logoUrl: 'https://logo.clearbit.com/schwab.com' }
+      { ticker: 'VOO', name: 'Vanguard S&P 500 ETF', description: 'Tracks the S&P 500 index', isPrivate: false, logoUrl: 'https://logo.clearbit.com/vanguard.com', ytdChange: 26.2 },
+      { ticker: 'VTI', name: 'Vanguard Total Stock Market ETF', description: 'Total US stock market exposure', isPrivate: false, logoUrl: 'https://logo.clearbit.com/vanguard.com', ytdChange: 24.8 },
+      { ticker: 'QQQ', name: 'Invesco QQQ Trust', description: 'Tracks the Nasdaq-100 index', isPrivate: false, logoUrl: 'https://logo.clearbit.com/invesco.com', ytdChange: 32.1 },
+      { ticker: 'SCHD', name: 'Schwab US Dividend Equity ETF', description: 'High dividend yield stocks', isPrivate: false, logoUrl: 'https://logo.clearbit.com/schwab.com', ytdChange: 14.5 }
     ]
   }
 ];

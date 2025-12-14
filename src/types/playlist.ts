@@ -4,6 +4,7 @@ export interface Stock {
   description: string;
   isPrivate: boolean;
   logoUrl?: string;
+  ytdChange?: number;
 }
 
 export interface PlaylistMatchCriteria {
