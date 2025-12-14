@@ -1,14 +1,48 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { QuizProvider } from '@/context/QuizContext';
+import { AppProvider, useApp } from '@/context/AppContext';
+import { QuizFlow } from '@/components/quiz/QuizFlow';
+import { DiscoveryScreen } from '@/components/discovery/DiscoveryScreen';
+import { PlaylistDetail } from '@/components/playlist/PlaylistDetail';
+import { StockDetail } from '@/components/stock/StockDetail';
+import { ProfileScreen } from '@/components/profile/ProfileScreen';
+import { BottomNav } from '@/components/navigation/BottomNav';
 
-const Index = () => {
+function AppContent() {
+  const { currentScreen } = useApp();
+
+  const renderScreen = () => {
+    switch (currentScreen) {
+      case 'quiz':
+        return <QuizFlow />;
+      case 'discovery':
+        return <DiscoveryScreen />;
+      case 'playlist':
+        return <PlaylistDetail />;
+      case 'stock':
+        return <StockDetail />;
+      case 'profile':
+        return <ProfileScreen />;
+      default:
+        return <QuizFlow />;
+    }
+  };
+
+  const showBottomNav = currentScreen !== 'quiz';
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="max-w-md mx-auto min-h-screen bg-background relative">
+      {renderScreen()}
+      {showBottomNav && <BottomNav />}
     </div>
   );
-};
+}
 
-export default Index;
+export default function Index() {
+  return (
+    <QuizProvider>
+      <AppProvider>
+        <AppContent />
+      </AppProvider>
+    </QuizProvider>
+  );
+}
