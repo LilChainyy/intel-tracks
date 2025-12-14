@@ -31,13 +31,12 @@ export function GridSelector({ options, selectedIds, maxSelections, onToggle }: 
             transition={{ delay: index * 0.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => handleToggle(option.id)}
-            className={`relative h-16 rounded-2xl flex items-center gap-3 px-4 transition-all duration-150 ${
+            className={`relative h-16 rounded-2xl flex items-center justify-center px-4 transition-all duration-150 ${
               isSelected
                 ? 'bg-primary border-2 border-primary'
                 : 'bg-card border border-border hover:border-muted-foreground'
             }`}
           >
-            <span className="text-xl">{option.emoji}</span>
             <span
               className={`text-sm font-medium ${
                 isSelected ? 'text-primary-foreground' : 'text-foreground'

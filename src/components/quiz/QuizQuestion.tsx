@@ -61,17 +61,9 @@ export function QuizQuestion() {
       <div className="flex-1 flex flex-col items-center justify-center">
         {isMultiple ? (
           <>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="text-5xl mb-4"
-            >
-              {currentQuestion.emoji}
-            </motion.div>
             <motion.h2
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
               className="text-xl font-bold text-foreground text-center mb-2"
             >
               {currentQuestion.question}
@@ -79,7 +71,7 @@ export function QuizQuestion() {
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
+              transition={{ delay: 0.1 }}
               className="text-sm text-muted-foreground text-center mb-8"
             >
               {currentQuestion.subtitle}
@@ -94,7 +86,6 @@ export function QuizQuestion() {
         ) : (
           <>
             <CircleUI
-              emoji={currentQuestion.emoji}
               question={currentQuestion.question}
               options={currentQuestion.options}
               selectedId={currentAnswer as string}

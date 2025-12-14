@@ -8,14 +8,12 @@ export interface QuizState {
 
 export interface QuizOption {
   id: string;
-  emoji: string;
   label: string;
   description?: string;
 }
 
 export interface QuizQuestion {
   id: string;
-  emoji: string;
   question: string;
   subtitle?: string;
   options: QuizOption[];
