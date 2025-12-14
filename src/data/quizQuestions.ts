@@ -2,7 +2,7 @@ import { QuizQuestion } from "@/types/quiz";
 
 export const quizQuestions: QuizQuestion[] = [
   {
-    id: 'odds_preference',
+    id: 'risk',
     question: 'Pick your odds',
     subtitle: 'What matches your comfort zone?',
     selectionType: 'single',
@@ -47,58 +47,26 @@ export const quizQuestions: QuizQuestion[] = [
     ]
   },
   {
-    id: 'time_horizon',
+    id: 'timeline',
     question: 'Your timeline?',
     subtitle: 'When do you want results?',
     selectionType: 'single',
     options: [
       {
         id: 'short',
-        label: '< 1 year',
-        description: 'Quick plays'
+        label: '< 1 year'
       },
       {
         id: 'medium',
-        label: '1-3 years',
-        description: 'Medium term'
+        label: '1-3 years'
       },
       {
         id: 'long',
-        label: '3-5 years',
-        description: 'Patient capital'
+        label: '3-5 years'
       },
       {
         id: 'forever',
-        label: '5+ years',
-        description: 'Buy and hold'
-      }
-    ]
-  },
-  {
-    id: 'investment_style',
-    question: 'Your style?',
-    subtitle: 'How do you like to invest?',
-    selectionType: 'single',
-    options: [
-      {
-        id: 'passive',
-        label: 'Set & forget',
-        description: 'Minimal monitoring'
-      },
-      {
-        id: 'casual',
-        label: 'Casual',
-        description: 'Check weekly'
-      },
-      {
-        id: 'active',
-        label: 'Active',
-        description: 'Regular research'
-      },
-      {
-        id: 'intense',
-        label: 'Intense',
-        description: 'Daily tracking'
+        label: '5+ years'
       }
     ]
   }

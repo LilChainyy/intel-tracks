@@ -8,10 +8,9 @@ export interface Stock {
 }
 
 export interface PlaylistMatchCriteria {
-  riskLevel: 'safe' | 'balanced' | 'growth' | 'yolo';
+  risk: 'safe' | 'balanced' | 'growth' | 'yolo';
   sectors: string[];
-  timeHorizon: 'short' | 'medium' | 'long' | 'forever';
-  stylefit: 'passive' | 'casual' | 'active' | 'intense';
+  timeline: 'short' | 'medium' | 'long' | 'forever';
 }
 
 export interface Playlist extends PlaylistMatchCriteria {
