@@ -2,14 +2,13 @@ import { motion } from 'framer-motion';
 import { QuizOption as QuizOptionType } from '@/types/quiz';
 
 interface CircleUIProps {
-  emoji: string;
   question: string;
   options: QuizOptionType[];
   selectedId: string | null;
   onSelect: (id: string) => void;
 }
 
-export function CircleUI({ emoji, question, options, selectedId, onSelect }: CircleUIProps) {
+export function CircleUI({ question, options, selectedId, onSelect }: CircleUIProps) {
   const getOptionPosition = (index: number, total: number, radius: number = 100) => {
     const angleOffset = -90;
     const angleBetween = 360 / total;
@@ -31,7 +30,6 @@ export function CircleUI({ emoji, question, options, selectedId, onSelect }: Cir
         transition={{ duration: 0.4, ease: 'easeOut' }}
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-card border border-border flex flex-col items-center justify-center p-3"
       >
-        <span className="text-3xl mb-1">{emoji}</span>
         <span className="text-sm text-foreground text-center font-medium leading-tight">
           {question}
         </span>
@@ -64,10 +62,9 @@ export function CircleUI({ emoji, question, options, selectedId, onSelect }: Cir
                 : 'bg-card border-2 border-border hover:border-muted-foreground'
             }`}
           >
-            <span className="text-xl mb-0.5">{option.emoji}</span>
             <span
-              className={`text-[10px] font-medium ${
-                isSelected ? 'text-primary-foreground' : 'text-muted-foreground'
+              className={`text-xs font-medium text-center px-1 ${
+                isSelected ? 'text-primary-foreground' : 'text-foreground'
               }`}
             >
               {option.label}

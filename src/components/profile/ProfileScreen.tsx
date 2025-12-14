@@ -53,24 +53,20 @@ export function ProfileScreen() {
   const summaryItems = quizCompleted
     ? [
         {
-          emoji: '🛡️',
           label: 'Risk',
           value: answerLabels.odds_preference[state.answers.odds_preference as string] || 'Not set'
         },
         {
-          emoji: '⚡',
           label: 'Sectors',
           value: Array.isArray(state.answers.sectors)
             ? state.answers.sectors.map((s) => answerLabels.sectors[s]).join(', ')
             : 'Not set'
         },
         {
-          emoji: '⏰',
           label: 'Horizon',
           value: answerLabels.time_horizon[state.answers.time_horizon as string] || 'Not set'
         },
         {
-          emoji: '🧠',
           label: 'Style',
           value: answerLabels.investment_style[state.answers.investment_style as string] || 'Not set'
         }
@@ -104,7 +100,7 @@ export function ProfileScreen() {
         className="card-surface p-6 text-center mb-6"
       >
         <div className="w-20 h-20 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
-          <span className="text-3xl">👤</span>
+          <span className="text-2xl font-semibold text-muted-foreground">G</span>
         </div>
         <h2 className="text-lg font-semibold text-foreground">Guest User</h2>
       </motion.div>
@@ -121,10 +117,7 @@ export function ProfileScreen() {
           <div className="card-surface p-4 space-y-4">
             {summaryItems.map((item) => (
               <div key={item.label} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{item.emoji}</span>
-                  <span className="text-sm text-muted-foreground">{item.label}</span>
-                </div>
+                <span className="text-sm text-muted-foreground">{item.label}</span>
                 <span className="text-sm font-medium text-foreground">{item.value}</span>
               </div>
             ))}
@@ -146,13 +139,12 @@ export function ProfileScreen() {
         >
           <h3 className="section-header mb-3">Personalize</h3>
           <div className="card-surface p-6 text-center">
-            <span className="text-4xl mb-3 block">🎯</span>
             <h4 className="font-semibold text-foreground mb-1">Take the Quiz</h4>
             <p className="text-sm text-muted-foreground mb-4">
               Find themes that match your investment style
             </p>
             <button onClick={handleTakeQuiz} className="btn-primary">
-              Start Quiz →
+              Start Quiz
             </button>
           </div>
         </motion.div>

@@ -45,24 +45,20 @@ export function QuizResults() {
 
   const summaryItems = [
     {
-      emoji: '🛡️',
       label: 'Risk',
       value: answerLabels.odds_preference[state.answers.odds_preference as string] || 'Not set'
     },
     {
-      emoji: '⚡',
       label: 'Sectors',
       value: Array.isArray(state.answers.sectors)
         ? state.answers.sectors.map((s) => answerLabels.sectors[s]).join(', ')
         : 'Not set'
     },
     {
-      emoji: '⏰',
       label: 'Horizon',
       value: answerLabels.time_horizon[state.answers.time_horizon as string] || 'Not set'
     },
     {
-      emoji: '🧠',
       label: 'Style',
       value: answerLabels.investment_style[state.answers.investment_style as string] || 'Not set'
     }
@@ -87,13 +83,6 @@ export function QuizResults() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="text-5xl mb-4 animate-wiggle"
-      >
-        ✨
-      </motion.div>
 
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
@@ -126,7 +115,6 @@ export function QuizResults() {
             custom={index}
             className="card-surface p-4 flex items-center gap-3"
           >
-            <span className="text-xl">{item.emoji}</span>
             <div className="flex-1">
               <span className="text-sm text-muted-foreground">{item.label}</span>
               <p className="text-foreground font-medium">{item.value}</p>
