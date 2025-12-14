@@ -1,7 +1,16 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Playlist } from '@/types/playlist';
+import { Playlist, Stock } from '@/types/playlist';
 
-type Screen = 'quiz' | 'discovery' | 'playlist' | 'stock' | 'profile';
+type Screen = 'quiz' | 'discovery' | 'playlist' | 'stock' | 'profile' | 'following';
+
+export interface SavedStock {
+  ticker: string;
+  name: string;
+  playlistId: string;
+  playlistTitle: string;
+  logoUrl?: string;
+  ytdChange?: number;
+}
 
 interface AppContextType {
   currentScreen: Screen;
@@ -12,8 +21,11 @@ interface AppContextType {
   setSelectedStock: (stock: { ticker: string; playlist: Playlist } | null) => void;
   quizCompleted: boolean;
   setQuizCompleted: (completed: boolean) => void;
-  followedPlaylists: string[];
-  toggleFollowPlaylist: (playlistId: string) => void;
+  savedPlaylists: string[];
+  toggleSavePlaylist: (playlistId: string) => void;
+  savedStocks: SavedStock[];
+  toggleSaveStock: (stock: SavedStock) => void;
+  isStockSaved: (ticker: string) => boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -23,14 +35,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
   const [selectedStock, setSelectedStock] = useState<{ ticker: string; playlist: Playlist } | null>(null);
   const [quizCompleted, setQuizCompleted] = useState(false);
-  const [followedPlaylists, setFollowedPlaylists] = useState<string[]>([]);
+  const [savedPlaylists, setSavedPlaylists] = useState<string[]>([]);
+  const [savedStocks, setSavedStocks] = useState<SavedStock[]>([]);
 
-  const toggleFollowPlaylist = (playlistId: string) => {
-    setFollowedPlaylists(prev =>
+  const toggleSavePlaylist = (playlistId: string) => {
+    setSavedPlaylists(prev =>
       prev.includes(playlistId)
         ? prev.filter(id => id !== playlistId)
         : [...prev, playlistId]
     );
+  };
+
+  const toggleSaveStock = (stock: SavedStock) => {
+    setSavedStocks(prev =>
+      prev.some(s => s.ticker === stock.ticker)
+        ? prev.filter(s => s.ticker !== stock.ticker)
+        : [...prev, stock]
+    );
+  };
+
+  const isStockSaved = (ticker: string) => {
+    return savedStocks.some(s => s.ticker === ticker);
   };
 
   return (
@@ -44,8 +69,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setSelectedStock,
         quizCompleted,
         setQuizCompleted,
-        followedPlaylists,
-        toggleFollowPlaylist
+        savedPlaylists,
+        toggleSavePlaylist,
+        savedStocks,
+        toggleSaveStock,
+        isStockSaved
       }}
     >
       {children}

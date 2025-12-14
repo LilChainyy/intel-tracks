@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Share2, Bell, BellOff, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Share2, Bookmark, ChevronDown } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { Stock } from '@/types/playlist';
 import { ThemeIllustration } from './ThemeIllustration';
@@ -59,12 +59,12 @@ function StockRow({ stock, onClick }: { stock: Stock; onClick: () => void }) {
 }
 
 export function PlaylistDetail() {
-  const { selectedPlaylist, setCurrentScreen, setSelectedStock, followedPlaylists, toggleFollowPlaylist } = useApp();
+  const { selectedPlaylist, setCurrentScreen, setSelectedStock, savedPlaylists, toggleSavePlaylist } = useApp();
   const [isAnalysisExpanded, setIsAnalysisExpanded] = useState(false);
 
   if (!selectedPlaylist) return null;
 
-  const isFollowing = followedPlaylists.includes(selectedPlaylist.id);
+  const isSaved = savedPlaylists.includes(selectedPlaylist.id);
 
   const handleBack = () => {
     setCurrentScreen('discovery');
@@ -216,31 +216,22 @@ export function PlaylistDetail() {
           ))}
         </motion.div>
 
-        {/* Follow button */}
+        {/* Save button */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
           <button
-            onClick={() => toggleFollowPlaylist(selectedPlaylist.id)}
+            onClick={() => toggleSavePlaylist(selectedPlaylist.id)}
             className={`w-full py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all ${
-              isFollowing
+              isSaved
                 ? 'bg-secondary text-secondary-foreground'
                 : 'bg-foreground text-background'
             }`}
           >
-            {isFollowing ? (
-              <>
-                <BellOff className="w-4 h-4" />
-                Following
-              </>
-            ) : (
-              <>
-                <Bell className="w-4 h-4" />
-                Follow This Theme
-              </>
-            )}
+            <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+            {isSaved ? 'Saved' : 'Save This Theme'}
           </button>
         </motion.div>
 
