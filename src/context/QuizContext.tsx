@@ -81,10 +81,9 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   const getUserProfile = (): UserProfile | null => {
     if (!state.isComplete) return null;
     return {
-      oddsPreference: state.answers.odds_preference as string,
+      risk: state.answers.risk as UserProfile['risk'],
       sectors: state.answers.sectors as string[],
-      timeHorizon: state.answers.time_horizon as string,
-      investmentStyle: state.answers.investment_style as string,
+      timeline: state.answers.timeline as UserProfile['timeline'],
       quizCompletedAt: new Date()
     };
   };

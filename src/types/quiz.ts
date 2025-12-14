@@ -22,9 +22,8 @@ export interface QuizQuestion {
 }
 
 export interface UserProfile {
-  oddsPreference: string;
+  risk: 'safe' | 'balanced' | 'growth' | 'yolo';
   sectors: string[];
-  timeHorizon: string;
-  investmentStyle: string;
+  timeline: 'short' | 'medium' | 'long' | 'forever';
   quizCompletedAt: Date;
 }

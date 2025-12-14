@@ -9,11 +9,11 @@ interface MatchBadgeProps {
 export function MatchBadge({ score }: MatchBadgeProps) {
   const level = getMatchLevel(score);
 
-  if (level === 'okay') {
+  if (level === 'none') {
     return null;
   }
 
-  const config: Record<MatchLevel, { icon: React.ReactNode; className: string }> = {
+  const config: Record<Exclude<MatchLevel, 'none'>, { icon: React.ReactNode; className: string }> = {
     great: {
       icon: <Star className="w-3 h-3" />,
       className: 'match-badge-great'
@@ -21,10 +21,6 @@ export function MatchBadge({ score }: MatchBadgeProps) {
     good: {
       icon: <Check className="w-3 h-3" />,
       className: 'match-badge-good'
-    },
-    okay: {
-      icon: null,
-      className: 'match-badge-okay'
     }
   };
 

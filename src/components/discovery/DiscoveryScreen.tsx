@@ -65,7 +65,7 @@ export function DiscoveryScreen() {
         >
           <div className="card-surface p-4 flex items-center justify-between gap-4 bg-gradient-to-r from-card to-secondary">
             <div className="flex items-center gap-3">
-              <span className="text-2xl">🎯</span>
+              <span className="text-2xl"></span>
               <div>
                 <p className="text-sm font-medium text-foreground">Personalize your feed</p>
                 <p className="text-xs text-muted-foreground">Take 30s quiz to see your matches</p>

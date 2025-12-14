@@ -36,10 +36,9 @@ There are multiple ways to play this theme:
 - **SMR developers**: SMR, OKLO
 - **Enrichment**: LEU`,
     tags: ['Energy', 'AI Infrastructure', 'Policy Tailwinds'],
-    riskLevel: 'growth',
+    risk: 'growth',
     sectors: ['energy', 'tech', 'industrial'],
-    timeHorizon: 'long',
-    stylefit: 'casual',
+    timeline: 'long',
     stocks: [
       { ticker: 'CCJ', name: 'Cameco Corporation', description: "World's largest publicly traded uranium company", isPrivate: false, logoUrl: 'https://logo.clearbit.com/cameco.com', ytdChange: 45.2 },
       { ticker: 'VST', name: 'Vistra Corp', description: 'Integrated retail electricity and power generation company', isPrivate: false, logoUrl: 'https://logo.clearbit.com/vistracorp.com', ytdChange: 89.7 },
@@ -72,10 +71,9 @@ Netflix has achieved what others couldn't: profitable streaming at scale. Key ad
 - Password crackdown working
 - Live events (WWE, NFL) driving engagement`,
     tags: ['Media', 'Ad Recovery', 'Live Sports'],
-    riskLevel: 'balanced',
+    risk: 'balanced',
     sectors: ['entertainment', 'tech'],
-    timeHorizon: 'medium',
-    stylefit: 'casual',
+    timeline: 'medium',
     stocks: [
       { ticker: 'NFLX', name: 'Netflix', description: 'Leading streaming entertainment service', isPrivate: false, logoUrl: 'https://logo.clearbit.com/netflix.com', ytdChange: 75.3 },
       { ticker: 'DIS', name: 'Walt Disney Company', description: 'Entertainment giant with Disney+, Hulu, ESPN+', isPrivate: false, logoUrl: 'https://logo.clearbit.com/disney.com', ytdChange: 12.8 },
@@ -103,10 +101,9 @@ The post-Cold War era of declining defense spending is definitively over. Three 
 2. **Indo-Pacific**: Taiwan, Japan, Australia, South Korea all increasing spend
 3. **Middle East**: Gulf states modernizing militaries`,
     tags: ['Geopolitics', 'Government Contracts', 'Backlog Growth'],
-    riskLevel: 'balanced',
+    risk: 'balanced',
     sectors: ['industrial', 'tech'],
-    timeHorizon: 'long',
-    stylefit: 'passive',
+    timeline: 'long',
     stocks: [
       { ticker: 'LMT', name: 'Lockheed Martin', description: "World's largest defense contractor", isPrivate: false, logoUrl: 'https://logo.clearbit.com/lockheedmartin.com', ytdChange: 18.4 },
       { ticker: 'RTX', name: 'RTX Corporation', description: 'Aerospace and defense conglomerate', isPrivate: false, logoUrl: 'https://logo.clearbit.com/rtx.com', ytdChange: 24.7 },
@@ -135,10 +132,9 @@ In 2010, launching 1kg to orbit cost ~$50,000. Today with SpaceX it's under $3,0
 
 The space economy is expanding beyond low-earth orbit satellites.`,
     tags: ['Satellite Boom', 'NASA Artemis', 'Launch Cost Collapse'],
-    riskLevel: 'yolo',
+    risk: 'yolo',
     sectors: ['space', 'tech', 'industrial'],
-    timeHorizon: 'long',
-    stylefit: 'active',
+    timeline: 'long',
     stocks: [
       { ticker: 'RKLB', name: 'Rocket Lab', description: 'End-to-end space company', isPrivate: false, logoUrl: 'https://logo.clearbit.com/rocketlabusa.com', ytdChange: 156.3 },
       { ticker: 'ASTS', name: 'AST SpaceMobile', description: 'Building first space-based cellular broadband network', isPrivate: false, logoUrl: 'https://logo.clearbit.com/ast-science.com', ytdChange: 234.8 },
@@ -168,10 +164,9 @@ Pets have evolved from animals in the backyard to family members who sleep in be
 - Average dog owner spends $1,500+/year
 - Vet visits up 35% since pre-pandemic`,
     tags: ['Humanization Trend', 'Vet Spending', 'Recession Resistant'],
-    riskLevel: 'balanced',
+    risk: 'balanced',
     sectors: ['consumer', 'healthcare'],
-    timeHorizon: 'medium',
-    stylefit: 'casual',
+    timeline: 'medium',
     stocks: [
       { ticker: 'CHWY', name: 'Chewy', description: 'Online pet retailer and pharmacy', isPrivate: false, logoUrl: 'https://logo.clearbit.com/chewy.com', ytdChange: 28.4 },
       { ticker: 'IDXX', name: 'IDEXX Laboratories', description: 'Veterinary diagnostics and software', isPrivate: false, logoUrl: 'https://logo.clearbit.com/idexx.com', ytdChange: 8.7 },
@@ -200,10 +195,9 @@ Income inequality is reshaping retail. The middle class is shrinking, and with i
 Value winners: Costco membership model creates loyalty
 Luxury winners: RH proving aspirational consumers will pay for quality`,
     tags: ['Consumer Bifurcation', 'Value Winners', 'Luxury Resilience'],
-    riskLevel: 'safe',
+    risk: 'safe',
     sectors: ['consumer', 'finance'],
-    timeHorizon: 'medium',
-    stylefit: 'passive',
+    timeline: 'medium',
     stocks: [
       { ticker: 'COST', name: 'Costco', description: 'Membership warehouse retailer', isPrivate: false, logoUrl: 'https://logo.clearbit.com/costco.com', ytdChange: 45.8 },
       { ticker: 'WMT', name: 'Walmart', description: "World's largest retailer", isPrivate: false, logoUrl: 'https://logo.clearbit.com/walmart.com', ytdChange: 32.4 },
@@ -235,10 +229,9 @@ Early data suggests GLP-1s may help with:
 - Liver disease
 - Sleep apnea`,
     tags: ['GLP-1 Revolution', 'Silver Tsunami', 'Biotech Billions'],
-    riskLevel: 'growth',
+    risk: 'growth',
     sectors: ['healthcare', 'tech'],
-    timeHorizon: 'long',
-    stylefit: 'active',
+    timeline: 'long',
     stocks: [
       { ticker: 'LLY', name: 'Eli Lilly', description: 'Pharmaceutical giant with Mounjaro/Zepbound', isPrivate: false, logoUrl: 'https://logo.clearbit.com/lilly.com', ytdChange: 52.3 },
       { ticker: 'NVO', name: 'Novo Nordisk', description: 'Leader in obesity and diabetes care', isPrivate: false, logoUrl: 'https://logo.clearbit.com/novonordisk.com', ytdChange: 38.7 },
@@ -270,10 +263,9 @@ $10,000 invested in Coca-Cola in 1988 is worth over $500,000 today with dividend
 - Return of capital discipline
 - Low volatility = better risk-adjusted returns`,
     tags: ['Dividend Aristocrats', 'Low Volatility', 'Compounders'],
-    riskLevel: 'safe',
+    risk: 'safe',
     sectors: ['consumer', 'finance', 'healthcare'],
-    timeHorizon: 'forever',
-    stylefit: 'passive',
+    timeline: 'forever',
     stocks: [
       { ticker: 'JNJ', name: 'Johnson & Johnson', description: 'Diversified healthcare company', isPrivate: false, logoUrl: 'https://logo.clearbit.com/jnj.com', ytdChange: 8.2 },
       { ticker: 'PG', name: 'Procter & Gamble', description: 'Consumer goods giant', isPrivate: false, logoUrl: 'https://logo.clearbit.com/pg.com', ytdChange: 12.5 },
@@ -304,10 +296,9 @@ Over $1 trillion in private company value is waiting to go public. Unlike 2021, 
 - SpaceX: Starlink alone could be worth $100B+
 - Databricks: The data/AI platform leader`,
     tags: ['Pre-IPO', 'Venture Darlings', 'High Risk/Reward'],
-    riskLevel: 'yolo',
+    risk: 'yolo',
     sectors: ['tech', 'finance'],
-    timeHorizon: 'medium',
-    stylefit: 'active',
+    timeline: 'medium',
     stocks: [
       { ticker: 'STRIPE', name: 'Stripe', description: 'Payments infrastructure for the internet', isPrivate: true },
       { ticker: 'SPACEX', name: 'SpaceX', description: 'Aerospace manufacturer and space transport company', isPrivate: true },
@@ -336,10 +327,9 @@ Over 15 years, 92% of large-cap fund managers underperformed the S&P 500. It's n
 
 Jack Bogle's insight: you can't control returns, but you can control costs. Every dollar in fees is a dollar not compounding.`,
     tags: ['Passive Investing', 'Low Fees', 'Set & Forget'],
-    riskLevel: 'safe',
+    risk: 'safe',
     sectors: ['tech', 'finance', 'consumer', 'healthcare'],
-    timeHorizon: 'forever',
-    stylefit: 'passive',
+    timeline: 'forever',
     stocks: [
       { ticker: 'VOO', name: 'Vanguard S&P 500 ETF', description: 'Tracks the S&P 500 index', isPrivate: false, logoUrl: 'https://logo.clearbit.com/vanguard.com', ytdChange: 26.2 },
       { ticker: 'VTI', name: 'Vanguard Total Stock Market ETF', description: 'Total US stock market exposure', isPrivate: false, logoUrl: 'https://logo.clearbit.com/vanguard.com', ytdChange: 24.8 },

@@ -3,23 +3,17 @@ import { useQuiz } from '@/context/QuizContext';
 import { useApp } from '@/context/AppContext';
 
 const answerLabels: Record<string, Record<string, string>> = {
-  odds_preference: {
+  risk: {
     safe: 'Steady wins',
     balanced: 'Balanced',
     growth: 'Growth',
     yolo: 'Moon shots'
   },
-  time_horizon: {
+  timeline: {
     short: '< 1 year',
     medium: '1-3 years',
     long: '3-5 years',
     forever: '5+ years'
-  },
-  investment_style: {
-    passive: 'Set & forget',
-    casual: 'Casual',
-    active: 'Active',
-    intense: 'Intense'
   },
   sectors: {
     tech: 'Tech',
@@ -46,7 +40,7 @@ export function QuizResults() {
   const summaryItems = [
     {
       label: 'Risk',
-      value: answerLabels.odds_preference[state.answers.odds_preference as string] || 'Not set'
+      value: answerLabels.risk[state.answers.risk as string] || 'Not set'
     },
     {
       label: 'Sectors',
@@ -55,12 +49,8 @@ export function QuizResults() {
         : 'Not set'
     },
     {
-      label: 'Horizon',
-      value: answerLabels.time_horizon[state.answers.time_horizon as string] || 'Not set'
-    },
-    {
-      label: 'Style',
-      value: answerLabels.investment_style[state.answers.investment_style as string] || 'Not set'
+      label: 'Timeline',
+      value: answerLabels.timeline[state.answers.timeline as string] || 'Not set'
     }
   ];
 
@@ -126,11 +116,11 @@ export function QuizResults() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.9 }}
+        transition={{ delay: 0.7 }}
         className="w-full max-w-sm mt-8"
       >
         <button onClick={handleSeeMatches} className="btn-primary">
-          See Your Matches →
+          See Your Matches
         </button>
       </motion.div>
     </div>
