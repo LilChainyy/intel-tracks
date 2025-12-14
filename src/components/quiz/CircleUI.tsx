@@ -9,7 +9,7 @@ interface CircleUIProps {
 }
 
 export function CircleUI({ question, options, selectedId, onSelect }: CircleUIProps) {
-  const getOptionPosition = (index: number, total: number, radius: number = 100) => {
+  const getOptionPosition = (index: number, total: number, radius: number = 120) => {
     const angleOffset = -90;
     const angleBetween = 360 / total;
     const angle = angleOffset + index * angleBetween;
@@ -22,7 +22,7 @@ export function CircleUI({ question, options, selectedId, onSelect }: CircleUIPr
   };
 
   return (
-    <div className="relative w-[280px] h-[280px] mx-auto">
+    <div className="relative w-[320px] h-[320px] mx-auto">
       {/* Center circle */}
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
