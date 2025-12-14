@@ -36,9 +36,6 @@ export function PlaylistCard({ playlist, onClick, showMatchScore = false }: Play
         <h3 className="font-semibold text-foreground mb-2">{playlist.title}</h3>
 
         <div className="space-y-1">
-          <p className="text-xs text-muted-foreground">
-            {playlist.investors.slice(0, 2).join(' · ')}
-          </p>
           <p className={`text-xs ${playlist.isPositivePerformance ? 'text-emerald-400' : 'text-red-400'}`}>
             {playlist.benchmarkPerformance}
           </p>
