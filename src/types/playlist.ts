@@ -3,6 +3,7 @@ export interface Stock {
   name: string;
   description: string;
   isPrivate: boolean;
+  logoUrl?: string;
 }
 
 export interface PlaylistMatchCriteria {
@@ -14,12 +15,24 @@ export interface PlaylistMatchCriteria {
 
 export interface Playlist extends PlaylistMatchCriteria {
   id: string;
-  emoji: string;
   title: string;
   heroImage: string;
-  whoBuying: string[];
-  proofPoint: string;
-  whyNow: string;
+  
+  // Key Players
+  investors: string[];
+  companies: string[];
+  
+  // Performance
+  benchmarkTicker: string;
+  benchmarkName: string;
+  benchmarkPerformance: string;
+  isPositivePerformance: boolean;
+  
+  // Content
+  signal: string;
+  thesis: string;
+  fullAnalysis?: string;
+  
   tags: string[];
   stocks: Stock[];
   matchScore?: number;
