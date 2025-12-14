@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Share2, Bell, BellOff, ChevronDown, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Share2, Bell, BellOff, ChevronDown } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { Stock } from '@/types/playlist';
+import { ThemeIllustration } from './ThemeIllustration';
 
 function StockLogo({ ticker, logoUrl, name }: { ticker: string; logoUrl?: string; name: string }) {
   const [imgError, setImgError] = useState(false);
 
   if (!logoUrl || imgError) {
     return (
-      <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center">
-        <span className="text-sm font-semibold text-muted-foreground">
+      <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+        <span className="text-sm font-medium text-muted-foreground">
           {ticker.charAt(0)}
         </span>
       </div>
@@ -21,9 +22,39 @@ function StockLogo({ ticker, logoUrl, name }: { ticker: string; logoUrl?: string
     <img
       src={logoUrl}
       alt={name}
-      className="w-9 h-9 rounded-lg object-contain bg-white"
+      className="w-8 h-8 rounded-lg object-contain bg-muted/50"
       onError={() => setImgError(true)}
     />
+  );
+}
+
+function StockRow({ stock, onClick }: { stock: Stock; onClick: () => void }) {
+  const formatYtdChange = (change?: number) => {
+    if (change === undefined) return null;
+    const sign = change >= 0 ? '+' : '';
+    return `${sign}${change.toFixed(1)}%`;
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className="w-full py-4 flex items-center justify-between hover:bg-secondary/50 transition-colors -mx-6 px-6"
+    >
+      <div className="flex items-center gap-3">
+        <StockLogo ticker={stock.ticker} logoUrl={stock.logoUrl} name={stock.name} />
+        <span className="font-semibold text-foreground">{stock.ticker}</span>
+        {stock.isPrivate && (
+          <span className="px-2 py-0.5 rounded-full bg-amber/20 text-amber text-xs">
+            Private
+          </span>
+        )}
+      </div>
+      {stock.ytdChange !== undefined && (
+        <span className={`text-sm font-semibold ${stock.ytdChange >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+          {formatYtdChange(stock.ytdChange)}
+        </span>
+      )}
+    </button>
   );
 }
 
@@ -44,51 +75,39 @@ export function PlaylistDetail() {
     setCurrentScreen('stock');
   };
 
-  const keyPlayers = [...selectedPlaylist.investors, ...selectedPlaylist.companies.slice(0, 2)].slice(0, 5);
-
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Hero section */}
-      <div className="relative h-64">
-        <img
-          src={selectedPlaylist.heroImage}
-          alt={selectedPlaylist.title}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-
+      {/* Hero section - Minna Bank style */}
+      <div className="relative bg-muted/30 pt-12 pb-8">
         {/* Navigation */}
-        <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 pt-12">
+        <div className="flex items-center justify-between px-4 mb-8">
           <button
             onClick={handleBack}
-            className="w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center"
+            className="w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center border border-border"
           >
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
-          <button className="w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center">
+          <button className="w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center border border-border">
             <Share2 className="w-5 h-5 text-foreground" />
           </button>
         </div>
 
-        {/* Title */}
-        <div className="absolute bottom-6 left-6 right-6">
-          <h1 className="text-2xl font-bold text-foreground">{selectedPlaylist.title}</h1>
+        {/* Illustration */}
+        <div className="flex justify-center mb-6">
+          <ThemeIllustration 
+            themeId={selectedPlaylist.id} 
+            className="w-32 h-32 text-foreground"
+          />
         </div>
+
+        {/* Title */}
+        <h1 className="text-2xl font-bold text-foreground text-center px-6">
+          {selectedPlaylist.title}
+        </h1>
       </div>
 
       {/* Content */}
       <div className="px-6 py-6 space-y-6">
-        {/* Key Players */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-2"
-        >
-          <h2 className="section-header">KEY PLAYERS</h2>
-          <p className="text-foreground font-medium">
-            {keyPlayers.join(' · ')}
-          </p>
-        </motion.div>
 
         {/* Performance */}
         <motion.div
@@ -240,18 +259,10 @@ export function PlaylistDetail() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 + index * 0.05 }}
             >
-              <button
-                onClick={() => handleStockClick(stock)}
-                className="w-full py-4 flex items-center gap-3 hover:bg-secondary/50 transition-colors -mx-6 px-6"
-              >
-                <StockLogo ticker={stock.ticker} logoUrl={stock.logoUrl} name={stock.name} />
-                <span className="font-semibold text-foreground">{stock.ticker}</span>
-                {stock.isPrivate && (
-                  <span className="ml-auto px-2 py-0.5 rounded-full bg-amber/20 text-amber text-xs">
-                    Private
-                  </span>
-                )}
-              </button>
+              <StockRow 
+                stock={stock} 
+                onClick={() => handleStockClick(stock)} 
+              />
               <div className="border-t border-border" />
             </motion.div>
           ))}
