@@ -4,23 +4,17 @@ import { useApp } from '@/context/AppContext';
 import { useQuiz } from '@/context/QuizContext';
 
 const answerLabels: Record<string, Record<string, string>> = {
-  odds_preference: {
+  risk: {
     safe: 'Steady wins',
     balanced: 'Balanced',
     growth: 'Growth',
     yolo: 'Moon shots'
   },
-  time_horizon: {
+  timeline: {
     short: '< 1 year',
     medium: '1-3 years',
     long: '3-5 years',
     forever: '5+ years'
-  },
-  investment_style: {
-    passive: 'Set & forget',
-    casual: 'Casual',
-    active: 'Active',
-    intense: 'Intense'
   },
   sectors: {
     tech: 'Tech',
@@ -54,7 +48,7 @@ export function ProfileScreen() {
     ? [
         {
           label: 'Risk',
-          value: answerLabels.odds_preference[state.answers.odds_preference as string] || 'Not set'
+          value: answerLabels.risk[state.answers.risk as string] || 'Not set'
         },
         {
           label: 'Sectors',
@@ -63,12 +57,8 @@ export function ProfileScreen() {
             : 'Not set'
         },
         {
-          label: 'Horizon',
-          value: answerLabels.time_horizon[state.answers.time_horizon as string] || 'Not set'
-        },
-        {
-          label: 'Style',
-          value: answerLabels.investment_style[state.answers.investment_style as string] || 'Not set'
+          label: 'Timeline',
+          value: answerLabels.timeline[state.answers.timeline as string] || 'Not set'
         }
       ]
     : [];
@@ -113,22 +103,23 @@ export function ProfileScreen() {
           transition={{ delay: 0.2 }}
           className="mb-6"
         >
-          <h3 className="section-header mb-3">Your Investment DNA</h3>
-          <div className="card-surface p-4 space-y-4">
+          <h3 className="text-xl font-bold text-foreground text-center mb-2">Your Investment DNA</h3>
+          <p className="text-sm text-muted-foreground text-center mb-6">Based on your answers, here's what we found</p>
+          <div className="space-y-3">
             {summaryItems.map((item) => (
-              <div key={item.label} className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">{item.label}</span>
-                <span className="text-sm font-medium text-foreground">{item.value}</span>
+              <div key={item.label} className="card-surface p-4">
+                <span className="text-sm text-muted-foreground block mb-1">{item.label}</span>
+                <span className="text-base font-semibold text-foreground">{item.value}</span>
               </div>
             ))}
-            <button
-              onClick={handleRetakeQuiz}
-              className="w-full py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-2"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Retake Quiz
-            </button>
           </div>
+          <button
+            onClick={handleRetakeQuiz}
+            className="w-full mt-4 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-2"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Retake Quiz
+          </button>
         </motion.div>
       ) : (
         <motion.div
