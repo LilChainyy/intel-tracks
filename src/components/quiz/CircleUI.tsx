@@ -28,7 +28,7 @@ export function CircleUI({ question, options, selectedId, onSelect }: CircleUIPr
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-card border border-border flex flex-col items-center justify-center p-3"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-card border border-border flex flex-col items-center justify-center p-3"
       >
         <span className="text-sm text-foreground text-center font-medium leading-tight">
           {question}
