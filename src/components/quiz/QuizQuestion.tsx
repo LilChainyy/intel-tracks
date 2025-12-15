@@ -58,7 +58,7 @@ export function QuizQuestion() {
       </div>
 
       {/* Question content */}
-      <div className="flex-1 flex flex-col items-center justify-center">
+      <div className="flex-1 flex flex-col items-center justify-center pt-16">
         {isMultiple ? (
           <>
             <motion.h2
