@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Share2, Bookmark, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Share2, Bookmark, ChevronDown, Loader2, RefreshCw } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { Stock } from '@/types/playlist';
 import { ThemeIllustration } from './ThemeIllustration';
+import { useStockDataContext } from '@/context/StockDataContext';
 
 function StockLogo({ ticker, logoUrl, name }: { ticker: string; logoUrl?: string; name: string }) {
   const [imgError, setImgError] = useState(false);
@@ -29,6 +30,13 @@ function StockLogo({ ticker, logoUrl, name }: { ticker: string; logoUrl?: string
 }
 
 function StockRow({ stock, onClick }: { stock: Stock; onClick: () => void }) {
+  const { getStockData, isLoading } = useStockDataContext();
+  
+  // Get live data or fallback to hardcoded
+  const liveData = getStockData(stock.ticker);
+  const ytdChange = liveData ? liveData.ytdChange : stock.ytdChange;
+  const isPositive = liveData ? liveData.isPositive : (stock.ytdChange !== undefined ? stock.ytdChange >= 0 : true);
+
   const formatYtdChange = (change?: number) => {
     if (change === undefined) return null;
     const sign = change >= 0 ? '+' : '';
@@ -49,11 +57,13 @@ function StockRow({ stock, onClick }: { stock: Stock; onClick: () => void }) {
           </span>
         )}
       </div>
-      {stock.ytdChange !== undefined && (
-        <span className={`text-sm font-semibold ${stock.ytdChange >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-          {formatYtdChange(stock.ytdChange)}
+      {stock.isPrivate ? null : isLoading ? (
+        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+      ) : ytdChange !== undefined ? (
+        <span className={`text-sm font-semibold ${isPositive ? 'text-emerald-500' : 'text-red-500'}`}>
+          {formatYtdChange(ytdChange)}
         </span>
-      )}
+      ) : null}
     </button>
   );
 }
@@ -61,10 +71,12 @@ function StockRow({ stock, onClick }: { stock: Stock; onClick: () => void }) {
 export function PlaylistDetail() {
   const { selectedPlaylist, setCurrentScreen, setSelectedStock, savedPlaylists, toggleSavePlaylist } = useApp();
   const [isAnalysisExpanded, setIsAnalysisExpanded] = useState(false);
+  const { getBenchmarkPerformance, refresh, isLoading, error, lastFetched } = useStockDataContext();
 
   if (!selectedPlaylist) return null;
 
   const isSaved = savedPlaylists.includes(selectedPlaylist.id);
+  const benchmarkData = getBenchmarkPerformance(selectedPlaylist.id);
 
   const handleBack = () => {
     setCurrentScreen('discovery');
@@ -116,15 +128,42 @@ export function PlaylistDetail() {
           transition={{ delay: 0.05 }}
           className="space-y-2"
         >
-          <h2 className="section-header">PERFORMANCE</h2>
-          <div className="flex items-baseline gap-2">
-            <span className={`text-xl font-semibold ${selectedPlaylist.isPositivePerformance ? 'text-emerald-400' : 'text-red-400'}`}>
-              {selectedPlaylist.benchmarkPerformance}
-            </span>
-            <span className="text-sm text-muted-foreground">
-              {selectedPlaylist.benchmarkTicker} ({selectedPlaylist.benchmarkName})
-            </span>
+          <div className="flex items-center justify-between">
+            <h2 className="section-header">PERFORMANCE</h2>
+            <button
+              onClick={refresh}
+              disabled={isLoading}
+              className="p-1.5 rounded-lg hover:bg-secondary transition-colors disabled:opacity-50"
+              title="Refresh data"
+            >
+              <RefreshCw className={`w-4 h-4 text-muted-foreground ${isLoading ? 'animate-spin' : ''}`} />
+            </button>
           </div>
+          <div className="flex items-baseline gap-2">
+            {benchmarkData.isLoading ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                <span className="text-muted-foreground">Loading...</span>
+              </div>
+            ) : (
+              <>
+                <span className={`text-xl font-semibold ${benchmarkData.isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {benchmarkData.performance}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  {selectedPlaylist.benchmarkTicker} ({selectedPlaylist.benchmarkName})
+                </span>
+              </>
+            )}
+          </div>
+          {error && (
+            <p className="text-xs text-amber-500">{error}</p>
+          )}
+          {lastFetched && !isLoading && (
+            <p className="text-xs text-muted-foreground">
+              Updated: {lastFetched.toLocaleTimeString()}
+            </p>
+          )}
         </motion.div>
 
         {/* The Signal */}
