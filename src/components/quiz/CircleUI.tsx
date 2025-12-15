@@ -9,7 +9,7 @@ interface CircleUIProps {
 }
 
 export function CircleUI({ question, options, selectedId, onSelect }: CircleUIProps) {
-  const getOptionPosition = (index: number, total: number, radius: number = 120) => {
+  const getOptionPosition = (index: number, total: number, radius: number = 140) => {
     const angleOffset = -90;
     const angleBetween = 360 / total;
     const angle = angleOffset + index * angleBetween;
