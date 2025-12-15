@@ -42,7 +42,7 @@ function StockRow({ stock, onClick }: { stock: Stock; onClick: () => void }) {
     >
       <div className="flex items-center gap-3">
         <StockLogo ticker={stock.ticker} logoUrl={stock.logoUrl} name={stock.name} />
-        <span className="font-semibold text-foreground">{stock.ticker}</span>
+        <span className="font-semibold text-foreground">{stock.name} <span className="text-muted-foreground font-normal">({stock.ticker})</span></span>
         {stock.isPrivate && (
           <span className="px-2 py-0.5 rounded-full bg-amber/20 text-amber text-xs">
             Private
