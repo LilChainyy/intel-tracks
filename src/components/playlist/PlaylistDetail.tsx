@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Share2, Bookmark, ChevronDown, Loader2, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Share2, Bookmark, ChevronDown, Loader2 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { Stock } from '@/types/playlist';
 import { ThemeIllustration } from './ThemeIllustration';
@@ -71,12 +71,10 @@ function StockRow({ stock, onClick }: { stock: Stock; onClick: () => void }) {
 export function PlaylistDetail() {
   const { selectedPlaylist, setCurrentScreen, setSelectedStock, savedPlaylists, toggleSavePlaylist } = useApp();
   const [isAnalysisExpanded, setIsAnalysisExpanded] = useState(false);
-  const { getBenchmarkPerformance, refresh, isLoading, error, lastFetched } = useStockDataContext();
 
   if (!selectedPlaylist) return null;
 
   const isSaved = savedPlaylists.includes(selectedPlaylist.id);
-  const benchmarkData = getBenchmarkPerformance(selectedPlaylist.id);
 
   const handleBack = () => {
     setCurrentScreen('discovery');
@@ -120,51 +118,6 @@ export function PlaylistDetail() {
 
       {/* Content */}
       <div className="px-6 py-6 space-y-6">
-
-        {/* Performance */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="space-y-2"
-        >
-          <div className="flex items-center justify-between">
-            <h2 className="section-header">PERFORMANCE</h2>
-            <button
-              onClick={refresh}
-              disabled={isLoading}
-              className="p-1.5 rounded-lg hover:bg-secondary transition-colors disabled:opacity-50"
-              title="Refresh data"
-            >
-              <RefreshCw className={`w-4 h-4 text-muted-foreground ${isLoading ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-          <div className="flex items-baseline gap-2">
-            {benchmarkData.isLoading ? (
-              <div className="flex items-center gap-2">
-                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-                <span className="text-muted-foreground">Loading...</span>
-              </div>
-            ) : (
-              <>
-                <span className={`text-xl font-semibold ${benchmarkData.isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {benchmarkData.performance}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  {selectedPlaylist.benchmarkTicker} ({selectedPlaylist.benchmarkName})
-                </span>
-              </>
-            )}
-          </div>
-          {error && (
-            <p className="text-xs text-amber-500">{error}</p>
-          )}
-          {lastFetched && !isLoading && (
-            <p className="text-xs text-muted-foreground">
-              Updated: {lastFetched.toLocaleTimeString()}
-            </p>
-          )}
-        </motion.div>
 
         {/* The Signal */}
         <motion.div
