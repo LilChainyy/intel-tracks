@@ -1,18 +1,17 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Share2, Bookmark, ChevronDown, Loader2 } from 'lucide-react';
+import { ArrowLeft, Share2, Bookmark, ChevronDown } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { Stock } from '@/types/playlist';
 import { ThemeIllustration } from './ThemeIllustration';
-import { useStockDataContext } from '@/context/StockDataContext';
 
 function StockLogo({ ticker, logoUrl, name }: { ticker: string; logoUrl?: string; name: string }) {
   const [imgError, setImgError] = useState(false);
 
   if (!logoUrl || imgError) {
     return (
-      <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
-        <span className="text-sm font-medium text-muted-foreground">
+      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+        <span className="text-sm font-bold text-muted-foreground">
           {ticker.charAt(0)}
         </span>
       </div>
@@ -23,47 +22,33 @@ function StockLogo({ ticker, logoUrl, name }: { ticker: string; logoUrl?: string
     <img
       src={logoUrl}
       alt={name}
-      className="w-8 h-8 rounded-lg object-contain bg-muted/50"
+      className="w-8 h-8 rounded-full object-contain bg-muted/50"
       onError={() => setImgError(true)}
     />
   );
 }
 
 function StockRow({ stock, onClick }: { stock: Stock; onClick: () => void }) {
-  const { getStockData, isLoading } = useStockDataContext();
-  
-  // Get live data from API
-  const liveData = getStockData(stock.ticker);
-  const ytdChange = liveData?.ytdChange;
-  const isPositive = liveData?.isPositive ?? true;
-
-  const formatYtdChange = (change?: number) => {
-    if (change === undefined) return null;
-    const sign = change >= 0 ? '+' : '';
-    return `${sign}${change.toFixed(1)}%`;
-  };
-
   return (
     <button
       onClick={onClick}
-      className="w-full py-4 flex items-center justify-between hover:bg-secondary/50 transition-colors -mx-6 px-6"
+      className="w-full py-4 flex items-start gap-3 hover:bg-secondary/50 transition-colors -mx-6 px-6 text-left"
     >
-      <div className="flex items-center gap-3">
-        <StockLogo ticker={stock.ticker} logoUrl={stock.logoUrl} name={stock.name} />
-        <span className="font-semibold text-foreground">{stock.name} <span className="text-muted-foreground font-normal">({stock.ticker})</span></span>
-        {stock.isPrivate && (
-          <span className="px-2 py-0.5 rounded-full bg-amber/20 text-amber text-xs">
-            Private
-          </span>
+      <StockLogo ticker={stock.ticker} logoUrl={stock.logoUrl} name={stock.name} />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-foreground">{stock.name}</span>
+          <span className="text-muted-foreground text-sm">({stock.ticker})</span>
+          {stock.isPrivate && (
+            <span className="px-2 py-0.5 rounded-full bg-amber/20 text-amber text-xs">
+              Private
+            </span>
+          )}
+        </div>
+        {stock.description && (
+          <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{stock.description}</p>
         )}
       </div>
-      {stock.isPrivate ? null : isLoading ? (
-        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-      ) : ytdChange !== undefined ? (
-        <span className={`text-sm font-semibold ${isPositive ? 'text-emerald-500' : 'text-red-500'}`}>
-          {formatYtdChange(ytdChange)}
-        </span>
-      ) : null}
     </button>
   );
 }
