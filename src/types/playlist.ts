@@ -4,7 +4,6 @@ export interface Stock {
   description: string;
   isPrivate: boolean;
   logoUrl?: string;
-  ytdChange?: number;
 }
 
 export interface PlaylistMatchCriteria {
@@ -21,12 +20,6 @@ export interface Playlist extends PlaylistMatchCriteria {
   // Key Players
   investors: string[];
   companies: string[];
-  
-  // Performance
-  benchmarkTicker: string;
-  benchmarkName: string;
-  benchmarkPerformance: string;
-  isPositivePerformance: boolean;
   
   // Content
   signal: string;

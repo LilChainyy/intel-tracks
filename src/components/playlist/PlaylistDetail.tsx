@@ -32,10 +32,10 @@ function StockLogo({ ticker, logoUrl, name }: { ticker: string; logoUrl?: string
 function StockRow({ stock, onClick }: { stock: Stock; onClick: () => void }) {
   const { getStockData, isLoading } = useStockDataContext();
   
-  // Get live data or fallback to hardcoded
+  // Get live data from API
   const liveData = getStockData(stock.ticker);
-  const ytdChange = liveData ? liveData.ytdChange : stock.ytdChange;
-  const isPositive = liveData ? liveData.isPositive : (stock.ytdChange !== undefined ? stock.ytdChange >= 0 : true);
+  const ytdChange = liveData?.ytdChange;
+  const isPositive = liveData?.isPositive ?? true;
 
   const formatYtdChange = (change?: number) => {
     if (change === undefined) return null;

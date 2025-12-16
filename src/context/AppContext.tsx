@@ -9,7 +9,6 @@ export interface SavedStock {
   playlistId: string;
   playlistTitle: string;
   logoUrl?: string;
-  ytdChange?: number;
 }
 
 interface AppContextType {

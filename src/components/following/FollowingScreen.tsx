@@ -151,9 +151,6 @@ export function FollowingScreen() {
                         <h3 className="font-semibold text-foreground truncate">{playlist.title}</h3>
                         <p className="text-sm text-muted-foreground">{playlist.stocks.length} stocks</p>
                       </div>
-                      <span className={`text-sm font-semibold ${playlist.isPositivePerformance ? 'text-emerald-500' : 'text-red-500'}`}>
-                        {playlist.benchmarkPerformance}
-                      </span>
                     </motion.button>
                   ))
                 )}
@@ -187,11 +184,6 @@ export function FollowingScreen() {
                               <span className="text-xs text-muted-foreground">{stock.playlistTitle}</span>
                             </div>
                           </div>
-                          {stock.ytdChange !== undefined && (
-                            <span className={`text-sm font-semibold ${stock.ytdChange >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                              {formatYtdChange(stock.ytdChange)}
-                            </span>
-                          )}
                         </button>
                         <div className="border-t border-border" />
                       </motion.div>

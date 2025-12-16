@@ -31,7 +31,6 @@ export function StockDetail() {
       playlistId: playlist.id,
       playlistTitle: playlist.title,
       logoUrl: stock.logoUrl,
-      ytdChange: stock.ytdChange
     };
     toggleSaveStock(savedStock);
   };
