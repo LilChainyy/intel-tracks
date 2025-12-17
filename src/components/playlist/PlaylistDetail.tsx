@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Share2, Bookmark, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Share2, Bookmark, ChevronDown, Loader2 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { Stock } from '@/types/playlist';
 import { ThemeIllustration } from './ThemeIllustration';
+import { useStockDataContext } from '@/context/StockDataContext';
 
 function StockLogo({ ticker, logoUrl, name }: { ticker: string; logoUrl?: string; name: string }) {
   const [imgError, setImgError] = useState(false);
@@ -29,10 +30,23 @@ function StockLogo({ ticker, logoUrl, name }: { ticker: string; logoUrl?: string
 }
 
 function StockRow({ stock, onClick }: { stock: Stock; onClick: () => void }) {
+  const { getStockData, isLoading } = useStockDataContext();
+  
+  // Get live data from API (skip for private companies)
+  const liveData = !stock.isPrivate ? getStockData(stock.ticker) : null;
+  const ytdChange = liveData?.ytdChange;
+  const isPositive = liveData?.isPositive ?? true;
+
+  const formatYtdChange = (change?: number) => {
+    if (change === undefined) return null;
+    const sign = change >= 0 ? '+' : '';
+    return `${sign}${change.toFixed(1)}% YTD`;
+  };
+
   return (
     <button
       onClick={onClick}
-      className="w-full py-4 flex items-start gap-3 hover:bg-secondary/50 transition-colors -mx-6 px-6 text-left"
+      className="w-full py-4 flex items-center gap-3 hover:bg-secondary/50 transition-colors -mx-6 px-6 text-left"
     >
       <StockLogo ticker={stock.ticker} logoUrl={stock.logoUrl} name={stock.name} />
       <div className="flex-1 min-w-0">
@@ -49,6 +63,15 @@ function StockRow({ stock, onClick }: { stock: Stock; onClick: () => void }) {
           <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{stock.description}</p>
         )}
       </div>
+      {!stock.isPrivate && (
+        isLoading ? (
+          <Loader2 className="w-4 h-4 animate-spin text-muted-foreground flex-shrink-0" />
+        ) : ytdChange !== undefined ? (
+          <span className={`text-sm font-semibold flex-shrink-0 ${isPositive ? 'text-emerald-500' : 'text-red-500'}`}>
+            {formatYtdChange(ytdChange)}
+          </span>
+        ) : null
+      )}
     </button>
   );
 }
