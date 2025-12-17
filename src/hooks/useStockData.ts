@@ -66,8 +66,8 @@ export function useStockData(tickers: string[]) {
     if (!forceRefresh) {
       const cached = getFromCache();
       if (cached) {
-        // Check if we have all requested tickers
-        const missingTickers = tickers.filter(t => !(t in cached.data));
+        // Check if we have all requested tickers with valid (non-null) data
+        const missingTickers = tickers.filter(t => !(t in cached.data) || cached.data[t] === null);
         if (missingTickers.length === 0) {
           setState({
             data: cached.data,
