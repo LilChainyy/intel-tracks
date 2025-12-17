@@ -30,31 +30,51 @@ async function fetchStockData(ticker: string, apiKey: string): Promise<StockQuot
     return cached.data;
   }
 
-  console.log(`Fetching data for ${ticker} from Alpha Vantage`);
+  console.log(`Fetching data for ${ticker} from Finnhub`);
   
   try {
-    // Fetch current quote
-    const quoteUrl = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${apiKey}`;
+    // Fetch current quote from Finnhub
+    const quoteUrl = `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`;
     const quoteResponse = await fetch(quoteUrl);
     const quoteData = await quoteResponse.json();
 
-    // Check for rate limiting or API errors
-    if (quoteData.Note || quoteData.Information) {
-      console.error(`API limit reached for ${ticker}:`, quoteData.Note || quoteData.Information);
+    // Check for errors
+    if (quoteData.error) {
+      console.error(`Finnhub error for ${ticker}:`, quoteData.error);
       return null;
     }
 
-    if (!quoteData['Global Quote'] || !quoteData['Global Quote']['05. price']) {
+    // c = current price, pc = previous close, d = change, dp = percent change
+    if (!quoteData.c || quoteData.c === 0) {
       console.error(`No data found for ${ticker}`, quoteData);
       return null;
     }
 
-    const currentPrice = parseFloat(quoteData['Global Quote']['05. price']);
-    const changePercent = parseFloat(quoteData['Global Quote']['10. change percent']?.replace('%', '') || '0');
+    const currentPrice = quoteData.c;
     
-    // Alpha Vantage provides change percent which we can use
-    // For YTD, we'll use the available data or calculate from monthly data
-    const ytdChange = changePercent; // Using available change percent as approximation
+    // For YTD change, we need to get the price from start of year
+    // Finnhub provides 52-week high/low but not YTD directly
+    // We'll calculate approximate YTD from the daily change percentage as a fallback
+    // Better approach: fetch candles for Jan 1st
+    let ytdChange = quoteData.dp || 0; // Daily percent change as fallback
+    
+    // Try to get YTD data using candles endpoint
+    try {
+      const now = Math.floor(Date.now() / 1000);
+      const startOfYear = Math.floor(new Date(new Date().getFullYear(), 0, 1).getTime() / 1000);
+      
+      const candleUrl = `https://finnhub.io/api/v1/stock/candle?symbol=${ticker}&resolution=D&from=${startOfYear}&to=${startOfYear + 86400 * 7}&token=${apiKey}`;
+      const candleResponse = await fetch(candleUrl);
+      const candleData = await candleResponse.json();
+      
+      if (candleData.c && candleData.c.length > 0) {
+        const startOfYearPrice = candleData.c[0];
+        ytdChange = ((currentPrice - startOfYearPrice) / startOfYearPrice) * 100;
+        console.log(`YTD change for ${ticker}: ${ytdChange.toFixed(2)}% (from ${startOfYearPrice} to ${currentPrice})`);
+      }
+    } catch (e) {
+      console.log(`Using daily change for ${ticker} as YTD fallback`);
+    }
     
     const stockQuote: StockQuote = {
       ticker,
@@ -90,29 +110,32 @@ serve(async (req) => {
       );
     }
 
-    const apiKey = Deno.env.get('ALPHA_VANTAGE_API_KEY');
+    const apiKey = Deno.env.get('FINNHUB_API_KEY');
     if (!apiKey) {
-      console.error('ALPHA_VANTAGE_API_KEY is not configured');
+      console.error('FINNHUB_API_KEY is not configured');
       return new Response(
         JSON.stringify({ error: 'API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Processing request for tickers: ${tickers.join(', ')}`);
+    console.log(`Processing request for ${tickers.length} tickers`);
 
-    // Fetch data for all tickers with delay to respect rate limits
+    // Fetch data for all tickers with small delay to respect rate limits (60/min)
     const results: Record<string, StockQuote | null> = {};
     
     for (let i = 0; i < tickers.length; i++) {
       const ticker = tickers[i];
       results[ticker] = await fetchStockData(ticker, apiKey);
       
-      // Add delay between requests to respect rate limits (5 requests per minute on free tier)
+      // Add small delay between requests (60 calls/min = 1 per second)
       if (i < tickers.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 12000)); // 12 second delay
+        await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
       }
     }
+
+    const successCount = Object.values(results).filter(r => r !== null).length;
+    console.log(`Successfully fetched ${successCount}/${tickers.length} stocks`);
 
     return new Response(
       JSON.stringify({ 
