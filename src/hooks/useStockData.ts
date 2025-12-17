@@ -16,43 +16,6 @@ interface StockDataState {
   lastFetched: Date | null;
 }
 
-// Local storage cache key
-const CACHE_KEY = 'stock_data_cache';
-const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
-
-interface CachedData {
-  data: Record<string, StockQuote | null>;
-  timestamp: number;
-}
-
-function getFromCache(): CachedData | null {
-  try {
-    const cached = localStorage.getItem(CACHE_KEY);
-    if (!cached) return null;
-    
-    const parsed: CachedData = JSON.parse(cached);
-    if (Date.now() - parsed.timestamp > CACHE_DURATION_MS) {
-      localStorage.removeItem(CACHE_KEY);
-      return null;
-    }
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-function saveToCache(data: Record<string, StockQuote | null>) {
-  try {
-    const cacheData: CachedData = {
-      data,
-      timestamp: Date.now(),
-    };
-    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
-  } catch (error) {
-    console.error('Error saving to cache:', error);
-  }
-}
-
 export function useStockData(tickers: string[]) {
   const [state, setState] = useState<StockDataState>({
     data: {},
@@ -61,44 +24,44 @@ export function useStockData(tickers: string[]) {
     lastFetched: null,
   });
 
-  const fetchData = useCallback(async (forceRefresh = false) => {
-    // Check local cache first (unless force refresh)
-    if (!forceRefresh) {
-      const cached = getFromCache();
-      if (cached) {
-        // Check if we have all requested tickers with valid (non-null) data
-        const missingTickers = tickers.filter(t => !(t in cached.data) || cached.data[t] === null);
-        if (missingTickers.length === 0) {
-          setState({
-            data: cached.data,
-            isLoading: false,
-            error: null,
-            lastFetched: new Date(cached.timestamp),
-          });
-          return;
-        }
-      }
+  const fetchData = useCallback(async () => {
+    if (tickers.length === 0) {
+      setState({ data: {}, isLoading: false, error: null, lastFetched: new Date() });
+      return;
     }
 
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const { data, error } = await supabase.functions.invoke('fetch-stock-data', {
-        body: { tickers },
-      });
+      // Fetch from database directly - instant!
+      const { data, error } = await supabase
+        .from('stock_quotes')
+        .select('*')
+        .in('ticker', tickers);
 
       if (error) {
-        throw new Error(error.message || 'Failed to fetch stock data');
+        throw new Error(error.message);
       }
 
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      const stockData = data.data as Record<string, StockQuote | null>;
+      const stockData: Record<string, StockQuote | null> = {};
       
-      // Save to local cache
-      saveToCache(stockData);
+      // Initialize all requested tickers with null
+      tickers.forEach(ticker => {
+        stockData[ticker] = null;
+      });
+
+      // Map database results to our format
+      if (data) {
+        data.forEach((row: { ticker: string; current_price: number | null; ytd_change: number | null; is_positive: boolean | null; last_updated: string | null }) => {
+          stockData[row.ticker] = {
+            ticker: row.ticker,
+            currentPrice: row.current_price || 0,
+            ytdChange: row.ytd_change || 0,
+            isPositive: row.is_positive || false,
+            lastUpdated: row.last_updated || new Date().toISOString(),
+          };
+        });
+      }
 
       setState({
         data: stockData,
@@ -108,34 +71,20 @@ export function useStockData(tickers: string[]) {
       });
     } catch (error) {
       console.error('Error fetching stock data:', error);
-      
-      // Try to use cached data as fallback
-      const cached = getFromCache();
-      if (cached) {
-        setState({
-          data: cached.data,
-          isLoading: false,
-          error: 'Using cached data. Live data unavailable.',
-          lastFetched: new Date(cached.timestamp),
-        });
-      } else {
-        setState(prev => ({
-          ...prev,
-          isLoading: false,
-          error: error instanceof Error ? error.message : 'Failed to fetch stock data',
-        }));
-      }
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch stock data',
+      }));
     }
   }, [tickers.join(',')]);
 
   useEffect(() => {
-    if (tickers.length > 0) {
-      fetchData();
-    }
-  }, [fetchData, tickers.length]);
+    fetchData();
+  }, [fetchData]);
 
   const refresh = useCallback(() => {
-    fetchData(true);
+    fetchData();
   }, [fetchData]);
 
   const getStockData = useCallback((ticker: string): StockQuote | null => {
