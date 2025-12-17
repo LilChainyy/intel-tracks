@@ -7,17 +7,26 @@ const corsHeaders = {
 };
 
 // All tickers from playlists (hardcoded to avoid importing from frontend)
+// Nuclear, Streaming, Defense, Space, Pets, Barbell, Longevity, Cash Cows, Index & Chill
 const ALL_TICKERS = [
-  "CCJ", "VST", "CEG", "SMR", "OKLO", "LEU", "UEC", "DNN",
-  "NVDA", "AVGO", "MRVL", "AMD", "TSM", "MU", "AMAT", "LRCX", "KLAC", "ASML",
-  "PLTR", "PANW", "CRWD", "NET", "S", "ZS", "FTNT", "DDOG", "MNDY",
-  "LMT", "RTX", "NOC", "GD", "HII", "KTOS", "RKLB", "BA", "TDG",
-  "GS", "MS", "SCHW", "BX", "KKR", "APO", "ARES", "COIN", "HOOD",
-  "CELH", "FRPT", "HIMS", "GOOS", "DECK", "NKE", "ONON", "LULU",
-  "XOM", "CVX", "COP", "EOG", "PXD", "FANG", "DVN", "OXY", "MPC", "VLO",
-  "META", "GOOGL", "SNAP", "TTD", "APP", "DV", "IAS", "MGNI",
-  "V", "MA", "AXP", "SQ", "PYPL", "FIS", "ADYEN", "NU",
-  "LLY", "NVO", "VKTX", "AMGN", "BMY", "PFE", "MRNA"
+  // Nuclear Renaissance
+  "CCJ", "VST", "CEG", "SMR", "LEU",
+  // Streaming Wars Winners
+  "NFLX", "DIS", "WBD", "PARA",
+  // Defense & Aerospace
+  "LMT", "RTX", "NOC", "GD", "LHX",
+  // Space Economy
+  "RKLB", "ASTS", "PL", "LUNR",
+  // Pet Economy
+  "CHWY", "IDXX", "ZTS", "TRUP",
+  // Retail Barbell
+  "COST", "WMT", "DG", "RH",
+  // Future of Longevity
+  "LLY", "NVO", "WELL", "VTR", "CRSP",
+  // Cash Cows
+  "JNJ", "PG", "KO", "PEP", "MCD",
+  // Index & Chill (ETFs)
+  "VOO", "VTI", "QQQ", "SCHD"
 ];
 
 interface StockQuote {
