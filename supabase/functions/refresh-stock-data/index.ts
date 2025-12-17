@@ -37,40 +37,65 @@ interface StockQuote {
 }
 
 async function fetchStockData(ticker: string, apiKey: string): Promise<StockQuote | null> {
-  console.log(`Fetching data for ${ticker} from Alpha Vantage`);
+  console.log(`Fetching YTD data for ${ticker} from Alpha Vantage`);
   
   try {
+    // Get current quote
     const quoteUrl = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${apiKey}`;
     const quoteResponse = await fetch(quoteUrl);
     const quoteData = await quoteResponse.json();
 
-    if (quoteData.Note) {
-      console.error(`Alpha Vantage rate limit for ${ticker}:`, quoteData.Note);
-      return null;
-    }
-    
-    if (quoteData.Information) {
-      console.error(`Alpha Vantage API info for ${ticker}:`, quoteData.Information);
+    if (quoteData.Note || quoteData.Information) {
+      console.error(`Alpha Vantage rate limit/info for ${ticker}:`, quoteData.Note || quoteData.Information);
       return null;
     }
 
     const globalQuote = quoteData['Global Quote'];
     if (!globalQuote || !globalQuote['05. price']) {
-      console.error(`No data found for ${ticker}`, quoteData);
+      console.error(`No quote data for ${ticker}`, quoteData);
       return null;
     }
 
     const currentPrice = parseFloat(globalQuote['05. price']);
-    const changePercentStr = globalQuote['10. change percent'] || '0%';
-    const changePercent = parseFloat(changePercentStr.replace('%', ''));
-    
-    console.log(`${ticker}: price=$${currentPrice.toFixed(2)}, change=${changePercent.toFixed(2)}%`);
+
+    // Get monthly data for YTD calculation (free tier supports this)
+    const monthlyUrl = `https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY&symbol=${ticker}&apikey=${apiKey}`;
+    const monthlyResponse = await fetch(monthlyUrl);
+    const monthlyData = await monthlyResponse.json();
+
+    let ytdChange = 0;
+    let startOfYearPrice = currentPrice;
+
+    if (monthlyData['Monthly Time Series']) {
+      const monthly = monthlyData['Monthly Time Series'];
+      const dates = Object.keys(monthly).sort((a, b) => b.localeCompare(a));
+      
+      // Find December 2024 close price (end of year = start of 2025)
+      const dec2024 = dates.find(d => d.startsWith('2024-12'));
+      if (dec2024) {
+        startOfYearPrice = parseFloat(monthly[dec2024]['4. close']);
+        ytdChange = ((currentPrice - startOfYearPrice) / startOfYearPrice) * 100;
+        console.log(`${ticker}: current=$${currentPrice.toFixed(2)}, Dec2024=$${startOfYearPrice.toFixed(2)}, YTD=${ytdChange.toFixed(2)}%`);
+      } else {
+        // Fallback: use oldest available 2025 data
+        const jan2025 = dates.find(d => d.startsWith('2025-01'));
+        if (jan2025) {
+          startOfYearPrice = parseFloat(monthly[jan2025]['1. open']);
+          ytdChange = ((currentPrice - startOfYearPrice) / startOfYearPrice) * 100;
+          console.log(`${ticker}: current=$${currentPrice.toFixed(2)}, Jan2025Open=$${startOfYearPrice.toFixed(2)}, YTD=${ytdChange.toFixed(2)}%`);
+        }
+      }
+    } else {
+      console.warn(`No monthly data for ${ticker}, using daily change`);
+      const changePercentStr = globalQuote['10. change percent'] || '0%';
+      ytdChange = parseFloat(changePercentStr.replace('%', ''));
+    }
     
     return {
       ticker,
       currentPrice,
-      ytdChange: parseFloat(changePercent.toFixed(2)),
-      isPositive: changePercent >= 0,
+      ytdChange: parseFloat(ytdChange.toFixed(2)),
+      isPositive: ytdChange >= 0,
     };
   } catch (error) {
     console.error(`Error fetching data for ${ticker}:`, error);
@@ -102,7 +127,7 @@ serve(async (req) => {
     let successCount = 0;
     let errorCount = 0;
 
-    // Process tickers with 12-second delay between each (Alpha Vantage rate limit: 5/min)
+    // Process tickers with 15-second delay (Alpha Vantage: 5 calls/min, we make 2 calls per ticker)
     for (let i = 0; i < ALL_TICKERS.length; i++) {
       const ticker = ALL_TICKERS[i];
       const stockData = await fetchStockData(ticker, apiKey);
@@ -129,9 +154,9 @@ serve(async (req) => {
         errorCount++;
       }
       
-      // Add 12-second delay between requests
+      // Add 25-second delay (Alpha Vantage: 5 calls/min, we make 2 calls per ticker)
       if (i < ALL_TICKERS.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 12000));
+        await new Promise(resolve => setTimeout(resolve, 25000));
       }
     }
 
