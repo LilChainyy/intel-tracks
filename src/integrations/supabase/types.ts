@@ -14,7 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      stock_quotes: {
+        Row: {
+          current_price: number | null
+          id: string
+          is_positive: boolean | null
+          last_updated: string | null
+          ticker: string
+          ytd_change: number | null
+        }
+        Insert: {
+          current_price?: number | null
+          id?: string
+          is_positive?: boolean | null
+          last_updated?: string | null
+          ticker: string
+          ytd_change?: number | null
+        }
+        Update: {
+          current_price?: number | null
+          id?: string
+          is_positive?: boolean | null
+          last_updated?: string | null
+          ticker?: string
+          ytd_change?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
