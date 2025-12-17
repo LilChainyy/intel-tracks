@@ -18,7 +18,7 @@ interface StockDataState {
 
 // Local storage cache key
 const CACHE_KEY = 'stock_data_cache';
-const CACHE_DURATION_MS = 60 * 60 * 1000; // 1 hour
+const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 interface CachedData {
   data: Record<string, StockQuote | null>;
