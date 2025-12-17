@@ -37,13 +37,12 @@ interface StockQuote {
 
 async function fetchStockYTD(ticker: string): Promise<StockQuote | null> {
   try {
-    // Use Yahoo Finance chart API - fetch data from start of 2025 to now
-    // period1 = Jan 1, 2025 (Unix timestamp)
-    // period2 = now
-    const startOf2025 = Math.floor(new Date('2025-01-01').getTime() / 1000);
+    // Use Yahoo Finance chart API - fetch data from Dec 30, 2024 to now
+    // This allows us to get Dec 31, 2024 close as the YTD baseline
+    const endOf2024 = Math.floor(new Date('2024-12-30').getTime() / 1000);
     const now = Math.floor(Date.now() / 1000);
     
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?period1=${startOf2025}&period2=${now}&interval=1d`;
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?period1=${endOf2024}&period2=${now}&interval=1d`;
     
     const response = await fetch(url, {
       headers: {
@@ -67,19 +66,26 @@ async function fetchStockYTD(ticker: string): Promise<StockQuote | null> {
     
     const meta = result.meta;
     const currentPrice = meta.regularMarketPrice;
+    const timestamps = result.timestamp || [];
     const closes = result.indicators?.quote?.[0]?.close || [];
     
-    // First close of the year (first trading day)
-    const firstClose = closes.find((c: number | null) => c !== null);
+    // Find the last trading day of 2024 (Dec 31, 2024 close)
+    let dec31Close: number | null = null;
+    for (let i = 0; i < timestamps.length; i++) {
+      const date = new Date(timestamps[i] * 1000);
+      if (date.getFullYear() === 2024 && closes[i] !== null) {
+        dec31Close = closes[i]; // Keep updating to get the last 2024 close
+      }
+    }
     
-    if (!firstClose || !currentPrice) {
-      console.error(`Missing price data for ${ticker}`);
+    if (!dec31Close || !currentPrice) {
+      console.error(`Missing price data for ${ticker}: dec31Close=${dec31Close}, currentPrice=${currentPrice}`);
       return null;
     }
     
-    const ytdChange = ((currentPrice - firstClose) / firstClose) * 100;
+    const ytdChange = ((currentPrice - dec31Close) / dec31Close) * 100;
     
-    console.log(`${ticker}: Start=$${firstClose.toFixed(2)}, Now=$${currentPrice.toFixed(2)}, YTD=${ytdChange.toFixed(2)}%`);
+    console.log(`${ticker}: Dec31=$${dec31Close.toFixed(2)}, Now=$${currentPrice.toFixed(2)}, YTD=${ytdChange.toFixed(2)}%`);
     
     return {
       ticker,
