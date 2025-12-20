@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.market-weather]
 verify_jwt = false
+
+[functions.stock-events]
+verify_jwt = false
