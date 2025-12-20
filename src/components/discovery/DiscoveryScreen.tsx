@@ -5,6 +5,7 @@ import { playlists } from '@/data/playlists';
 import { PlaylistCard } from './PlaylistCard';
 import { calculateMatchScore } from '@/utils/matchScore';
 import { Playlist } from '@/types/playlist';
+import { MarketWeather } from './MarketWeather';
 
 export function DiscoveryScreen() {
   const { setCurrentScreen, setSelectedPlaylist, quizCompleted } = useApp();
@@ -54,6 +55,9 @@ export function DiscoveryScreen() {
           Where smart money is flowing
         </motion.p>
       </div>
+
+      {/* Market Weather */}
+      <MarketWeather />
 
       {/* Quiz banner (if not completed) */}
       {!quizCompleted && (
