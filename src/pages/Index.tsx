@@ -6,6 +6,7 @@ import { PlaylistDetail } from '@/components/playlist/PlaylistDetail';
 import { StockDetail } from '@/components/stock/StockDetail';
 import { ProfileScreen } from '@/components/profile/ProfileScreen';
 import { FollowingScreen } from '@/components/following/FollowingScreen';
+import { AuthScreen } from '@/components/auth/AuthScreen';
 import { BottomNav } from '@/components/navigation/BottomNav';
 
 function AppContent() {
@@ -25,12 +26,14 @@ function AppContent() {
         return <ProfileScreen />;
       case 'following':
         return <FollowingScreen />;
+      case 'auth':
+        return <AuthScreen />;
       default:
         return <QuizFlow />;
     }
   };
 
-  const showBottomNav = currentScreen !== 'quiz';
+  const showBottomNav = currentScreen !== 'quiz' && currentScreen !== 'auth';
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-background relative">

@@ -1,7 +1,10 @@
 import { motion } from 'framer-motion';
-import { ChevronRight, Bell, Moon, HelpCircle, RotateCcw } from 'lucide-react';
+import { ChevronRight, Bell, Moon, HelpCircle, RotateCcw, LogIn, LogOut, User } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useQuiz } from '@/context/QuizContext';
+import { useAuth } from '@/context/AuthContext';
+import { ActivitySection } from './ActivitySection';
+import { toast } from 'sonner';
 
 const answerLabels: Record<string, Record<string, string>> = {
   risk: {
@@ -31,6 +34,7 @@ const answerLabels: Record<string, Record<string, string>> = {
 export function ProfileScreen() {
   const { quizCompleted, setCurrentScreen } = useApp();
   const { state, resetQuiz, startQuiz } = useQuiz();
+  const { user, signOut, isLoading } = useAuth();
 
   const handleTakeQuiz = () => {
     resetQuiz();
@@ -42,6 +46,15 @@ export function ProfileScreen() {
     resetQuiz();
     startQuiz();
     setCurrentScreen('quiz');
+  };
+
+  const handleSignIn = () => {
+    setCurrentScreen('auth');
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success('Signed out successfully');
   };
 
   const summaryItems = quizCompleted
@@ -69,6 +82,9 @@ export function ProfileScreen() {
     { icon: HelpCircle, label: 'Help & FAQ', hasArrow: true }
   ];
 
+  const displayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'User';
+  const initial = displayName.charAt(0).toUpperCase();
+
   return (
     <div className="min-h-screen pb-24 px-6">
       {/* Header */}
@@ -90,10 +106,52 @@ export function ProfileScreen() {
         className="card-surface p-6 text-center mb-6"
       >
         <div className="w-20 h-20 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
-          <span className="text-2xl font-semibold text-muted-foreground">G</span>
+          <span className="text-2xl font-semibold text-muted-foreground">
+            {user ? initial : 'G'}
+          </span>
         </div>
-        <h2 className="text-lg font-semibold text-foreground">Guest User</h2>
+        <h2 className="text-lg font-semibold text-foreground">
+          {user ? displayName : 'Guest User'}
+        </h2>
+        {user && (
+          <p className="text-sm text-muted-foreground mt-1">{user.email}</p>
+        )}
+        
+        {/* Auth button */}
+        <div className="mt-4">
+          {isLoading ? (
+            <div className="h-10" />
+          ) : user ? (
+            <button
+              onClick={handleSignOut}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </button>
+          ) : (
+            <button
+              onClick={handleSignIn}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+            >
+              <LogIn className="w-4 h-4" />
+              Sign In
+            </button>
+          )}
+        </div>
       </motion.div>
+
+      {/* Activity Section (logged-in users only) */}
+      {user && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="mb-6"
+        >
+          <ActivitySection />
+        </motion.div>
+      )}
 
       {/* Investment DNA or Quiz CTA */}
       {quizCompleted ? (

@@ -6,6 +6,7 @@ import { PlaylistCard } from './PlaylistCard';
 import { calculateMatchScore } from '@/utils/matchScore';
 import { Playlist } from '@/types/playlist';
 import { MarketWeather } from './MarketWeather';
+import { EventNudgeBanner } from '@/components/nudges/EventNudgeBanner';
 
 export function DiscoveryScreen() {
   const { setCurrentScreen, setSelectedPlaylist, quizCompleted } = useApp();
@@ -58,6 +59,9 @@ export function DiscoveryScreen() {
 
       {/* Market Weather */}
       <MarketWeather />
+
+      {/* Event Nudge Banner (logged-in users) */}
+      <EventNudgeBanner />
 
       {/* Quiz banner (if not completed) */}
       {!quizCompleted && (
