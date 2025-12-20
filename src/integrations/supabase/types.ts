@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      macro_events: {
+        Row: {
+          description: string | null
+          event_date: string
+          event_name: string
+          event_type: string
+          id: string
+          importance: string | null
+        }
+        Insert: {
+          description?: string | null
+          event_date: string
+          event_name: string
+          event_type: string
+          id?: string
+          importance?: string | null
+        }
+        Update: {
+          description?: string | null
+          event_date?: string
+          event_name?: string
+          event_type?: string
+          id?: string
+          importance?: string | null
+        }
+        Relationships: []
+      }
+      market_regime: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          headline: string
+          id: string
+          indicators: Json
+          regime_type: string
+          summary: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          headline: string
+          id?: string
+          indicators: Json
+          regime_type: string
+          summary: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          headline?: string
+          id?: string
+          indicators?: Json
+          regime_type?: string
+          summary?: string
+        }
+        Relationships: []
+      }
       stock_quotes: {
         Row: {
           current_price: number | null
