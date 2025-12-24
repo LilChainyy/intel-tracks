@@ -1,16 +1,16 @@
 project_id = "emscbdwqqnvcjskrdmzp"
 
 [functions.fetch-stock-data]
-verify_jwt = false
+verify_jwt = true
 
 [functions.refresh-stock-data]
 verify_jwt = false
 
 [functions.market-weather]
-verify_jwt = false
+verify_jwt = true
 
 [functions.stock-events]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-nudges]
 verify_jwt = false
