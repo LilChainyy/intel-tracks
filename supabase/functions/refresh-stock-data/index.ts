@@ -105,6 +105,26 @@ serve(async (req) => {
   }
 
   try {
+    // Validate internal function secret for scheduled/cron calls
+    const authHeader = req.headers.get('authorization');
+    const expectedToken = Deno.env.get('FUNCTION_SECRET');
+    
+    if (!expectedToken) {
+      console.error('FUNCTION_SECRET not configured');
+      return new Response(JSON.stringify({ error: 'Server misconfigured' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+      console.warn('Unauthorized request to refresh-stock-data');
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
