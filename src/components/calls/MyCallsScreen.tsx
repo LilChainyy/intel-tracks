@@ -1,13 +1,11 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Target, TrendingUp, TrendingDown, Minus, ChevronRight, BarChart3 } from 'lucide-react';
+import { Target, ChevronRight, BarChart3 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { usePredictions, PredictionType } from '@/hooks/usePredictions';
-import { useStockData } from '@/hooks/useStockData';
 import { playlists } from '@/data/playlists';
 import { Button } from '@/components/ui/button';
-
-const SP500_BENCHMARK_YTD = 17.54; // VOO approximate YTD
+import { format } from 'date-fns';
 
 function getPredictionLabel(prediction: PredictionType) {
   switch (prediction) {
@@ -32,59 +30,13 @@ function getDaysRemaining(expiresAt: string): number {
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 }
 
-function getStatus(prediction: PredictionType, vsSP: number | null): { label: string; color: string } {
-  if (vsSP === null) return { label: 'Loading', color: 'text-muted-foreground' };
-  
-  const isOnTrack = 
-    (prediction === 'outperform' && vsSP > 0) ||
-    (prediction === 'underperform' && vsSP < 0) ||
-    (prediction === 'match' && Math.abs(vsSP) <= 2);
-  
-  return isOnTrack 
-    ? { label: 'On track', color: 'text-emerald-400' }
-    : { label: 'Behind', color: 'text-amber-400' };
+function formatDate(dateString: string): string {
+  return format(new Date(dateString), 'MMM d');
 }
 
 export function MyCallsScreen() {
   const { setCurrentScreen, setSelectedPlaylist } = useApp();
   const { predictions } = usePredictions();
-  
-  // Get all tickers from playlists that have predictions
-  const allTickers = useMemo(() => {
-    const tickerSet = new Set<string>();
-    predictions.forEach(pred => {
-      const playlist = playlists.find(p => p.id === pred.playlist_id);
-      if (playlist) {
-        playlist.stocks.forEach(stock => {
-          if (!stock.isPrivate) {
-            tickerSet.add(stock.ticker);
-          }
-        });
-      }
-    });
-    return Array.from(tickerSet);
-  }, [predictions]);
-
-  const { data: stockData } = useStockData(allTickers);
-
-  // Calculate theme performance (average YTD of all stocks)
-  const getThemePerformance = (playlistId: string): number | null => {
-    const playlist = playlists.find(p => p.id === playlistId);
-    if (!playlist) return null;
-
-    const ytdValues: number[] = [];
-    playlist.stocks.forEach(stock => {
-      if (!stock.isPrivate) {
-        const quote = stockData[stock.ticker];
-        if (quote?.ytdChange != null) {
-          ytdValues.push(quote.ytdChange);
-        }
-      }
-    });
-
-    if (ytdValues.length === 0) return null;
-    return ytdValues.reduce((a, b) => a + b, 0) / ytdValues.length;
-  };
 
   // Calculate streak (consecutive days with predictions)
   const streak = useMemo(() => {
@@ -181,12 +133,12 @@ export function MyCallsScreen() {
           <div className="w-px h-4 bg-border" />
           <div className="flex items-center gap-1.5">
             <span className="text-sm text-muted-foreground">Accuracy:</span>
-            <span className="text-sm font-semibold text-foreground">-</span>
+            <span className="text-sm font-semibold text-muted-foreground">-</span>
           </div>
           <div className="w-px h-4 bg-border" />
           <div className="flex items-center gap-1.5">
             <span className="text-sm text-muted-foreground">Streak:</span>
-            <span className="text-sm font-semibold text-foreground">{streak} days</span>
+            <span className="text-sm font-semibold text-foreground">{streak} {streak === 1 ? 'day' : 'days'}</span>
           </div>
         </div>
 
@@ -196,10 +148,9 @@ export function MyCallsScreen() {
             const playlist = playlists.find(p => p.id === pred.playlist_id);
             if (!playlist) return null;
 
-            const performance = getThemePerformance(pred.playlist_id);
-            const vsSP = performance !== null ? performance - SP500_BENCHMARK_YTD : null;
             const daysLeft = getDaysRemaining(pred.expires_at);
-            const status = getStatus(pred.prediction as PredictionType, vsSP);
+            const calledDate = formatDate(pred.created_at);
+            const scoresDate = formatDate(pred.expires_at);
 
             return (
               <motion.div
@@ -221,26 +172,12 @@ export function MyCallsScreen() {
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-sm">
-                  <div className="text-muted-foreground">
-                    {performance !== null ? (
-                      <span>
-                        <span className={performance >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
-                          {performance >= 0 ? '+' : ''}{performance.toFixed(1)}%
-                        </span>
-                        <span className="text-muted-foreground"> vs </span>
-                        <span className={SP500_BENCHMARK_YTD >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
-                          +{SP500_BENCHMARK_YTD.toFixed(1)}%
-                        </span>
-                      </span>
-                    ) : (
-                      <span>Loading...</span>
-                    )}
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <div className="flex items-center gap-3">
+                    <span>Called: {calledDate}</span>
+                    <span>Scores: {scoresDate}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-xs">
-                    <span className="text-muted-foreground">{daysLeft} days left</span>
-                    <span className={status.color}>{status.label}</span>
-                  </div>
+                  <span>{daysLeft} {daysLeft === 1 ? 'day' : 'days'} left</span>
                 </div>
               </motion.div>
             );
