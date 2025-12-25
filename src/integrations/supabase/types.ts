@@ -119,6 +119,41 @@ export type Database = {
         }
         Relationships: []
       }
+      theme_predictions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          playlist_id: string
+          prediction: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          playlist_id: string
+          prediction: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          playlist_id?: string
+          prediction?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "theme_predictions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_activity: {
         Row: {
           action_type: string

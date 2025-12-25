@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, Bookmark, TrendingUp, TrendingDown } from 'lucide-react';
+import { ArrowLeft, Bookmark, TrendingUp, TrendingDown, Check } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useStockData } from '@/hooks/useStockData';
 import { ThemeIllustration } from './ThemeIllustration';
+import { PredictionCard } from './PredictionCard';
+import { usePredictions } from '@/hooks/usePredictions';
 import { Stock } from '@/types/playlist';
-
 interface StockRowProps {
   stock: Stock;
   ytdChange?: string;
@@ -85,6 +86,7 @@ function StockRow({ stock, ytdChange, isLoading, onClick }: StockRowProps) {
 
 export function PlaylistDetail() {
   const { selectedPlaylist, setCurrentScreen, setSelectedStock, savedPlaylists, toggleSavePlaylist } = useApp();
+  const { hasPrediction } = usePredictions();
 
   const tickers = selectedPlaylist?.stocks
     .filter((s) => !s.isPrivate)
@@ -95,6 +97,7 @@ export function PlaylistDetail() {
   if (!selectedPlaylist) return null;
 
   const isSaved = savedPlaylists.includes(selectedPlaylist.id);
+  const hasMadePrediction = hasPrediction(selectedPlaylist.id);
 
   const handleBack = () => {
     setCurrentScreen('discovery');
@@ -129,7 +132,11 @@ export function PlaylistDetail() {
           onClick={handleSave}
           className="absolute top-12 right-4 p-2 rounded-full bg-background/80 backdrop-blur-sm"
         >
-          <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-primary text-primary' : 'text-foreground'}`} />
+          {hasMadePrediction ? (
+            <Check className="w-5 h-5 text-emerald" />
+          ) : (
+            <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-primary text-primary' : 'text-foreground'}`} />
+          )}
         </button>
       </div>
 
@@ -170,11 +177,14 @@ export function PlaylistDetail() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="card-surface p-4 mb-6"
+          className="card-surface p-4 mb-4"
         >
           <h2 className="text-sm font-semibold text-foreground mb-2">💡 Thesis</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">{selectedPlaylist.thesis}</p>
         </motion.div>
+
+        {/* Prediction Card */}
+        <PredictionCard playlistId={selectedPlaylist.id} />
 
         {/* Stocks */}
         <motion.div
