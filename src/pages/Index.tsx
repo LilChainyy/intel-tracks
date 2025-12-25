@@ -6,6 +6,7 @@ import { PlaylistDetail } from '@/components/playlist/PlaylistDetail';
 import { StockDetail } from '@/components/stock/StockDetail';
 import { ProfileScreen } from '@/components/profile/ProfileScreen';
 import { MyCallsScreen } from '@/components/calls/MyCallsScreen';
+import { WeeklyScorecard } from '@/components/calls/WeeklyScorecard';
 import { AuthScreen } from '@/components/auth/AuthScreen';
 import { BottomNav } from '@/components/navigation/BottomNav';
 
@@ -26,6 +27,8 @@ function AppContent() {
         return <ProfileScreen />;
       case 'calls':
         return <MyCallsScreen />;
+      case 'scorecard':
+        return <WeeklyScorecard />;
       case 'auth':
         return <AuthScreen />;
       default:

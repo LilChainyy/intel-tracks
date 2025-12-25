@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Target, TrendingUp, TrendingDown, Minus, ChevronRight } from 'lucide-react';
+import { Target, TrendingUp, TrendingDown, Minus, ChevronRight, BarChart3 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { usePredictions, PredictionType } from '@/hooks/usePredictions';
 import { useStockData } from '@/hooks/useStockData';
 import { playlists } from '@/data/playlists';
+import { Button } from '@/components/ui/button';
 
 const SP500_BENCHMARK_YTD = 17.54; // VOO approximate YTD
 
@@ -157,8 +158,19 @@ export function MyCallsScreen() {
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="p-6">
-        {/* Header */}
-        <h1 className="text-2xl font-bold text-foreground mb-4">My Calls</h1>
+        {/* Header with Scorecard button */}
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold text-foreground">My Calls</h1>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentScreen('scorecard')}
+            className="gap-1.5"
+          >
+            <BarChart3 className="w-4 h-4" />
+            Weekly Scorecard
+          </Button>
+        </div>
 
         {/* Stats Row */}
         <div className="flex items-center gap-4 mb-6">
