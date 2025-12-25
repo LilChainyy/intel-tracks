@@ -8,6 +8,7 @@ import { Playlist } from '@/types/playlist';
 import { MarketWeather } from './MarketWeather';
 import { EventNudgeBanner } from '@/components/nudges/EventNudgeBanner';
 import { YourCallsToday } from './YourCallsToday';
+import { QuickCall } from './QuickCall';
 
 export function DiscoveryScreen() {
   const { setCurrentScreen, setSelectedPlaylist, quizCompleted } = useApp();
@@ -66,6 +67,9 @@ export function DiscoveryScreen() {
 
       {/* Your Calls Today (only shows if user has predictions) */}
       <YourCallsToday />
+
+      {/* Quick Call */}
+      <QuickCall />
 
       {/* Quiz banner (if not completed) */}
       {!quizCompleted && (
