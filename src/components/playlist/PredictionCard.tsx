@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { usePredictions, PredictionType } from '@/hooks/usePredictions';
-import { useAuth } from '@/context/AuthContext';
 
 interface PredictionCardProps {
   playlistId: string;
@@ -16,7 +15,6 @@ const predictionOptions: { value: PredictionType; label: string }[] = [
 ];
 
 export function PredictionCard({ playlistId, onPredictionMade }: PredictionCardProps) {
-  const { user } = useAuth();
   const { getPrediction, savePrediction, isLoading } = usePredictions();
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [selectedPrediction, setSelectedPrediction] = useState<PredictionType | null>(null);
@@ -24,7 +22,7 @@ export function PredictionCard({ playlistId, onPredictionMade }: PredictionCardP
   const existingPrediction = getPrediction(playlistId);
 
   const handlePrediction = async (prediction: PredictionType) => {
-    if (!user || isLoading) return;
+    if (isLoading) return;
 
     setSelectedPrediction(prediction);
     const success = await savePrediction(playlistId, prediction);
@@ -39,21 +37,6 @@ export function PredictionCard({ playlistId, onPredictionMade }: PredictionCardP
       }, 3000);
     }
   };
-
-  // If user is not logged in
-  if (!user) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.25 }}
-        className="card-surface p-4 mb-6"
-      >
-        <h2 className="text-sm font-semibold text-foreground mb-1">🎯 What's your call?</h2>
-        <p className="text-xs text-muted-foreground mb-4">Sign in to make predictions</p>
-      </motion.div>
-    );
-  }
 
   return (
     <motion.div
