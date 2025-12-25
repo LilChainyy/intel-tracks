@@ -7,6 +7,7 @@ import { calculateMatchScore } from '@/utils/matchScore';
 import { Playlist } from '@/types/playlist';
 import { MarketWeather } from './MarketWeather';
 import { EventNudgeBanner } from '@/components/nudges/EventNudgeBanner';
+import { YourCallsToday } from './YourCallsToday';
 
 export function DiscoveryScreen() {
   const { setCurrentScreen, setSelectedPlaylist, quizCompleted } = useApp();
@@ -62,6 +63,9 @@ export function DiscoveryScreen() {
 
       {/* Event Nudge Banner (logged-in users) */}
       <EventNudgeBanner />
+
+      {/* Your Calls Today (only shows if user has predictions) */}
+      <YourCallsToday />
 
       {/* Quiz banner (if not completed) */}
       {!quizCompleted && (
