@@ -1,10 +1,39 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Get allowed origin from environment or default to Lovable preview
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://lovable.dev';
+
+function getCorsHeaders(origin: string | null) {
+  // Allow localhost for development, and the configured allowed origin
+  const allowedOrigins = [
+    ALLOWED_ORIGIN,
+    'http://localhost:5173',
+    'http://localhost:3000',
+  ];
+  
+  // Also allow any lovableproject.com subdomain
+  const isLovableProject = origin?.includes('.lovableproject.com') || origin?.includes('.lovable.app');
+  const isAllowed = origin && (allowedOrigins.includes(origin) || isLovableProject);
+  
+  return {
+    'Access-Control-Allow-Origin': isAllowed ? origin : ALLOWED_ORIGIN,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Credentials': 'true',
+  };
+}
+
+// Ticker validation: 1-5 uppercase letters
+const TICKER_REGEX = /^[A-Z]{1,5}$/;
+const VALID_RANGES = ['1W', '1M', '3M', '1Y', 'YTD'];
+
+function validateTicker(ticker: unknown): ticker is string {
+  return typeof ticker === 'string' && TICKER_REGEX.test(ticker);
+}
+
+function validateRange(range: unknown): range is string {
+  return typeof range === 'string' && VALID_RANGES.includes(range);
+}
 
 interface ChartDataPoint {
   date: string;
@@ -44,7 +73,7 @@ async function fetchYahooChartData(
 
     const params = rangeMap[range] || rangeMap['1M'];
     
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=${params.range}&interval=${params.interval}&events=div,earnings`;
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=${params.range}&interval=${params.interval}&events=div,earnings`;
     
     const response = await fetch(url, {
       headers: { 'User-Agent': 'Mozilla/5.0' }
@@ -121,13 +150,18 @@ async function fetchYahooChartData(
 }
 
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { ticker, range = '1M' } = await req.json();
+    const body = await req.json();
+    const { ticker, range = '1M' } = body;
     
+    // Input validation: ticker is required and must be valid format
     if (!ticker) {
       return new Response(JSON.stringify({ error: 'Ticker is required' }), {
         status: 400,
@@ -135,8 +169,32 @@ serve(async (req) => {
       });
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    if (!validateTicker(ticker)) {
+      return new Response(JSON.stringify({ error: 'Invalid ticker format. Must be 1-5 uppercase letters.' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Input validation: range must be valid
+    if (!validateRange(range)) {
+      return new Response(JSON.stringify({ error: `Invalid range. Must be one of: ${VALID_RANGES.join(', ')}` }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing required environment variables');
+      return new Response(JSON.stringify({ error: 'Server configuration error' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Fetch chart data and company events from Yahoo
