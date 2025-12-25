@@ -1,9 +1,26 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Get allowed origin from environment or default to Lovable preview
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://lovable.dev';
+
+function getCorsHeaders(origin: string | null) {
+  // Allow localhost for development, and the configured allowed origin
+  const allowedOrigins = [
+    ALLOWED_ORIGIN,
+    'http://localhost:5173',
+    'http://localhost:3000',
+  ];
+  
+  // Also allow any lovableproject.com subdomain
+  const isLovableProject = origin?.includes('.lovableproject.com') || origin?.includes('.lovable.app');
+  const isAllowed = origin && (allowedOrigins.includes(origin) || isLovableProject);
+  
+  return {
+    'Access-Control-Allow-Origin': isAllowed ? origin : ALLOWED_ORIGIN,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Credentials': 'true',
+  };
+}
 
 interface StockQuote {
   ticker: string;
@@ -22,6 +39,14 @@ interface CacheEntry {
 const cache = new Map<string, CacheEntry>();
 const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hour cache
 
+// Ticker validation: 1-5 uppercase letters
+const TICKER_REGEX = /^[A-Z]{1,5}$/;
+const MAX_TICKERS = 10;
+
+function validateTicker(ticker: unknown): ticker is string {
+  return typeof ticker === 'string' && TICKER_REGEX.test(ticker);
+}
+
 async function fetchStockData(ticker: string, apiKey: string): Promise<StockQuote | null> {
   // Check cache first
   const cached = cache.get(ticker);
@@ -34,7 +59,7 @@ async function fetchStockData(ticker: string, apiKey: string): Promise<StockQuot
   
   try {
     // Fetch current quote from Alpha Vantage
-    const quoteUrl = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${apiKey}`;
+    const quoteUrl = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${encodeURIComponent(ticker)}&apikey=${apiKey}`;
     const quoteResponse = await fetch(quoteUrl);
     const quoteData = await quoteResponse.json();
 
@@ -81,6 +106,9 @@ async function fetchStockData(ticker: string, apiKey: string): Promise<StockQuot
 }
 
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -89,11 +117,30 @@ serve(async (req) => {
   try {
     const { tickers } = await req.json();
     
-    if (!tickers || !Array.isArray(tickers) || tickers.length === 0) {
+    // Input validation: check tickers is an array
+    if (!tickers || !Array.isArray(tickers)) {
       return new Response(
         JSON.stringify({ error: 'Please provide an array of ticker symbols' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Input validation: check array length
+    if (tickers.length === 0 || tickers.length > MAX_TICKERS) {
+      return new Response(
+        JSON.stringify({ error: `Tickers must be an array of 1-${MAX_TICKERS} symbols` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Input validation: validate each ticker format
+    for (const ticker of tickers) {
+      if (!validateTicker(ticker)) {
+        return new Response(
+          JSON.stringify({ error: `Invalid ticker format: ${String(ticker).substring(0, 10)}. Must be 1-5 uppercase letters.` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     const apiKey = Deno.env.get('ALPHA_VANTAGE_API_KEY');
