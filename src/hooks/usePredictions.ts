@@ -8,6 +8,7 @@ interface Prediction {
   id: string;
   playlist_id: string;
   prediction: PredictionType;
+  conviction?: number;
   created_at: string;
   expires_at: string;
 }
@@ -74,7 +75,8 @@ export function usePredictions() {
   // Save or update a prediction
   const savePrediction = useCallback(async (
     playlistId: string, 
-    prediction: PredictionType
+    prediction: PredictionType,
+    conviction: number = 70
   ): Promise<boolean> => {
     setIsLoading(true);
     
@@ -90,6 +92,7 @@ export function usePredictions() {
             user_id: user.id,
             playlist_id: playlistId,
             prediction,
+            conviction,
             expires_at: expiresAt.toISOString(),
           }, {
             onConflict: 'user_id,playlist_id'
@@ -108,6 +111,7 @@ export function usePredictions() {
           id: `local_${playlistId}_${Date.now()}`,
           playlist_id: playlistId,
           prediction,
+          conviction,
           created_at: new Date().toISOString(),
           expires_at: expiresAt.toISOString(),
         };

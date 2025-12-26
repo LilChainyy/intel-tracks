@@ -71,6 +71,41 @@ export type Database = {
         }
         Relationships: []
       }
+      prediction_autopsies: {
+        Row: {
+          created_at: string
+          events: Json
+          id: string
+          prediction_id: string
+          selected_factor: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          events?: Json
+          id?: string
+          prediction_id: string
+          selected_factor?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          events?: Json
+          id?: string
+          prediction_id?: string
+          selected_factor?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prediction_autopsies_prediction_id_fkey"
+            columns: ["prediction_id"]
+            isOneToOne: false
+            referencedRelation: "theme_predictions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -121,27 +156,51 @@ export type Database = {
       }
       theme_predictions: {
         Row: {
+          actual_performance: number | null
+          conviction: number
           created_at: string
+          edge_earned: number | null
           expires_at: string
           id: string
+          is_correct: boolean | null
+          is_revealed: boolean
+          is_scored: boolean
           playlist_id: string
           prediction: string
+          scored_at: string | null
+          sp500_performance: number | null
           user_id: string
         }
         Insert: {
+          actual_performance?: number | null
+          conviction?: number
           created_at?: string
+          edge_earned?: number | null
           expires_at?: string
           id?: string
+          is_correct?: boolean | null
+          is_revealed?: boolean
+          is_scored?: boolean
           playlist_id: string
           prediction: string
+          scored_at?: string | null
+          sp500_performance?: number | null
           user_id: string
         }
         Update: {
+          actual_performance?: number | null
+          conviction?: number
           created_at?: string
+          edge_earned?: number | null
           expires_at?: string
           id?: string
+          is_correct?: boolean | null
+          is_revealed?: boolean
+          is_scored?: boolean
           playlist_id?: string
           prediction?: string
+          scored_at?: string | null
+          sp500_performance?: number | null
           user_id?: string
         }
         Relationships: [
@@ -191,6 +250,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_edge: {
+        Row: {
+          archetype: string | null
+          calibration: number
+          calls_made: number
+          correct_calls: number
+          created_at: string
+          id: string
+          pattern_recognition: number
+          timing: number
+          total_edge: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          archetype?: string | null
+          calibration?: number
+          calls_made?: number
+          correct_calls?: number
+          created_at?: string
+          id?: string
+          pattern_recognition?: number
+          timing?: number
+          total_edge?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          archetype?: string | null
+          calibration?: number
+          calls_made?: number
+          correct_calls?: number
+          created_at?: string
+          id?: string
+          pattern_recognition?: number
+          timing?: number
+          total_edge?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_nudges: {
         Row: {
