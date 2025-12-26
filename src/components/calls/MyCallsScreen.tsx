@@ -6,6 +6,8 @@ import { usePredictions, PredictionType } from '@/hooks/usePredictions';
 import { playlists } from '@/data/playlists';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
+import { YourCallsToday } from '@/components/discovery/YourCallsToday';
+import { QuickCall } from '@/components/discovery/QuickCall';
 
 function getPredictionLabel(prediction: PredictionType) {
   switch (prediction) {
@@ -88,6 +90,9 @@ export function MyCallsScreen() {
         <div className="p-6">
           <h1 className="text-2xl font-bold text-foreground mb-8">My Calls</h1>
           
+          {/* Quick Call */}
+          <QuickCall />
+          
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="w-16 h-16 rounded-full bg-muted/20 flex items-center justify-center mb-4">
               <Target className="w-8 h-8 text-muted-foreground" />
@@ -141,6 +146,12 @@ export function MyCallsScreen() {
             <span className="text-sm font-semibold text-foreground">{streak} {streak === 1 ? 'day' : 'days'}</span>
           </div>
         </div>
+
+        {/* Quick Call */}
+        <QuickCall />
+
+        {/* Your Calls Today */}
+        <YourCallsToday />
 
         {/* Predictions List */}
         <div className="space-y-3">

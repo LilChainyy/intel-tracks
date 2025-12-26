@@ -1,8 +1,12 @@
 import { motion } from 'framer-motion';
 import { MarketWeather } from '@/components/discovery/MarketWeather';
-import { QuickCall } from '@/components/discovery/QuickCall';
+import { LiveSection } from '@/components/discovery/LiveSection';
+import { usePredictions } from '@/hooks/usePredictions';
 
 export function MarketModeScreen() {
+  const { predictions } = usePredictions();
+  const hasActivePredictions = predictions.length > 0;
+
   return (
     <div className="min-h-screen pb-24">
       {/* Header */}
@@ -27,8 +31,8 @@ export function MarketModeScreen() {
       {/* Market Weather */}
       <MarketWeather />
 
-      {/* Quick Call */}
-      <QuickCall />
+      {/* Live Section (only shows if user has active predictions) */}
+      {hasActivePredictions && <LiveSection />}
     </div>
   );
 }

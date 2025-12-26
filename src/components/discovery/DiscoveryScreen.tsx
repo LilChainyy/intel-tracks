@@ -1,20 +1,15 @@
 import { motion } from 'framer-motion';
 import { useApp } from '@/context/AppContext';
 import { useQuiz } from '@/context/QuizContext';
-import { usePredictions } from '@/hooks/usePredictions';
 import { playlists } from '@/data/playlists';
 import { PlaylistCard } from './PlaylistCard';
 import { calculateMatchScore } from '@/utils/matchScore';
 import { Playlist } from '@/types/playlist';
 import { EventNudgeBanner } from '@/components/nudges/EventNudgeBanner';
-import { YourCallsToday } from './YourCallsToday';
-import { LiveSection } from './LiveSection';
 
 export function DiscoveryScreen() {
   const { setCurrentScreen, setSelectedPlaylist, quizCompleted } = useApp();
   const { getUserProfile, resetQuiz, startQuiz } = useQuiz();
-  const { predictions } = usePredictions();
-  const hasActivePredictions = predictions.length > 0;
 
   const userProfile = getUserProfile();
 
@@ -61,14 +56,8 @@ export function DiscoveryScreen() {
         </motion.p>
       </div>
 
-      {/* Live Section (only shows if user has active predictions) */}
-      {hasActivePredictions && <LiveSection />}
-
       {/* Event Nudge Banner (logged-in users) */}
       <EventNudgeBanner />
-
-      {/* Your Calls Today (only shows if user has predictions) */}
-      <YourCallsToday />
 
       {/* Quiz banner (if not completed) */}
       {!quizCompleted && (
