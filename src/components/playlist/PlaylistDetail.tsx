@@ -146,7 +146,7 @@ export function PlaylistDetail() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-4"
+          className="mb-4 pt-2"
         >
           <h1 className="text-2xl font-bold text-foreground mb-2">{selectedPlaylist.title}</h1>
           <div className="flex flex-wrap gap-2">
