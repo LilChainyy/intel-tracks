@@ -1,7 +1,7 @@
-import { Home, Search, Target, User } from 'lucide-react';
+import { Home, Activity, Target, User } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
-type Tab = 'discovery' | 'search' | 'calls' | 'profile';
+type Tab = 'discovery' | 'market' | 'calls' | 'profile';
 
 export function BottomNav() {
   const { currentScreen, setCurrentScreen } = useApp();
@@ -12,6 +12,8 @@ export function BottomNav() {
       case 'playlist':
       case 'stock':
         return 'discovery';
+      case 'market':
+        return 'market';
       case 'calls':
         return 'calls';
       case 'profile':
@@ -25,7 +27,7 @@ export function BottomNav() {
 
   const tabs = [
     { id: 'discovery' as Tab, icon: Home, label: 'Home' },
-    { id: 'search' as Tab, icon: Search, label: 'Search' },
+    { id: 'market' as Tab, icon: Activity, label: 'Market' },
     { id: 'calls' as Tab, icon: Target, label: 'My Calls' },
     { id: 'profile' as Tab, icon: User, label: 'Profile' }
   ];
@@ -33,12 +35,13 @@ export function BottomNav() {
   const handleTabClick = (tab: Tab) => {
     if (tab === 'discovery') {
       setCurrentScreen('discovery');
+    } else if (tab === 'market') {
+      setCurrentScreen('market');
     } else if (tab === 'profile') {
       setCurrentScreen('profile');
     } else if (tab === 'calls') {
       setCurrentScreen('calls');
     }
-    // search is placeholder
   };
 
   return (

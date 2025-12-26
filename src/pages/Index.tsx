@@ -8,6 +8,7 @@ import { ProfileScreen } from '@/components/profile/ProfileScreen';
 import { MyCallsScreen } from '@/components/calls/MyCallsScreen';
 import { WeeklyScorecard } from '@/components/calls/WeeklyScorecard';
 import { AuthScreen } from '@/components/auth/AuthScreen';
+import { MarketModeScreen } from '@/components/market/MarketModeScreen';
 import { BottomNav } from '@/components/navigation/BottomNav';
 
 function AppContent() {
@@ -31,6 +32,8 @@ function AppContent() {
         return <WeeklyScorecard />;
       case 'auth':
         return <AuthScreen />;
+      case 'market':
+        return <MarketModeScreen />;
       default:
         return <QuizFlow />;
     }
