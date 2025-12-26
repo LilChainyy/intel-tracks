@@ -29,4 +29,5 @@ export interface Playlist extends PlaylistMatchCriteria {
   tags: string[];
   stocks: Stock[];
   matchScore?: number;
+  featuredStock?: string;
 }

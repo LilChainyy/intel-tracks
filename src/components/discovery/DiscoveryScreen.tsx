@@ -6,10 +6,8 @@ import { playlists } from '@/data/playlists';
 import { PlaylistCard } from './PlaylistCard';
 import { calculateMatchScore } from '@/utils/matchScore';
 import { Playlist } from '@/types/playlist';
-import { MarketWeather } from './MarketWeather';
 import { EventNudgeBanner } from '@/components/nudges/EventNudgeBanner';
 import { YourCallsToday } from './YourCallsToday';
-import { QuickCall } from './QuickCall';
 import { LiveSection } from './LiveSection';
 
 export function DiscoveryScreen() {
@@ -66,17 +64,11 @@ export function DiscoveryScreen() {
       {/* Live Section (only shows if user has active predictions) */}
       {hasActivePredictions && <LiveSection />}
 
-      {/* Market Weather */}
-      <MarketWeather />
-
       {/* Event Nudge Banner (logged-in users) */}
       <EventNudgeBanner />
 
       {/* Your Calls Today (only shows if user has predictions) */}
       <YourCallsToday />
-
-      {/* Quick Call */}
-      <QuickCall />
 
       {/* Quiz banner (if not completed) */}
       {!quizCompleted && (
