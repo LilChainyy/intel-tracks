@@ -85,7 +85,7 @@ function StockRow({ stock, ytdChange, isLoading, onClick }: StockRowProps) {
 }
 
 export function PlaylistDetail() {
-  const { selectedPlaylist, setCurrentScreen, setSelectedStock, savedPlaylists, toggleSavePlaylist } = useApp();
+  const { selectedPlaylist, setCurrentScreen, setSelectedStock } = useApp();
   const { hasPrediction } = usePredictions();
 
   const tickers = selectedPlaylist?.stocks
@@ -96,7 +96,6 @@ export function PlaylistDetail() {
 
   if (!selectedPlaylist) return null;
 
-  const isSaved = savedPlaylists.includes(selectedPlaylist.id);
   const hasMadePrediction = hasPrediction(selectedPlaylist.id);
 
   const handleBack = () => {
@@ -106,10 +105,6 @@ export function PlaylistDetail() {
   const handleStockClick = (ticker: string) => {
     setSelectedStock({ ticker, playlist: selectedPlaylist });
     setCurrentScreen('stock');
-  };
-
-  const handleSave = () => {
-    toggleSavePlaylist(selectedPlaylist.id);
   };
 
   return (
@@ -127,17 +122,12 @@ export function PlaylistDetail() {
           <span className="text-sm">Back</span>
         </button>
 
-        {/* Save Button */}
-        <button
-          onClick={handleSave}
-          className="absolute top-12 right-4 p-2 rounded-full bg-background/80 backdrop-blur-sm"
-        >
-          {hasMadePrediction ? (
+        {/* Status indicator */}
+        {hasMadePrediction && (
+          <div className="absolute top-12 right-4 p-2 rounded-full bg-background/80 backdrop-blur-sm">
             <Check className="w-5 h-5 text-emerald" />
-          ) : (
-            <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-primary text-primary' : 'text-foreground'}`} />
-          )}
-        </button>
+          </div>
+        )}
       </div>
 
       {/* Content */}

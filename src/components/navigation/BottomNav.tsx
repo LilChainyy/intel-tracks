@@ -1,7 +1,7 @@
-import { Home, Bookmark, User } from 'lucide-react';
+import { Home, Layers } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
-type Tab = 'home' | 'mythemes' | 'profile';
+type Tab = 'home' | 'themes';
 
 export function BottomNav() {
   const { currentScreen, setCurrentScreen } = useApp();
@@ -9,13 +9,12 @@ export function BottomNav() {
   const getActiveTab = (): Tab => {
     switch (currentScreen) {
       case 'home':
+        return 'home';
+      case 'themes':
+      case 'themeUnlock':
       case 'playlist':
       case 'stock':
-        return 'home';
-      case 'mythemes':
-        return 'mythemes';
-      case 'profile':
-        return 'profile';
+        return 'themes';
       default:
         return 'home';
     }
@@ -25,8 +24,7 @@ export function BottomNav() {
 
   const tabs = [
     { id: 'home' as Tab, icon: Home, label: 'Home' },
-    { id: 'mythemes' as Tab, icon: Bookmark, label: 'My Themes' },
-    { id: 'profile' as Tab, icon: User, label: 'Profile' }
+    { id: 'themes' as Tab, icon: Layers, label: 'Themes' }
   ];
 
   const handleTabClick = (tab: Tab) => {
@@ -42,7 +40,7 @@ export function BottomNav() {
             <button
               key={tab.id}
               onClick={() => handleTabClick(tab.id)}
-              className={`flex flex-col items-center gap-1 py-2 px-4 transition-colors ${
+              className={`flex flex-col items-center gap-1 py-2 px-8 transition-colors ${
                 isActive ? 'text-foreground' : 'text-muted-foreground'
               }`}
             >

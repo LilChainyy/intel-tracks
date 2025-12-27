@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { Playlist, Stock } from '@/types/playlist';
+import { Playlist } from '@/types/playlist';
+import { getTodayKey } from '@/data/discoveryQuestions';
 
-type Screen = 'quiz' | 'discovery' | 'playlist' | 'stock' | 'profile' | 'calls' | 'auth' | 'scorecard' | 'market' | 'home' | 'mythemes';
+type Screen = 'home' | 'themes' | 'playlist' | 'stock' | 'themeUnlock';
 
 export interface SavedStock {
   ticker: string;
@@ -18,30 +19,38 @@ interface AppContextType {
   setSelectedPlaylist: (playlist: Playlist | null) => void;
   selectedStock: { ticker: string; playlist: Playlist } | null;
   setSelectedStock: (stock: { ticker: string; playlist: Playlist } | null) => void;
-  quizCompleted: boolean;
-  setQuizCompleted: (completed: boolean) => void;
-  savedPlaylists: string[];
-  toggleSavePlaylist: (playlistId: string) => void;
-  savedStocks: SavedStock[];
-  toggleSaveStock: (stock: SavedStock) => void;
-  isStockSaved: (ticker: string) => boolean;
-  // New Edge system
-  edgePoints: number;
-  addEdge: (amount: number) => void;
+  // Pig points system
+  pigPoints: number;
+  addPigPoint: () => void;
   answeredQuestions: Set<string>;
   markQuestionAnswered: (questionId: string) => void;
-  trackedThemes: string[];
-  trackTheme: (themeId: string) => void;
-  discoveredThemes: string[];
-  discoverTheme: (themeId: string) => void;
-  currentThemeQuestionIndex: number;
-  advanceThemeQuestion: () => void;
-  resetThemeQuestions: () => void;
+  // Daily market questions
+  todayAnsweredCount: number;
+  canAnswerMoreToday: boolean;
+  // Theme unlocking
+  unlockedThemes: string[];
+  unlockTheme: (themeId: string) => void;
+  isThemeUnlocked: (themeId: string) => boolean;
+  currentUnlockingTheme: string | null;
+  setCurrentUnlockingTheme: (themeId: string | null) => void;
+  themeQuestionProgress: Record<string, number>;
+  advanceThemeQuestion: (themeId: string) => void;
+  resetThemeProgress: (themeId: string) => void;
+  // Reward modal
+  showRewardModal: boolean;
+  setShowRewardModal: (show: boolean) => void;
+  hasClaimedReward: boolean;
+  claimReward: () => void;
+  // Theme votes
+  themeVotes: Record<string, 'up' | 'down' | null>;
+  voteTheme: (themeId: string, vote: 'up' | 'down') => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Helper to load from localStorage
+const DAILY_LIMIT = 10;
+const REWARD_THRESHOLD = 50;
+
 function loadFromStorage<T>(key: string, defaultValue: T): T {
   try {
     const stored = localStorage.getItem(key);
@@ -58,98 +67,131 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
   const [selectedStock, setSelectedStock] = useState<{ ticker: string; playlist: Playlist } | null>(null);
-  const [quizCompleted, setQuizCompleted] = useState(false);
-  const [savedPlaylists, setSavedPlaylists] = useState<string[]>([]);
-  const [savedStocks, setSavedStocks] = useState<SavedStock[]>([]);
   
-  // New Edge system state
-  const [edgePoints, setEdgePoints] = useState(() => loadFromStorage('edgePoints', 0));
+  // Pig points system
+  const [pigPoints, setPigPoints] = useState(() => loadFromStorage('pigPoints', 0));
   const [answeredQuestions, setAnsweredQuestions] = useState<Set<string>>(() => {
     const stored = loadFromStorage<string[]>('answeredQuestions', []);
     return new Set(stored);
   });
-  const [trackedThemes, setTrackedThemes] = useState<string[]>(() => 
-    loadFromStorage('trackedThemes', [])
+  
+  // Daily tracking
+  const [dailyData, setDailyData] = useState(() => {
+    const stored = loadFromStorage<{ date: string; count: number }>('dailyMarketData', { date: getTodayKey(), count: 0 });
+    // Reset if it's a new day
+    if (stored.date !== getTodayKey()) {
+      return { date: getTodayKey(), count: 0 };
+    }
+    return stored;
+  });
+  
+  // Theme unlocking
+  const [unlockedThemes, setUnlockedThemes] = useState<string[]>(() => 
+    loadFromStorage('unlockedThemes', [])
   );
-  const [discoveredThemes, setDiscoveredThemes] = useState<string[]>(() => 
-    loadFromStorage('discoveredThemes', [])
+  const [currentUnlockingTheme, setCurrentUnlockingTheme] = useState<string | null>(null);
+  const [themeQuestionProgress, setThemeQuestionProgress] = useState<Record<string, number>>(() => 
+    loadFromStorage('themeQuestionProgress', {})
   );
-  const [currentThemeQuestionIndex, setCurrentThemeQuestionIndex] = useState(() => 
-    loadFromStorage('currentThemeQuestionIndex', 0)
+  
+  // Reward
+  const [showRewardModal, setShowRewardModal] = useState(false);
+  const [hasClaimedReward, setHasClaimedReward] = useState(() => loadFromStorage('hasClaimedReward', false));
+  
+  // Theme votes
+  const [themeVotes, setThemeVotes] = useState<Record<string, 'up' | 'down' | null>>(() => 
+    loadFromStorage('themeVotes', {})
   );
 
-  // Persist Edge points
+  // Computed values
+  const todayAnsweredCount = dailyData.count;
+  const canAnswerMoreToday = todayAnsweredCount < DAILY_LIMIT;
+
+  // Persist all state
   useEffect(() => {
-    localStorage.setItem('edgePoints', JSON.stringify(edgePoints));
-  }, [edgePoints]);
+    localStorage.setItem('pigPoints', JSON.stringify(pigPoints));
+  }, [pigPoints]);
 
-  // Persist answered questions
   useEffect(() => {
     localStorage.setItem('answeredQuestions', JSON.stringify(Array.from(answeredQuestions)));
   }, [answeredQuestions]);
 
-  // Persist tracked themes
   useEffect(() => {
-    localStorage.setItem('trackedThemes', JSON.stringify(trackedThemes));
-  }, [trackedThemes]);
+    localStorage.setItem('dailyMarketData', JSON.stringify(dailyData));
+  }, [dailyData]);
 
-  // Persist discovered themes
   useEffect(() => {
-    localStorage.setItem('discoveredThemes', JSON.stringify(discoveredThemes));
-  }, [discoveredThemes]);
+    localStorage.setItem('unlockedThemes', JSON.stringify(unlockedThemes));
+  }, [unlockedThemes]);
 
-  // Persist question index
   useEffect(() => {
-    localStorage.setItem('currentThemeQuestionIndex', JSON.stringify(currentThemeQuestionIndex));
-  }, [currentThemeQuestionIndex]);
+    localStorage.setItem('themeQuestionProgress', JSON.stringify(themeQuestionProgress));
+  }, [themeQuestionProgress]);
 
-  const toggleSavePlaylist = (playlistId: string) => {
-    setSavedPlaylists(prev =>
-      prev.includes(playlistId)
-        ? prev.filter(id => id !== playlistId)
-        : [...prev, playlistId]
-    );
-  };
+  useEffect(() => {
+    localStorage.setItem('hasClaimedReward', JSON.stringify(hasClaimedReward));
+  }, [hasClaimedReward]);
 
-  const toggleSaveStock = (stock: SavedStock) => {
-    setSavedStocks(prev =>
-      prev.some(s => s.ticker === stock.ticker)
-        ? prev.filter(s => s.ticker !== stock.ticker)
-        : [...prev, stock]
-    );
-  };
+  useEffect(() => {
+    localStorage.setItem('themeVotes', JSON.stringify(themeVotes));
+  }, [themeVotes]);
 
-  const isStockSaved = (ticker: string) => {
-    return savedStocks.some(s => s.ticker === ticker);
-  };
+  // Check for reward unlock
+  useEffect(() => {
+    if (pigPoints >= REWARD_THRESHOLD && !hasClaimedReward && !showRewardModal) {
+      setShowRewardModal(true);
+    }
+  }, [pigPoints, hasClaimedReward, showRewardModal]);
 
-  // Edge system functions
-  const addEdge = (amount: number) => {
-    setEdgePoints(prev => prev + amount);
+  const addPigPoint = () => {
+    setPigPoints(prev => prev + 1);
   };
 
   const markQuestionAnswered = (questionId: string) => {
     setAnsweredQuestions(prev => new Set(prev).add(questionId));
-  };
-
-  const trackTheme = (themeId: string) => {
-    if (!trackedThemes.includes(themeId)) {
-      setTrackedThemes(prev => [...prev, themeId]);
+    // Increment daily count for market questions
+    if (questionId.startsWith('market-')) {
+      setDailyData(prev => ({
+        ...prev,
+        count: prev.count + 1
+      }));
     }
   };
 
-  const discoverTheme = (themeId: string) => {
-    if (!discoveredThemes.includes(themeId)) {
-      setDiscoveredThemes(prev => [...prev, themeId]);
+  const unlockTheme = (themeId: string) => {
+    if (!unlockedThemes.includes(themeId)) {
+      setUnlockedThemes(prev => [...prev, themeId]);
     }
   };
 
-  const advanceThemeQuestion = () => {
-    setCurrentThemeQuestionIndex(prev => prev + 1);
+  const isThemeUnlocked = (themeId: string) => {
+    return unlockedThemes.includes(themeId);
   };
 
-  const resetThemeQuestions = () => {
-    setCurrentThemeQuestionIndex(0);
+  const advanceThemeQuestion = (themeId: string) => {
+    setThemeQuestionProgress(prev => ({
+      ...prev,
+      [themeId]: (prev[themeId] || 0) + 1
+    }));
+  };
+
+  const resetThemeProgress = (themeId: string) => {
+    setThemeQuestionProgress(prev => ({
+      ...prev,
+      [themeId]: 0
+    }));
+  };
+
+  const claimReward = () => {
+    setHasClaimedReward(true);
+    setShowRewardModal(false);
+  };
+
+  const voteTheme = (themeId: string, vote: 'up' | 'down') => {
+    setThemeVotes(prev => ({
+      ...prev,
+      [themeId]: prev[themeId] === vote ? null : vote
+    }));
   };
 
   return (
@@ -161,25 +203,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setSelectedPlaylist,
         selectedStock,
         setSelectedStock,
-        quizCompleted,
-        setQuizCompleted,
-        savedPlaylists,
-        toggleSavePlaylist,
-        savedStocks,
-        toggleSaveStock,
-        isStockSaved,
-        // Edge system
-        edgePoints,
-        addEdge,
+        pigPoints,
+        addPigPoint,
         answeredQuestions,
         markQuestionAnswered,
-        trackedThemes,
-        trackTheme,
-        discoveredThemes,
-        discoverTheme,
-        currentThemeQuestionIndex,
+        todayAnsweredCount,
+        canAnswerMoreToday,
+        unlockedThemes,
+        unlockTheme,
+        isThemeUnlocked,
+        currentUnlockingTheme,
+        setCurrentUnlockingTheme,
+        themeQuestionProgress,
         advanceThemeQuestion,
-        resetThemeQuestions
+        resetThemeProgress,
+        showRewardModal,
+        setShowRewardModal,
+        hasClaimedReward,
+        claimReward,
+        themeVotes,
+        voteTheme
       }}
     >
       {children}

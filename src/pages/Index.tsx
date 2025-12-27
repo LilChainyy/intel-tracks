@@ -1,12 +1,10 @@
-import { QuizProvider } from '@/context/QuizContext';
 import { AppProvider, useApp } from '@/context/AppContext';
-import { QuizFlow } from '@/components/quiz/QuizFlow';
 import { PlaylistDetail } from '@/components/playlist/PlaylistDetail';
 import { StockDetail } from '@/components/stock/StockDetail';
-import { ProfileScreen } from '@/components/profile/ProfileScreen';
-import { AuthScreen } from '@/components/auth/AuthScreen';
 import { HomeFeed } from '@/components/home/HomeFeed';
-import { MyThemesScreen } from '@/components/mythemes/MyThemesScreen';
+import { ThemesScreen } from '@/components/themes/ThemesScreen';
+import { ThemeUnlockFlow } from '@/components/themes/ThemeUnlockFlow';
+import { RewardModal } from '@/components/home/RewardModal';
 import { BottomNav } from '@/components/navigation/BottomNav';
 
 function AppContent() {
@@ -16,39 +14,34 @@ function AppContent() {
     switch (currentScreen) {
       case 'home':
         return <HomeFeed />;
-      case 'mythemes':
-        return <MyThemesScreen />;
-      case 'quiz':
-        return <QuizFlow />;
+      case 'themes':
+        return <ThemesScreen />;
+      case 'themeUnlock':
+        return <ThemeUnlockFlow />;
       case 'playlist':
         return <PlaylistDetail />;
       case 'stock':
         return <StockDetail />;
-      case 'profile':
-        return <ProfileScreen />;
-      case 'auth':
-        return <AuthScreen />;
       default:
         return <HomeFeed />;
     }
   };
 
-  const showBottomNav = currentScreen !== 'quiz' && currentScreen !== 'auth';
+  const showBottomNav = currentScreen !== 'themeUnlock';
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-background relative">
       {renderScreen()}
       {showBottomNav && <BottomNav />}
+      <RewardModal />
     </div>
   );
 }
 
 export default function Index() {
   return (
-    <QuizProvider>
-      <AppProvider>
-        <AppContent />
-      </AppProvider>
-    </QuizProvider>
+    <AppProvider>
+      <AppContent />
+    </AppProvider>
   );
 }

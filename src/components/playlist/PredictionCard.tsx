@@ -90,12 +90,12 @@ export function PredictionCard({ playlistId, onPredictionMade }: PredictionCardP
 
   const handleSeeMyCallsClick = () => {
     setShowModal(false);
-    setCurrentScreen('calls');
+    setCurrentScreen('themes');
   };
 
   const handleKeepExploringClick = () => {
     setShowModal(false);
-    setCurrentScreen('discovery');
+    setCurrentScreen('themes');
   };
 
   const userPick = finalPrediction || (existingPrediction?.prediction as PredictionType);
