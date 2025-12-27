@@ -1,14 +1,12 @@
 import { QuizProvider } from '@/context/QuizContext';
 import { AppProvider, useApp } from '@/context/AppContext';
 import { QuizFlow } from '@/components/quiz/QuizFlow';
-import { DiscoveryScreen } from '@/components/discovery/DiscoveryScreen';
 import { PlaylistDetail } from '@/components/playlist/PlaylistDetail';
 import { StockDetail } from '@/components/stock/StockDetail';
 import { ProfileScreen } from '@/components/profile/ProfileScreen';
-import { MyCallsScreen } from '@/components/calls/MyCallsScreen';
-import { WeeklyScorecard } from '@/components/calls/WeeklyScorecard';
 import { AuthScreen } from '@/components/auth/AuthScreen';
-import { MarketModeScreen } from '@/components/market/MarketModeScreen';
+import { HomeFeed } from '@/components/home/HomeFeed';
+import { MyThemesScreen } from '@/components/mythemes/MyThemesScreen';
 import { BottomNav } from '@/components/navigation/BottomNav';
 
 function AppContent() {
@@ -16,26 +14,22 @@ function AppContent() {
 
   const renderScreen = () => {
     switch (currentScreen) {
+      case 'home':
+        return <HomeFeed />;
+      case 'mythemes':
+        return <MyThemesScreen />;
       case 'quiz':
         return <QuizFlow />;
-      case 'discovery':
-        return <DiscoveryScreen />;
       case 'playlist':
         return <PlaylistDetail />;
       case 'stock':
         return <StockDetail />;
       case 'profile':
         return <ProfileScreen />;
-      case 'calls':
-        return <MyCallsScreen />;
-      case 'scorecard':
-        return <WeeklyScorecard />;
       case 'auth':
         return <AuthScreen />;
-      case 'market':
-        return <MarketModeScreen />;
       default:
-        return <QuizFlow />;
+        return <HomeFeed />;
     }
   };
 

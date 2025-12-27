@@ -1,47 +1,36 @@
-import { Home, Activity, Target, User } from 'lucide-react';
+import { Home, Bookmark, User } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
-type Tab = 'discovery' | 'market' | 'calls' | 'profile';
+type Tab = 'home' | 'mythemes' | 'profile';
 
 export function BottomNav() {
   const { currentScreen, setCurrentScreen } = useApp();
 
   const getActiveTab = (): Tab => {
     switch (currentScreen) {
-      case 'discovery':
+      case 'home':
       case 'playlist':
       case 'stock':
-        return 'discovery';
-      case 'market':
-        return 'market';
-      case 'calls':
-        return 'calls';
+        return 'home';
+      case 'mythemes':
+        return 'mythemes';
       case 'profile':
         return 'profile';
       default:
-        return 'discovery';
+        return 'home';
     }
   };
 
   const activeTab = getActiveTab();
 
   const tabs = [
-    { id: 'discovery' as Tab, icon: Home, label: 'Home' },
-    { id: 'market' as Tab, icon: Activity, label: 'Market' },
-    { id: 'calls' as Tab, icon: Target, label: 'My Calls' },
+    { id: 'home' as Tab, icon: Home, label: 'Home' },
+    { id: 'mythemes' as Tab, icon: Bookmark, label: 'My Themes' },
     { id: 'profile' as Tab, icon: User, label: 'Profile' }
   ];
 
   const handleTabClick = (tab: Tab) => {
-    if (tab === 'discovery') {
-      setCurrentScreen('discovery');
-    } else if (tab === 'market') {
-      setCurrentScreen('market');
-    } else if (tab === 'profile') {
-      setCurrentScreen('profile');
-    } else if (tab === 'calls') {
-      setCurrentScreen('calls');
-    }
+    setCurrentScreen(tab);
   };
 
   return (

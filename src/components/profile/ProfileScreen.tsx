@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ChevronRight, Bell, Moon, HelpCircle, RotateCcw, LogIn, LogOut, User } from 'lucide-react';
+import { ChevronRight, Bell, Moon, HelpCircle, RotateCcw, LogIn, LogOut, Zap } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useQuiz } from '@/context/QuizContext';
 import { useAuth } from '@/context/AuthContext';
@@ -32,7 +32,7 @@ const answerLabels: Record<string, Record<string, string>> = {
 };
 
 export function ProfileScreen() {
-  const { quizCompleted, setCurrentScreen } = useApp();
+  const { quizCompleted, setCurrentScreen, edgePoints } = useApp();
   const { state, resetQuiz, startQuiz } = useQuiz();
   const { user, signOut, isLoading } = useAuth();
 
@@ -98,15 +98,42 @@ export function ProfileScreen() {
         </motion.h1>
       </div>
 
-      {/* Avatar section */}
+      {/* Edge Points Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         className="card-surface p-6 text-center mb-6"
       >
-        <div className="w-20 h-20 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
-          <span className="text-2xl font-semibold text-muted-foreground">
+        <div className="w-16 h-16 rounded-full bg-primary/10 mx-auto mb-3 flex items-center justify-center">
+          <Zap className="w-8 h-8 text-primary fill-current" />
+        </div>
+        <div className="text-3xl font-bold text-primary mb-1">{edgePoints}</div>
+        <p className="text-sm text-muted-foreground">Edge Points</p>
+        
+        <div className="mt-4 pt-4 border-t border-border">
+          <h3 className="text-sm font-medium text-muted-foreground mb-2">Rewards Progress</h3>
+          <div className="h-2 bg-muted rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all"
+              style={{ width: `${Math.min((edgePoints / 200) * 100, 100)}%` }}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            {edgePoints}/200 to next reward
+          </p>
+        </div>
+      </motion.div>
+
+      {/* Avatar section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="card-surface p-6 text-center mb-6"
+      >
+        <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-3 flex items-center justify-center">
+          <span className="text-xl font-semibold text-muted-foreground">
             {user ? initial : 'G'}
           </span>
         </div>

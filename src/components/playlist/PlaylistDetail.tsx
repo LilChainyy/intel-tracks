@@ -100,7 +100,7 @@ export function PlaylistDetail() {
   const hasMadePrediction = hasPrediction(selectedPlaylist.id);
 
   const handleBack = () => {
-    setCurrentScreen('discovery');
+    setCurrentScreen('home');
   };
 
   const handleStockClick = (ticker: string) => {
