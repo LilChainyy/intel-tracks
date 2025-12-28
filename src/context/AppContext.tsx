@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { Playlist } from '@/types/playlist';
 import { getTodayKey } from '@/data/discoveryQuestions';
 
-type Screen = 'home' | 'themes' | 'playlist' | 'stock' | 'themeUnlock';
+type Screen = 'home' | 'themes' | 'playlist' | 'stock' | 'themeUnlock' | 'profile';
 
 export interface SavedStock {
   ticker: string;
@@ -22,10 +22,10 @@ interface AppContextType {
   // Pig points system
   pigPoints: number;
   addPigPoint: () => void;
-  answeredQuestions: Set<string>;
+  answeredQuestions: string[];
   markQuestionAnswered: (questionId: string) => void;
   // Daily market questions
-  todayAnsweredCount: number;
+  dailyData: { date: string; questionsAnsweredToday: number } | null;
   canAnswerMoreToday: boolean;
   // Theme unlocking
   unlockedThemes: string[];
@@ -70,17 +70,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   
   // Pig points system
   const [pigPoints, setPigPoints] = useState(() => loadFromStorage('pigPoints', 0));
-  const [answeredQuestions, setAnsweredQuestions] = useState<Set<string>>(() => {
-    const stored = loadFromStorage<string[]>('answeredQuestions', []);
-    return new Set(stored);
-  });
+  const [answeredQuestions, setAnsweredQuestions] = useState<string[]>(() => 
+    loadFromStorage<string[]>('answeredQuestions', [])
+  );
   
   // Daily tracking
-  const [dailyData, setDailyData] = useState(() => {
-    const stored = loadFromStorage<{ date: string; count: number }>('dailyMarketData', { date: getTodayKey(), count: 0 });
+  const [dailyData, setDailyData] = useState<{ date: string; questionsAnsweredToday: number } | null>(() => {
+    const stored = loadFromStorage<{ date: string; questionsAnsweredToday: number } | null>('dailyMarketData', { date: getTodayKey(), questionsAnsweredToday: 0 });
     // Reset if it's a new day
-    if (stored.date !== getTodayKey()) {
-      return { date: getTodayKey(), count: 0 };
+    if (stored && stored.date !== getTodayKey()) {
+      return { date: getTodayKey(), questionsAnsweredToday: 0 };
     }
     return stored;
   });
@@ -104,7 +103,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
 
   // Computed values
-  const todayAnsweredCount = dailyData.count;
+  const todayAnsweredCount = dailyData?.questionsAnsweredToday || 0;
   const canAnswerMoreToday = todayAnsweredCount < DAILY_LIMIT;
 
   // Persist all state
@@ -113,7 +112,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [pigPoints]);
 
   useEffect(() => {
-    localStorage.setItem('answeredQuestions', JSON.stringify(Array.from(answeredQuestions)));
+    localStorage.setItem('answeredQuestions', JSON.stringify(answeredQuestions));
   }, [answeredQuestions]);
 
   useEffect(() => {
@@ -148,12 +147,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const markQuestionAnswered = (questionId: string) => {
-    setAnsweredQuestions(prev => new Set(prev).add(questionId));
+    setAnsweredQuestions(prev => [...prev, questionId]);
     // Increment daily count for market questions
     if (questionId.startsWith('market-')) {
       setDailyData(prev => ({
-        ...prev,
-        count: prev.count + 1
+        date: prev?.date || getTodayKey(),
+        questionsAnsweredToday: (prev?.questionsAnsweredToday || 0) + 1
       }));
     }
   };
@@ -207,7 +206,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         addPigPoint,
         answeredQuestions,
         markQuestionAnswered,
-        todayAnsweredCount,
+        dailyData,
         canAnswerMoreToday,
         unlockedThemes,
         unlockTheme,

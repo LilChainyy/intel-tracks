@@ -1,7 +1,7 @@
-import { Home, Layers } from 'lucide-react';
+import { Home, Layers, User } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
-type Tab = 'home' | 'themes';
+type Tab = 'home' | 'themes' | 'profile';
 
 export function BottomNav() {
   const { currentScreen, setCurrentScreen } = useApp();
@@ -15,6 +15,8 @@ export function BottomNav() {
       case 'playlist':
       case 'stock':
         return 'themes';
+      case 'profile':
+        return 'profile';
       default:
         return 'home';
     }
@@ -24,7 +26,8 @@ export function BottomNav() {
 
   const tabs = [
     { id: 'home' as Tab, icon: Home, label: 'Home' },
-    { id: 'themes' as Tab, icon: Layers, label: 'Themes' }
+    { id: 'themes' as Tab, icon: Layers, label: 'Themes' },
+    { id: 'profile' as Tab, icon: User, label: 'Profile' }
   ];
 
   const handleTabClick = (tab: Tab) => {

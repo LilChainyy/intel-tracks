@@ -4,6 +4,7 @@ import { StockDetail } from '@/components/stock/StockDetail';
 import { HomeFeed } from '@/components/home/HomeFeed';
 import { ThemesScreen } from '@/components/themes/ThemesScreen';
 import { ThemeUnlockFlow } from '@/components/themes/ThemeUnlockFlow';
+import { ProfileScreen } from '@/components/profile/ProfileScreen';
 import { RewardModal } from '@/components/home/RewardModal';
 import { BottomNav } from '@/components/navigation/BottomNav';
 
@@ -22,6 +23,8 @@ function AppContent() {
         return <PlaylistDetail />;
       case 'stock':
         return <StockDetail />;
+      case 'profile':
+        return <ProfileScreen />;
       default:
         return <HomeFeed />;
     }
