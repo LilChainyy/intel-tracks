@@ -1,4 +1,4 @@
-import { Home, Layers, User } from 'lucide-react';
+import { CloudSun, Layers, User } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
 type Tab = 'home' | 'themes' | 'profile';
@@ -25,7 +25,7 @@ export function BottomNav() {
   const activeTab = getActiveTab();
 
   const tabs = [
-    { id: 'home' as Tab, icon: Home, label: 'Home' },
+    { id: 'home' as Tab, icon: CloudSun, label: 'Weather' },
     { id: 'themes' as Tab, icon: Layers, label: 'Themes' },
     { id: 'profile' as Tab, icon: User, label: 'Profile' }
   ];
