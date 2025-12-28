@@ -25,73 +25,73 @@ export interface ThemeData {
 export const marketQuestions: MarketQuestion[] = [
   {
     id: "market-1",
-    question: "Fed 下周开会。你觉得科技股会...",
-    options: ["涨", "跌", "没什么变化"],
-    popular: "涨",
-    explanation: "降息通常利好成长股，但市场可能已经 price in 了。"
+    question: "The Fed meets next week. How will tech stocks react?",
+    options: ["Rally", "Drop", "Stay flat"],
+    popular: "Rally",
+    explanation: "Rate cuts typically benefit growth stocks, though markets may have priced this in."
   },
   {
     id: "market-2",
-    question: "AI 公司估值是泡沫吗？",
-    options: ["是，很快会崩", "不是，还有空间", "很难说"],
-    popular: "不是，还有空间",
-    explanation: "AI 公司收入增长速度快于互联网泡沫时期。"
+    question: "Are AI company valuations a bubble?",
+    options: ["Yes, crash coming", "No, room to grow", "Hard to say"],
+    popular: "No, room to grow",
+    explanation: "AI company revenue growth is faster than during the dot-com bubble."
   },
   {
     id: "market-3",
-    question: "你觉得 2024 年美股会...",
-    options: ["继续涨", "横盘震荡", "大跌"],
-    popular: "继续涨",
-    explanation: "历史上选举年通常对股市有利。"
+    question: "How will US stocks perform in 2024?",
+    options: ["Keep rising", "Trade sideways", "Major correction"],
+    popular: "Keep rising",
+    explanation: "Election years have historically been favorable for stocks."
   },
   {
     id: "market-4",
-    question: "中国股市今年会反弹吗？",
-    options: ["会，机会来了", "不会，还要等", "说不准"],
-    popular: "说不准",
-    explanation: "政策支持 vs 经济基本面，市场分歧很大。"
+    question: "Will Chinese stocks rebound this year?",
+    options: ["Yes, opportunity ahead", "No, wait longer", "Too uncertain"],
+    popular: "Too uncertain",
+    explanation: "Policy support vs economic fundamentals creates significant market disagreement."
   },
   {
     id: "market-5",
-    question: "黄金还能买吗？",
-    options: ["能，避险首选", "不能，太贵了", "少量配置"],
-    popular: "少量配置",
-    explanation: "地缘政治不确定性支撑金价，但已创新高。"
+    question: "Is gold still worth buying?",
+    options: ["Yes, best safe haven", "No, too expensive", "Small allocation only"],
+    popular: "Small allocation only",
+    explanation: "Geopolitical uncertainty supports gold prices, but it's already at all-time highs."
   },
   {
     id: "market-6",
-    question: "电动车行业谁会赢？",
-    options: ["特斯拉", "中国车企", "传统车企"],
-    popular: "中国车企",
-    explanation: "比亚迪销量已超特斯拉，成本优势明显。"
+    question: "Who will win the EV race?",
+    options: ["Tesla", "Chinese automakers", "Legacy automakers"],
+    popular: "Chinese automakers",
+    explanation: "BYD has already surpassed Tesla in sales with clear cost advantages."
   },
   {
     id: "market-7",
-    question: "你会买加密货币吗？",
-    options: ["会，机会难得", "不会，风险太大", "观望中"],
-    popular: "观望中",
-    explanation: "比特币 ETF 获批后资金流入，但波动性仍高。"
+    question: "Would you buy crypto now?",
+    options: ["Yes, rare opportunity", "No, too risky", "Watching from sidelines"],
+    popular: "Watching from sidelines",
+    explanation: "Bitcoin ETF approval brought inflows, but volatility remains high."
   },
   {
     id: "market-8",
-    question: "美元会继续走强吗？",
-    options: ["会", "不会", "维持现状"],
-    popular: "维持现状",
-    explanation: "利率见顶但降息节奏不确定。"
+    question: "Will the dollar keep strengthening?",
+    options: ["Yes", "No", "Stay about the same"],
+    popular: "Stay about the same",
+    explanation: "Rates have peaked but the pace of cuts remains uncertain."
   },
   {
     id: "market-9",
-    question: "你觉得现在是买房好时机吗？",
-    options: ["是", "不是", "看地区"],
-    popular: "看地区",
-    explanation: "利率高企但库存紧张，各地情况不同。"
+    question: "Is now a good time to buy a house?",
+    options: ["Yes", "No", "Depends on location"],
+    popular: "Depends on location",
+    explanation: "High rates but tight inventory mean conditions vary widely by market."
   },
   {
     id: "market-10",
-    question: "明年科技股还是领头羊吗？",
-    options: ["是", "不是", "轮动到其他板块"],
-    popular: "是",
-    explanation: "AI 浪潮才刚开始，科技股仍有动能。"
+    question: "Will tech stocks still lead next year?",
+    options: ["Yes", "No", "Rotation to other sectors"],
+    popular: "Yes",
+    explanation: "The AI wave is just beginning, tech stocks still have momentum."
   }
 ];
 
@@ -104,24 +104,24 @@ export const themesData: ThemeData[] = [
     questions: [
       {
         id: "nuclear-1",
-        question: "微软、谷歌、亚马逊最近都在买同一样东西。是什么？",
-        options: ["太阳能农场", "核电站", "石油公司"],
-        popular: "核电站",
-        explanation: "AI 数据中心需要 24/7 稳定供电，核能是唯一选择。"
+        question: "Microsoft, Google, and Amazon are all buying the same thing. What is it?",
+        options: ["Solar farms", "Nuclear power plants", "Oil companies"],
+        popular: "Nuclear power plants",
+        explanation: "AI data centers need 24/7 stable power. Nuclear is the only clean option."
       },
       {
         id: "nuclear-2",
-        question: "这对谁最有利？",
-        options: ["挖铀矿的公司", "太阳能公司", "石油公司"],
-        popular: "挖铀矿的公司",
-        explanation: "铀是核电站的燃料，需求正在暴涨。"
+        question: "Who benefits most from this trend?",
+        options: ["Uranium miners", "Solar companies", "Oil companies"],
+        popular: "Uranium miners",
+        explanation: "Uranium is the fuel for nuclear plants, and demand is surging."
       },
       {
         id: "nuclear-3",
-        question: "铀矿股今年涨了多少？",
-        options: ["大概 20%", "大概 50%", "超过 80%"],
-        popular: "超过 80%",
-        explanation: "Cameco (CCJ) 今年涨了 81%。"
+        question: "How much have uranium stocks gained this year?",
+        options: ["About 20%", "About 50%", "Over 80%"],
+        popular: "Over 80%",
+        explanation: "Cameco (CCJ) is up 81% this year."
       }
     ]
   },
@@ -132,24 +132,24 @@ export const themesData: ThemeData[] = [
     questions: [
       {
         id: "netflix-1",
-        question: "Netflix 广告会员数量达到多少了？",
-        options: ["1000万", "4000万", "1亿"],
-        popular: "4000万",
-        explanation: "广告会员在18个月内从0增长到4000万。"
+        question: "How many ad-tier subscribers does Netflix have now?",
+        options: ["10 million", "40 million", "100 million"],
+        popular: "40 million",
+        explanation: "Ad-tier subscribers grew from 0 to 40 million in just 18 months."
       },
       {
         id: "netflix-2",
-        question: "打击密码共享后，Netflix 一个季度增加了多少订阅？",
-        options: ["500万", "1300万", "3000万"],
-        popular: "1300万",
-        explanation: "密码共享打击比预期效果更好。"
+        question: "How many subscribers did Netflix add in one quarter after the password crackdown?",
+        options: ["5 million", "13 million", "30 million"],
+        popular: "13 million",
+        explanation: "The password sharing crackdown worked better than expected."
       },
       {
         id: "netflix-3",
-        question: "流媒体大战的最终赢家可能有几家？",
-        options: ["1-2家", "3-4家", "5家以上"],
-        popular: "3-4家",
-        explanation: "市场正在整合，只有少数玩家能盈利。"
+        question: "How many streaming winners will there be in the end?",
+        options: ["1-2", "3-4", "5 or more"],
+        popular: "3-4",
+        explanation: "The market is consolidating. Only a few players will be profitable."
       }
     ]
   },
@@ -160,24 +160,24 @@ export const themesData: ThemeData[] = [
     questions: [
       {
         id: "defense-1",
-        question: "2024年美国国防预算是多少？",
-        options: ["5000亿美元", "8860亿美元", "1万亿美元"],
-        popular: "8860亿美元",
-        explanation: "创历史新高，还在继续增长。"
+        question: "What is the 2024 US defense budget?",
+        options: ["$500 billion", "$886 billion", "$1 trillion"],
+        popular: "$886 billion",
+        explanation: "An all-time high, and still growing."
       },
       {
         id: "defense-2",
-        question: "欧洲国防支出处于什么水平？",
-        options: ["二战后最低", "冷战以来最高", "和往年差不多"],
-        popular: "冷战以来最高",
-        explanation: "俄乌战争后，北约国家纷纷增加军费。"
+        question: "Where is European defense spending right now?",
+        options: ["Post-WWII low", "Highest since Cold War", "About the same as usual"],
+        popular: "Highest since Cold War",
+        explanation: "After the Ukraine war, NATO countries are ramping up military spending."
       },
       {
         id: "defense-3",
-        question: "主要国防承包商的订单积压到哪一年？",
-        options: ["2025年", "2028年", "2030年后"],
-        popular: "2030年后",
-        explanation: "洛克希德马丁等公司订单已排到2030年之后。"
+        question: "How far out are major defense contractors booked?",
+        options: ["Until 2025", "Until 2028", "Beyond 2030"],
+        popular: "Beyond 2030",
+        explanation: "Lockheed Martin and others have orders booked past 2030."
       }
     ]
   },
@@ -188,24 +188,24 @@ export const themesData: ThemeData[] = [
     questions: [
       {
         id: "space-1",
-        question: "SpaceX 发射成本比10年前降低了多少？",
+        question: "How much has SpaceX reduced launch costs compared to 10 years ago?",
         options: ["50%", "70%", "90%"],
         popular: "90%",
-        explanation: "可重复使用火箭彻底改变了太空经济学。"
+        explanation: "Reusable rockets have completely changed space economics."
       },
       {
         id: "space-2",
-        question: "Starlink 卫星数量达到多少颗？",
-        options: ["1000颗", "3000颗", "7000颗"],
-        popular: "7000颗",
-        explanation: "SpaceX 正在建设全球最大的卫星网络。"
+        question: "How many Starlink satellites are in orbit?",
+        options: ["1,000", "3,000", "7,000"],
+        popular: "7,000",
+        explanation: "SpaceX is building the world's largest satellite network."
       },
       {
         id: "space-3",
-        question: "国际空间站什么时候退役？",
-        options: ["2025年", "2030年", "2035年"],
-        popular: "2030年",
-        explanation: "私人空间站将接替 ISS。"
+        question: "When will the International Space Station be retired?",
+        options: ["2025", "2030", "2035"],
+        popular: "2030",
+        explanation: "Private space stations will replace the ISS."
       }
     ]
   },
@@ -216,24 +216,24 @@ export const themesData: ThemeData[] = [
     questions: [
       {
         id: "pets-1",
-        question: "美国宠物年支出是多少？",
-        options: ["500亿美元", "1000亿美元", "1470亿美元"],
-        popular: "1470亿美元",
-        explanation: "宠物已经成为家庭成员，支出持续增长。"
+        question: "How much do Americans spend on pets annually?",
+        options: ["$50 billion", "$100 billion", "$147 billion"],
+        popular: "$147 billion",
+        explanation: "Pets have become family members, and spending keeps growing."
       },
       {
         id: "pets-2",
-        question: "美国宠物保险渗透率是多少？",
+        question: "What is the pet insurance penetration rate in the US?",
         options: ["4%", "15%", "25%"],
         popular: "4%",
-        explanation: "对比英国的25%，美国市场还有很大空间。"
+        explanation: "Compared to 25% in the UK, the US market has huge room to grow."
       },
       {
         id: "pets-3",
-        question: "Chewy 的自动续订收入占比是多少？",
+        question: "What percentage of Chewy's revenue comes from auto-ship subscriptions?",
         options: ["30%", "55%", "78%"],
         popular: "78%",
-        explanation: "订阅模式创造了极强的用户粘性。"
+        explanation: "The subscription model creates extremely strong customer retention."
       }
     ]
   },
@@ -244,24 +244,24 @@ export const themesData: ThemeData[] = [
     questions: [
       {
         id: "barbell-1",
-        question: "Costco 今年股价涨了多少？",
+        question: "How much is Costco stock up this year?",
         options: ["+15%", "+30%", "+45%"],
         popular: "+45%",
-        explanation: "会员制零售商在消费分化中受益。"
+        explanation: "Membership-based retailers are benefiting from consumer bifurcation."
       },
       {
         id: "barbell-2",
-        question: "中端零售商（如 Kohl's）的命运是？",
-        options: ["复苏中", "挣扎求存", "已经倒闭"],
-        popular: "挣扎求存",
-        explanation: "消费者要么追求极致性价比，要么追求高端体验。"
+        question: "What's happening to mid-tier retailers like Kohl's?",
+        options: ["Recovering", "Struggling to survive", "Already bankrupt"],
+        popular: "Struggling to survive",
+        explanation: "Consumers either want the best value or premium experiences."
       },
       {
         id: "barbell-3",
-        question: "零售的未来是？",
-        options: ["只剩线上", "两极分化", "回归线下"],
-        popular: "两极分化",
-        explanation: "便宜的更便宜，贵的更贵，中间消失。"
+        question: "What's the future of retail?",
+        options: ["Online only", "Polarization", "Back to brick-and-mortar"],
+        popular: "Polarization",
+        explanation: "Cheap gets cheaper, expensive gets pricier, the middle disappears."
       }
     ]
   },
@@ -272,24 +272,24 @@ export const themesData: ThemeData[] = [
     questions: [
       {
         id: "longevity-1",
-        question: "贝佐斯投资 Altos Labs 多少钱？",
-        options: ["5亿美元", "30亿美元", "100亿美元"],
-        popular: "30亿美元",
-        explanation: "细胞重编程是抗衰老研究的前沿。"
+        question: "How much did Jeff Bezos invest in Altos Labs?",
+        options: ["$500 million", "$3 billion", "$10 billion"],
+        popular: "$3 billion",
+        explanation: "Cellular reprogramming is at the frontier of anti-aging research."
       },
       {
         id: "longevity-2",
-        question: "GLP-1 减肥药让哪家公司成为欧洲市值最高？",
-        options: ["诺华", "诺和诺德", "罗氏"],
-        popular: "诺和诺德",
-        explanation: "Ozempic/Wegovy 创造了史上最快增长的药物类别。"
+        question: "Which company's GLP-1 drugs made it the most valuable in Europe?",
+        options: ["Novartis", "Novo Nordisk", "Roche"],
+        popular: "Novo Nordisk",
+        explanation: "Ozempic/Wegovy created the fastest-growing drug category in history."
       },
       {
         id: "longevity-3",
-        question: "FDA 开始承认什么是可治疗的病症？",
-        options: ["肥胖", "衰老", "秃头"],
-        popular: "衰老",
-        explanation: "这是抗衰老领域的里程碑式监管转变。"
+        question: "The FDA has started to recognize what as a treatable condition?",
+        options: ["Obesity", "Aging", "Baldness"],
+        popular: "Aging",
+        explanation: "This is a milestone regulatory shift for the anti-aging field."
       }
     ]
   }
