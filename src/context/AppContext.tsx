@@ -44,6 +44,8 @@ interface AppContextType {
   // Theme votes
   themeVotes: Record<string, 'up' | 'down' | null>;
   voteTheme: (themeId: string, vote: 'up' | 'down') => void;
+  // Reset all progress
+  resetAllProgress: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -193,6 +195,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }));
   };
 
+  const resetAllProgress = () => {
+    setPigPoints(0);
+    setAnsweredQuestions([]);
+    setDailyData({ date: getTodayKey(), questionsAnsweredToday: 0 });
+    setUnlockedThemes([]);
+    setThemeQuestionProgress({});
+    setHasClaimedReward(false);
+    setThemeVotes({});
+    // Clear localStorage
+    localStorage.removeItem('pigPoints');
+    localStorage.removeItem('answeredQuestions');
+    localStorage.removeItem('dailyMarketData');
+    localStorage.removeItem('unlockedThemes');
+    localStorage.removeItem('themeQuestionProgress');
+    localStorage.removeItem('hasClaimedReward');
+    localStorage.removeItem('themeVotes');
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -221,7 +241,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         hasClaimedReward,
         claimReward,
         themeVotes,
-        voteTheme
+        voteTheme,
+        resetAllProgress
       }}
     >
       {children}
