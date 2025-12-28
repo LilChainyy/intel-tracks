@@ -40,7 +40,7 @@ export function ThemesScreen() {
       <div className="p-4">
         <h1 className="text-2xl font-bold mb-1">Themes</h1>
         <p className="text-sm text-muted-foreground mb-4">
-          回答问题解锁投资主题
+          Answer questions to unlock investment themes
         </p>
 
         <div className="space-y-3">
@@ -64,7 +64,7 @@ export function ThemesScreen() {
                     <div>
                       <h3 className="font-medium">{theme.themeName}</h3>
                       <p className="text-xs text-muted-foreground">
-                        {unlocked ? '已解锁 · 点击查看详情' : '回答 3 个问题解锁'}
+                        {unlocked ? 'Unlocked · Tap to view' : 'Answer 3 questions to unlock'}
                       </p>
                     </div>
                   </div>
