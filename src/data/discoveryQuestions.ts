@@ -21,77 +21,77 @@ export interface ThemeData {
   questions: ThemeQuestion[];
 }
 
-// Market questions - show one at a time, daily limit of 10
+// Market questions - 10 core financial literacy questions
 export const marketQuestions: MarketQuestion[] = [
   {
     id: "market-1",
-    question: "The Fed meets next week. How will tech stocks react?",
-    options: ["Rally", "Drop", "Stay flat"],
-    popular: "Rally",
-    explanation: "Rate cuts typically benefit growth stocks, though markets may have priced this in."
+    question: "The Fed says they'll 'keep rates higher for longer.' Who gets hurt the most?",
+    options: ["Tech companies that borrowed a lot to grow", "Oil companies that generate cash", "About the same for everyone"],
+    popular: "Tech companies that borrowed a lot to grow",
+    explanation: "Higher rates = expensive debt. Companies that rely on borrowing to grow (like unprofitable tech) feel the most pain. Cash-rich companies care less."
   },
   {
     id: "market-2",
-    question: "Are AI company valuations a bubble?",
-    options: ["Yes, crash coming", "No, room to grow", "Hard to say"],
-    popular: "No, room to grow",
-    explanation: "AI company revenue growth is faster than during the dot-com bubble."
+    question: "Jobs report comes in strong — economy added 300K jobs. The stock market drops. Why?",
+    options: ["Strong economy = Fed won't cut rates = bad for stocks", "More jobs = higher wages = companies make less profit", "Investors are just irrational"],
+    popular: "Strong economy = Fed won't cut rates = bad for stocks",
+    explanation: "Wall Street is obsessed with rate cuts. A strong economy means the Fed has no reason to cut rates, so stocks sell off. Weird, but that's how it works."
   },
   {
     id: "market-3",
-    question: "How will US stocks perform in 2024?",
-    options: ["Keep rising", "Trade sideways", "Major correction"],
-    popular: "Keep rising",
-    explanation: "Election years have historically been favorable for stocks."
+    question: "The VIX jumps from 12 to 25 in one day. What just happened?",
+    options: ["Something scared the market — people are buying protection", "The market is about to rally", "Nothing important, it's just a number"],
+    popular: "Something scared the market — people are buying protection",
+    explanation: "VIX measures fear. When it spikes, it means traders are panic-buying options to protect themselves. Usually means a big drop happened or is expected."
   },
   {
     id: "market-4",
-    question: "Will Chinese stocks rebound this year?",
-    options: ["Yes, opportunity ahead", "No, wait longer", "Too uncertain"],
-    popular: "Too uncertain",
-    explanation: "Policy support vs economic fundamentals creates significant market disagreement."
+    question: "Inflation is at 3%, and your savings account pays 1%. What's actually happening to your money?",
+    options: ["It's growing slowly", "It's losing purchasing power", "It's staying the same"],
+    popular: "It's losing purchasing power",
+    explanation: "If prices rise 3% but you only earn 1%, you're losing 2% in real terms. This is why people invest — to beat inflation."
   },
   {
     id: "market-5",
-    question: "Is gold still worth buying?",
-    options: ["Yes, best safe haven", "No, too expensive", "Small allocation only"],
-    popular: "Small allocation only",
-    explanation: "Geopolitical uncertainty supports gold prices, but it's already at all-time highs."
+    question: "A company beats earnings by 20%, but the stock drops 8%. What's going on?",
+    options: ["The market expected even more — 'buy the rumor, sell the news'", "Investors are stupid", "Earnings don't matter"],
+    popular: "The market expected even more — 'buy the rumor, sell the news'",
+    explanation: "Stock prices reflect expectations, not just results. If everyone expected a 30% beat, a 20% beat is a disappointment. The stock was 'priced for perfection.'"
   },
   {
     id: "market-6",
-    question: "Who will win the EV race?",
-    options: ["Tesla", "Chinese automakers", "Legacy automakers"],
-    popular: "Chinese automakers",
-    explanation: "BYD has already surpassed Tesla in sales with clear cost advantages."
+    question: "Everyone knows AI is the future. Is it a good idea to buy AI stocks now?",
+    options: ["Yes, AI will keep growing", "Maybe not — if everyone knows, the price already reflects it", "Definitely not, AI is overhyped"],
+    popular: "Maybe not — if everyone knows, the price already reflects it",
+    explanation: "If something is 'obvious,' the stock price already includes that expectation. The question isn't 'is AI big?' — it's 'is AI bigger than what's already priced in?'"
   },
   {
     id: "market-7",
-    question: "Would you buy crypto now?",
-    options: ["Yes, rare opportunity", "No, too risky", "Watching from sidelines"],
-    popular: "Watching from sidelines",
-    explanation: "Bitcoin ETF approval brought inflows, but volatility remains high."
+    question: "10-year Treasury yield rises from 4% to 5%. What happens to growth stocks?",
+    options: ["They usually drop — bonds become more attractive", "They usually rise — higher yields mean confidence", "No connection"],
+    popular: "They usually drop — bonds become more attractive",
+    explanation: "When bonds pay more, investors have less reason to take risks on stocks. Growth stocks (which promise future profits) get hit hardest because that future money is worth less today."
   },
   {
     id: "market-8",
-    question: "Will the dollar keep strengthening?",
-    options: ["Yes", "No", "Stay about the same"],
-    popular: "Stay about the same",
-    explanation: "Rates have peaked but the pace of cuts remains uncertain."
+    question: "When people say 'the market is up 20% this year,' what are they usually talking about?",
+    options: ["The S&P 500 — an index of 500 big US companies", "Every stock in America", "The Dow Jones"],
+    popular: "The S&P 500 — an index of 500 big US companies",
+    explanation: "'The market' usually means the S&P 500. It's market-cap weighted, so big companies like Apple and Microsoft move it more than smaller ones."
   },
   {
     id: "market-9",
-    question: "Is now a good time to buy a house?",
-    options: ["Yes", "No", "Depends on location"],
-    popular: "Depends on location",
-    explanation: "High rates but tight inventory mean conditions vary widely by market."
+    question: "Interest rates are at 5%. A hedge fund manager says 'cash is king.' What does he mean?",
+    options: ["You can earn 5% risk-free — why take stock market risk?", "He's scared of inflation", "He wants to buy real estate"],
+    popular: "You can earn 5% risk-free — why take stock market risk?",
+    explanation: "When cash earns 5% with zero risk, stocks have to offer way better returns to be worth it. High rates make investors pickier."
   },
   {
     id: "market-10",
-    question: "Will tech stocks still lead next year?",
-    options: ["Yes", "No", "Rotation to other sectors"],
-    popular: "Yes",
-    explanation: "The AI wave is just beginning, tech stocks still have momentum."
+    question: "The market crashed 30% last year, and everyone is depressed. Historically, what usually happens next?",
+    options: ["The best buying opportunities are when everyone is scared", "It keeps crashing", "It stays flat for years"],
+    popular: "The best buying opportunities are when everyone is scared",
+    explanation: "Markets are cyclical. After big crashes, historically you see big rebounds — because prices got too cheap. But timing it is hard, which is why most people just stay invested."
   }
 ];
 
