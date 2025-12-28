@@ -111,7 +111,7 @@ export function ThemeUnlockFlow() {
           <h1 className="text-2xl font-bold mb-2">Theme Unlocked!</h1>
           <p className="text-lg mb-1">{theme.icon} {theme.themeName}</p>
           <p className="text-muted-foreground mb-8">
-            现在可以查看投资主题详情了
+            You can now view the investment theme details
           </p>
           
           <div className="space-y-3">
@@ -119,14 +119,14 @@ export function ThemeUnlockFlow() {
               className="w-full"
               onClick={handleViewTheme}
             >
-              查看主题详情
+              View Theme Details
             </Button>
             <Button 
               variant="outline" 
               className="w-full"
               onClick={handleBackToThemes}
             >
-              返回主题列表
+              Back to Themes
             </Button>
           </div>
         </motion.div>
@@ -145,7 +145,7 @@ export function ThemeUnlockFlow() {
           <div>
             <h1 className="font-semibold">{theme.icon} {theme.themeName}</h1>
             <p className="text-xs text-muted-foreground">
-              问题 {currentQuestionIndex + 1} / {theme.questions.length}
+              Question {currentQuestionIndex + 1} / {theme.questions.length}
             </p>
           </div>
         </div>
@@ -233,13 +233,13 @@ export function ThemeUnlockFlow() {
                       </div>
                     ) : (
                       <div className="text-sm text-muted-foreground">
-                        {percentages[selectedOption!]}% 的用户选了同样的答案
+                        {percentages[selectedOption!]}% of users chose the same answer
                       </div>
                     )}
                   </motion.div>
 
                   <Button className="w-full" onClick={handleNext}>
-                    {isLastQuestion ? '解锁主题' : '下一题'}
+                    {isLastQuestion ? 'Unlock Theme' : 'Next'}
                   </Button>
                 </>
               )}
