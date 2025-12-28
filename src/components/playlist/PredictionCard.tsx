@@ -103,38 +103,9 @@ export function PredictionCard({ playlistId, onPredictionMade }: PredictionCardP
   const isContrarian = userPickPercentage < 30;
   const isMajority = userPickPercentage >= 50;
 
-  // If user already has a prediction, show current state
+  // If user already has a prediction, don't show the card
   if (existingPrediction && step === 'direction') {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.25 }}
-        className="card-surface p-4 mb-6"
-      >
-        <div className="flex items-center gap-2 mb-3">
-          <Check className="w-4 h-4 text-primary" />
-          <h2 className="text-sm font-semibold text-foreground">Your call is locked in</h2>
-        </div>
-        <div className="flex gap-2">
-          {predictionOptions.map((option) => (
-            <div
-              key={option.value}
-              className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-medium text-center ${
-                existingPrediction.prediction === option.value
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary/50 text-muted-foreground'
-              }`}
-            >
-              {option.label}
-            </div>
-          ))}
-        </div>
-        <p className="text-xs text-muted-foreground text-center mt-3">
-          {(existingPrediction as any).conviction || 70}% conviction
-        </p>
-      </motion.div>
-    );
+    return null;
   }
 
   return (
