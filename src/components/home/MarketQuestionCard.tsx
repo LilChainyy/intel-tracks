@@ -160,13 +160,13 @@ export function MarketQuestionCard({ question, onNext, hasMore }: MarketQuestion
               )}
             </motion.div>
 
-            {hasMore && onNext && (
+            {onNext && (
               <Button 
                 onClick={onNext}
                 className="w-full"
                 variant="default"
               >
-                Next
+                Next Question
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             )}
