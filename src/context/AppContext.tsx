@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { Playlist } from '@/types/playlist';
 import { getTodayKey } from '@/data/discoveryQuestions';
 
-type Screen = 'home' | 'themes' | 'playlist' | 'stock' | 'themeUnlock' | 'profile';
+export type Screen = 'home' | 'themes' | 'playlist' | 'stock' | 'themeUnlock' | 'profile';
 
 export interface SavedStock {
   ticker: string;
