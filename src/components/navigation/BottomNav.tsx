@@ -1,37 +1,44 @@
-import { CloudSun, Layers, User } from 'lucide-react';
+import { Home, Search, Bookmark, User } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
-type Tab = 'home' | 'themes' | 'profile';
+type Tab = 'discovery' | 'search' | 'following' | 'profile';
 
 export function BottomNav() {
   const { currentScreen, setCurrentScreen } = useApp();
 
   const getActiveTab = (): Tab => {
     switch (currentScreen) {
-      case 'home':
-        return 'home';
-      case 'themes':
-      case 'themeUnlock':
+      case 'discovery':
       case 'playlist':
       case 'stock':
-        return 'themes';
+        return 'discovery';
+      case 'following':
+        return 'following';
       case 'profile':
         return 'profile';
       default:
-        return 'home';
+        return 'discovery';
     }
   };
 
   const activeTab = getActiveTab();
 
   const tabs = [
-    { id: 'home' as Tab, icon: CloudSun, label: 'Weather' },
-    { id: 'themes' as Tab, icon: Layers, label: 'Themes' },
+    { id: 'discovery' as Tab, icon: Home, label: 'Home' },
+    { id: 'search' as Tab, icon: Search, label: 'Search' },
+    { id: 'following' as Tab, icon: Bookmark, label: 'Saved' },
     { id: 'profile' as Tab, icon: User, label: 'Profile' }
   ];
 
   const handleTabClick = (tab: Tab) => {
-    setCurrentScreen(tab);
+    if (tab === 'discovery') {
+      setCurrentScreen('discovery');
+    } else if (tab === 'profile') {
+      setCurrentScreen('profile');
+    } else if (tab === 'following') {
+      setCurrentScreen('following');
+    }
+    // search is placeholder
   };
 
   return (
@@ -43,7 +50,7 @@ export function BottomNav() {
             <button
               key={tab.id}
               onClick={() => handleTabClick(tab.id)}
-              className={`flex flex-col items-center gap-1 py-2 px-8 transition-colors ${
+              className={`flex flex-col items-center gap-1 py-2 px-4 transition-colors ${
                 isActive ? 'text-foreground' : 'text-muted-foreground'
               }`}
             >

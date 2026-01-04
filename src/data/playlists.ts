@@ -124,7 +124,6 @@ There are multiple ways to play this theme:
     risk: "growth",
     sectors: ["energy", "tech", "industrial"],
     timeline: "long",
-    featuredStock: "CCJ",
     stocks: [
       {
         ticker: "CCJ",
@@ -186,7 +185,6 @@ Netflix has achieved what others couldn't: profitable streaming at scale. Key ad
     risk: "balanced",
     sectors: ["entertainment", "tech"],
     timeline: "medium",
-    featuredStock: "NFLX",
     stocks: [
       {
         ticker: "NFLX",
@@ -237,7 +235,6 @@ The post-Cold War era of declining defense spending is definitively over. Three 
     risk: "balanced",
     sectors: ["industrial", "tech"],
     timeline: "long",
-    featuredStock: "LMT",
     stocks: [
       {
         ticker: "LMT",
@@ -295,7 +292,6 @@ The space economy is expanding beyond low-earth orbit satellites.`,
     risk: "yolo",
     sectors: ["space", "tech", "industrial"],
     timeline: "long",
-    featuredStock: "RKLB",
     stocks: [
       {
         ticker: "RKLB",
@@ -348,7 +344,6 @@ The Numbers Don't Lie
     risk: "balanced",
     sectors: ["consumer", "healthcare"],
     timeline: "medium",
-    featuredStock: "CHWY",
     stocks: [
       {
         ticker: "CHWY",
@@ -400,7 +395,6 @@ Luxury winners: RH proving aspirational consumers will pay for quality`,
     risk: "safe",
     sectors: ["consumer", "finance"],
     timeline: "medium",
-    featuredStock: "COST",
     stocks: [
       {
         ticker: "COST",
@@ -455,7 +449,6 @@ Early data suggests GLP-1s may help with:
     risk: "growth",
     sectors: ["healthcare", "tech"],
     timeline: "long",
-    featuredStock: "LLY",
     stocks: [
       {
         ticker: "LLY",
@@ -516,7 +509,6 @@ Why Boring Wins
     risk: "safe",
     sectors: ["consumer", "finance", "healthcare"],
     timeline: "forever",
-    featuredStock: "KO",
     stocks: [
       {
         ticker: "JNJ",
@@ -576,7 +568,6 @@ The Standouts
     risk: "yolo",
     sectors: ["tech", "finance"],
     timeline: "medium",
-    featuredStock: "STRIPE",
     stocks: [
       { ticker: "STRIPE", name: "Stripe", description: "Payments infrastructure for the internet", isPrivate: true },
       {
@@ -609,7 +600,6 @@ Jack Bogle's insight: you can't control returns, but you can control costs. Ever
     risk: "safe",
     sectors: ["tech", "finance", "consumer", "healthcare"],
     timeline: "forever",
-    featuredStock: "VOO",
     stocks: [
       {
         ticker: "VOO",

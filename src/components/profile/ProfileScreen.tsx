@@ -1,124 +1,175 @@
-import { useApp } from '@/context/AppContext';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Lock, Unlock, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ChevronRight, Bell, Moon, HelpCircle, RotateCcw } from 'lucide-react';
+import { useApp } from '@/context/AppContext';
+import { useQuiz } from '@/context/QuizContext';
 
-const REWARD_TIERS = [
-  { threshold: 50, reward: '$5 credit' },
-  { threshold: 100, reward: '$10 credit' },
-  { threshold: 200, reward: '$25 credit' },
-];
+const answerLabels: Record<string, Record<string, string>> = {
+  risk: {
+    safe: 'Steady wins',
+    balanced: 'Balanced',
+    growth: 'Growth',
+    yolo: 'Moon shots'
+  },
+  timeline: {
+    short: '< 1 year',
+    medium: '1-3 years',
+    long: '3-5 years',
+    forever: '5+ years'
+  },
+  sectors: {
+    tech: 'Tech',
+    energy: 'Energy',
+    healthcare: 'Healthcare',
+    finance: 'Finance',
+    consumer: 'Consumer',
+    industrial: 'Industrial',
+    space: 'Space',
+    entertainment: 'Entertainment'
+  }
+};
 
 export function ProfileScreen() {
-  const { pigPoints } = useApp();
-  
-  const currentTier = REWARD_TIERS.find(tier => pigPoints < tier.threshold) || REWARD_TIERS[REWARD_TIERS.length - 1];
-  const nextThreshold = currentTier?.threshold || 50;
-  const progress = Math.min((pigPoints / nextThreshold) * 100, 100);
-  const remaining = Math.max(nextThreshold - pigPoints, 0);
-  const hasUnlockedFirst = pigPoints >= 50;
+  const { quizCompleted, setCurrentScreen } = useApp();
+  const { state, resetQuiz, startQuiz } = useQuiz();
 
-  const handleRedeem = () => {
-    window.open('https://example.com/redeem', '_blank');
+  const handleTakeQuiz = () => {
+    resetQuiz();
+    startQuiz();
+    setCurrentScreen('quiz');
   };
 
-  return (
-    <div className="p-4 pb-24 space-y-6">
-      {/* Main Progress Card */}
-      <Card className="p-6 text-center">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="text-6xl mb-4"
-        >
-          🐷
-        </motion.div>
-        
-        <div className="text-2xl font-bold mb-2">
-          {pigPoints} / {nextThreshold}
-        </div>
-        
-        <Progress value={progress} className="h-3 mb-4" />
-        
-        {remaining > 0 ? (
-          <p className="text-muted-foreground">
-            {remaining} more to unlock {currentTier?.reward}
-          </p>
-        ) : (
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="space-y-3"
-          >
-            <p className="text-lg font-medium text-primary">
-              🎉 You unlocked {currentTier?.reward}!
-            </p>
-            <Button onClick={handleRedeem} className="gap-2">
-              Redeem on Partner Brokerage
-              <ExternalLink className="w-4 h-4" />
-            </Button>
-          </motion.div>
-        )}
-      </Card>
+  const handleRetakeQuiz = () => {
+    resetQuiz();
+    startQuiz();
+    setCurrentScreen('quiz');
+  };
 
-      {/* Reward Tiers */}
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold">Rewards</h2>
-        
-        {REWARD_TIERS.map((tier, index) => {
-          const isUnlocked = pigPoints >= tier.threshold;
-          const isNext = !isUnlocked && (index === 0 || pigPoints >= REWARD_TIERS[index - 1].threshold);
-          
-          return (
-            <Card 
-              key={tier.threshold}
-              className={`p-4 flex items-center justify-between ${
-                isUnlocked ? 'bg-green-500/10 border-green-500/30' : ''
-              } ${isNext ? 'border-primary/50' : ''}`}
+  const summaryItems = quizCompleted
+    ? [
+        {
+          label: 'Risk',
+          value: answerLabels.risk[state.answers.risk as string] || 'Not set'
+        },
+        {
+          label: 'Sectors',
+          value: Array.isArray(state.answers.sectors)
+            ? state.answers.sectors.map((s) => answerLabels.sectors[s]).join(', ')
+            : 'Not set'
+        },
+        {
+          label: 'Timeline',
+          value: answerLabels.timeline[state.answers.timeline as string] || 'Not set'
+        }
+      ]
+    : [];
+
+  const menuItems = [
+    { icon: Bell, label: 'Notifications', hasArrow: true },
+    { icon: Moon, label: 'Dark Mode', hasCheck: true },
+    { icon: HelpCircle, label: 'Help & FAQ', hasArrow: true }
+  ];
+
+  return (
+    <div className="min-h-screen pb-24 px-6">
+      {/* Header */}
+      <div className="pt-12 pb-6 text-center">
+        <motion.h1
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-2xl font-bold text-foreground"
+        >
+          Profile
+        </motion.h1>
+      </div>
+
+      {/* Avatar section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="card-surface p-6 text-center mb-6"
+      >
+        <div className="w-20 h-20 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
+          <span className="text-2xl font-semibold text-muted-foreground">G</span>
+        </div>
+        <h2 className="text-lg font-semibold text-foreground">Guest User</h2>
+      </motion.div>
+
+      {/* Investment DNA or Quiz CTA */}
+      {quizCompleted ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-6"
+        >
+          <h3 className="text-xl font-bold text-foreground text-center mb-2">Your Investment DNA</h3>
+          <p className="text-sm text-muted-foreground text-center mb-6">Based on your answers, here's what we found</p>
+          <div className="space-y-3">
+            {summaryItems.map((item) => (
+              <div key={item.label} className="card-surface p-4">
+                <span className="text-sm text-muted-foreground block mb-1">{item.label}</span>
+                <span className="text-base font-semibold text-foreground">{item.value}</span>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={handleRetakeQuiz}
+            className="w-full mt-4 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-2"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Retake Quiz
+          </button>
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-6"
+        >
+          <h3 className="section-header mb-3">Personalize</h3>
+          <div className="card-surface p-6 text-center">
+            <h4 className="font-semibold text-foreground mb-1">Take the Quiz</h4>
+            <p className="text-sm text-muted-foreground mb-4">
+              Find themes that match your investment style
+            </p>
+            <button onClick={handleTakeQuiz} className="btn-primary">
+              Start Quiz
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Preferences */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <h3 className="section-header mb-3">Preferences</h3>
+        <div className="card-surface overflow-hidden">
+          {menuItems.map((item, index) => (
+            <button
+              key={item.label}
+              className={`w-full px-4 py-3.5 flex items-center justify-between hover:bg-secondary/50 transition-colors ${
+                index < menuItems.length - 1 ? 'border-b border-border' : ''
+              }`}
             >
               <div className="flex items-center gap-3">
-                {isUnlocked ? (
-                  <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
-                    <Unlock className="w-4 h-4 text-green-600" />
-                  </div>
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                    <Lock className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                )}
-                
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{tier.threshold} 🐷</span>
-                    <span className="text-muted-foreground">→</span>
-                    <span className={isUnlocked ? 'text-green-600 font-medium' : ''}>
-                      {tier.reward}
-                    </span>
-                  </div>
-                  {isNext && (
-                    <p className="text-xs text-muted-foreground">
-                      {tier.threshold - pigPoints} more to go
-                    </p>
-                  )}
-                </div>
+                <item.icon className="w-5 h-5 text-muted-foreground" />
+                <span className="text-foreground">{item.label}</span>
               </div>
-              
-              {isUnlocked && (
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={handleRedeem}
-                  className="text-green-600 border-green-600 hover:bg-green-500/10"
-                >
-                  Redeem
-                </Button>
+              {item.hasArrow && <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+              {item.hasCheck && (
+                <div className="w-5 h-5 rounded bg-primary flex items-center justify-center">
+                  <span className="text-primary-foreground text-xs">✓</span>
+                </div>
               )}
-            </Card>
-          );
-        })}
-      </div>
+            </button>
+          ))}
+        </div>
+      </motion.div>
     </div>
   );
 }

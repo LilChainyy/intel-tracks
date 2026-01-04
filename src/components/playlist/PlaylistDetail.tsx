@@ -1,11 +1,10 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, Bookmark, TrendingUp, TrendingDown, Check } from 'lucide-react';
+import { ArrowLeft, Bookmark, TrendingUp, TrendingDown } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useStockData } from '@/hooks/useStockData';
 import { ThemeIllustration } from './ThemeIllustration';
-import { PredictionCard } from './PredictionCard';
-import { usePredictions } from '@/hooks/usePredictions';
 import { Stock } from '@/types/playlist';
+
 interface StockRowProps {
   stock: Stock;
   ytdChange?: string;
@@ -85,8 +84,7 @@ function StockRow({ stock, ytdChange, isLoading, onClick }: StockRowProps) {
 }
 
 export function PlaylistDetail() {
-  const { selectedPlaylist, setCurrentScreen, setSelectedStock } = useApp();
-  const { hasPrediction } = usePredictions();
+  const { selectedPlaylist, setCurrentScreen, setSelectedStock, savedPlaylists, toggleSavePlaylist } = useApp();
 
   const tickers = selectedPlaylist?.stocks
     .filter((s) => !s.isPrivate)
@@ -96,15 +94,19 @@ export function PlaylistDetail() {
 
   if (!selectedPlaylist) return null;
 
-  const hasMadePrediction = hasPrediction(selectedPlaylist.id);
+  const isSaved = savedPlaylists.includes(selectedPlaylist.id);
 
   const handleBack = () => {
-    setCurrentScreen('home');
+    setCurrentScreen('discovery');
   };
 
   const handleStockClick = (ticker: string) => {
     setSelectedStock({ ticker, playlist: selectedPlaylist });
     setCurrentScreen('stock');
+  };
+
+  const handleSave = () => {
+    toggleSavePlaylist(selectedPlaylist.id);
   };
 
   return (
@@ -122,12 +124,13 @@ export function PlaylistDetail() {
           <span className="text-sm">Back</span>
         </button>
 
-        {/* Status indicator */}
-        {hasMadePrediction && (
-          <div className="absolute top-12 right-4 p-2 rounded-full bg-background/80 backdrop-blur-sm">
-            <Check className="w-5 h-5 text-emerald" />
-          </div>
-        )}
+        {/* Save Button */}
+        <button
+          onClick={handleSave}
+          className="absolute top-12 right-4 p-2 rounded-full bg-background/80 backdrop-blur-sm"
+        >
+          <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-primary text-primary' : 'text-foreground'}`} />
+        </button>
       </div>
 
       {/* Content */}
@@ -136,7 +139,7 @@ export function PlaylistDetail() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-4 pt-2"
+          className="mb-6"
         >
           <h1 className="text-2xl font-bold text-foreground mb-2">{selectedPlaylist.title}</h1>
           <div className="flex flex-wrap gap-2">
@@ -150,63 +153,6 @@ export function PlaylistDetail() {
             ))}
           </div>
         </motion.div>
-
-        {/* Featured Stock */}
-        {selectedPlaylist.featuredStock && (() => {
-          const featured = selectedPlaylist.stocks.find(s => s.ticker === selectedPlaylist.featuredStock);
-          if (!featured) return null;
-          const ytdChange = featured.isPrivate ? undefined : formatYtdChange(featured.ticker);
-          const isPositive = ytdChange && !ytdChange.startsWith('-') && ytdChange !== 'N/A';
-          const isNegative = ytdChange && ytdChange.startsWith('-');
-          
-          return (
-            <motion.button
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
-              onClick={() => handleStockClick(featured.ticker)}
-              className="w-full card-surface p-4 mb-4 flex items-center gap-4 text-left"
-              whileTap={{ scale: 0.98 }}
-            >
-              <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
-                {featured.logoUrl ? (
-                  <img
-                    src={featured.logoUrl}
-                    alt={featured.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                ) : (
-                  <span className="text-sm font-bold text-muted-foreground">
-                    {featured.ticker.slice(0, 2)}
-                  </span>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-lg text-foreground">{featured.ticker}</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary font-medium">
-                    Top Pick
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">{featured.name}</p>
-              </div>
-              {!featured.isPrivate && (
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  {isLoading ? (
-                    <div className="w-14 h-5 bg-secondary animate-pulse rounded" />
-                  ) : ytdChange && ytdChange !== 'N/A' ? (
-                    <span className={`text-sm font-semibold ${isPositive ? 'text-emerald' : isNegative ? 'text-destructive' : 'text-muted-foreground'}`}>
-                      {ytdChange}
-                    </span>
-                  ) : null}
-                </div>
-              )}
-            </motion.button>
-          );
-        })()}
 
         {/* Signal */}
         <motion.div
@@ -224,14 +170,11 @@ export function PlaylistDetail() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="card-surface p-4 mb-4"
+          className="card-surface p-4 mb-6"
         >
           <h2 className="text-sm font-semibold text-foreground mb-2">💡 Thesis</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">{selectedPlaylist.thesis}</p>
         </motion.div>
-
-        {/* Prediction Card */}
-        <PredictionCard playlistId={selectedPlaylist.id} />
 
         {/* Stocks */}
         <motion.div

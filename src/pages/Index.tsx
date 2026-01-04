@@ -1,11 +1,11 @@
+import { QuizProvider } from '@/context/QuizContext';
 import { AppProvider, useApp } from '@/context/AppContext';
+import { QuizFlow } from '@/components/quiz/QuizFlow';
+import { DiscoveryScreen } from '@/components/discovery/DiscoveryScreen';
 import { PlaylistDetail } from '@/components/playlist/PlaylistDetail';
 import { StockDetail } from '@/components/stock/StockDetail';
-import { HomeFeed } from '@/components/home/HomeFeed';
-import { ThemesScreen } from '@/components/themes/ThemesScreen';
-import { ThemeUnlockFlow } from '@/components/themes/ThemeUnlockFlow';
 import { ProfileScreen } from '@/components/profile/ProfileScreen';
-import { RewardModal } from '@/components/home/RewardModal';
+import { FollowingScreen } from '@/components/following/FollowingScreen';
 import { BottomNav } from '@/components/navigation/BottomNav';
 
 function AppContent() {
@@ -13,38 +13,39 @@ function AppContent() {
 
   const renderScreen = () => {
     switch (currentScreen) {
-      case 'home':
-        return <HomeFeed />;
-      case 'themes':
-        return <ThemesScreen />;
-      case 'themeUnlock':
-        return <ThemeUnlockFlow />;
+      case 'quiz':
+        return <QuizFlow />;
+      case 'discovery':
+        return <DiscoveryScreen />;
       case 'playlist':
         return <PlaylistDetail />;
       case 'stock':
         return <StockDetail />;
       case 'profile':
         return <ProfileScreen />;
+      case 'following':
+        return <FollowingScreen />;
       default:
-        return <HomeFeed />;
+        return <QuizFlow />;
     }
   };
 
-  const showBottomNav = currentScreen !== 'themeUnlock';
+  const showBottomNav = currentScreen !== 'quiz';
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-background relative">
       {renderScreen()}
       {showBottomNav && <BottomNav />}
-      <RewardModal />
     </div>
   );
 }
 
 export default function Index() {
   return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
+    <QuizProvider>
+      <AppProvider>
+        <AppContent />
+      </AppProvider>
+    </QuizProvider>
   );
 }
