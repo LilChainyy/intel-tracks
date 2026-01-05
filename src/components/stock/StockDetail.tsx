@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { ArrowLeft, ExternalLink, Bookmark, Lock } from 'lucide-react';
 import { useApp, SavedStock } from '@/context/AppContext';
+import { StockPriceChart } from './StockPriceChart';
 
 export function StockDetail() {
   const { selectedStock, setCurrentScreen, toggleSaveStock, isStockSaved } = useApp();
@@ -67,11 +68,23 @@ export function StockDetail() {
         </motion.div>
       </div>
 
+      {/* Price Chart - Only for public stocks */}
+      {!stock.isPrivate && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="card-surface p-4 mb-4"
+        >
+          <StockPriceChart ticker={stock.ticker} />
+        </motion.div>
+      )}
+
       {/* Description */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
+        transition={{ delay: 0.2 }}
         className="card-surface p-4 mb-4"
       >
         <h2 className="text-sm font-semibold text-foreground mb-2">About</h2>
