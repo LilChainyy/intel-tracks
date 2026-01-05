@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.refresh-stock-data]
 verify_jwt = false
+
+[functions.stock-chart]
+verify_jwt = false
