@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ExternalLink, Bookmark, Lock } from 'lucide-react';
+import { ArrowLeft, Bookmark, Lock, Sparkles } from 'lucide-react';
 import { useApp, SavedStock } from '@/context/AppContext';
 import { StockPriceChart } from './StockPriceChart';
+import { AIAdvisorChat } from './AIAdvisorChat';
 
 export function StockDetail() {
   const { selectedStock, setCurrentScreen, toggleSaveStock, isStockSaved } = useApp();
+  const [aiChatOpen, setAiChatOpen] = useState(false);
 
   if (!selectedStock) return null;
 
@@ -17,12 +20,6 @@ export function StockDetail() {
 
   const handleBack = () => {
     setCurrentScreen('playlist');
-  };
-
-  const handleViewOnYahoo = () => {
-    if (!stock.isPrivate) {
-      window.open(`https://finance.yahoo.com/quote/${stock.ticker}`, '_blank');
-    }
   };
 
   const handleSaveStock = () => {
@@ -128,15 +125,7 @@ export function StockDetail() {
               This is a private company. Trading not available on public markets.
             </p>
           </div>
-        ) : (
-          <button
-            onClick={handleViewOnYahoo}
-            className="btn-secondary flex items-center justify-center gap-2"
-          >
-            <ExternalLink className="w-4 h-4" />
-            View on Yahoo Finance
-          </button>
-        )}
+        ) : null}
 
         <button 
           onClick={handleSaveStock}
@@ -150,6 +139,27 @@ export function StockDetail() {
           {isSaved ? 'Saved' : 'Save Stock'}
         </button>
       </motion.div>
+
+      {/* Floating Ask AI Button - Only for public stocks */}
+      {!stock.isPrivate && (
+        <motion.button
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.4, type: 'spring' }}
+          onClick={() => setAiChatOpen(true)}
+          className="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-105 transition-transform z-40"
+        >
+          <Sparkles className="w-6 h-6" />
+        </motion.button>
+      )}
+
+      {/* AI Advisor Chat Dialog */}
+      <AIAdvisorChat
+        open={aiChatOpen}
+        onOpenChange={setAiChatOpen}
+        ticker={stock.ticker}
+        companyName={stock.name}
+      />
     </div>
   );
 }
