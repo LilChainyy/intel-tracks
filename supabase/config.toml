@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.stock-chart]
 verify_jwt = false
+
+[functions.stock-analysis]
+verify_jwt = false

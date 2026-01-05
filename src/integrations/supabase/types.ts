@@ -337,6 +337,78 @@ export type Database = {
           },
         ]
       }
+      user_research_xp: {
+        Row: {
+          created_at: string
+          id: string
+          level: string
+          questions_asked: number
+          research_time_minutes: number
+          total_xp: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          level?: string
+          questions_asked?: number
+          research_time_minutes?: number
+          total_xp?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          level?: string
+          questions_asked?: number
+          research_time_minutes?: number
+          total_xp?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_stock_theories: {
+        Row: {
+          confidence: number
+          created_at: string
+          evidence: Json
+          id: string
+          metrics: Json
+          questions_explored: Json
+          theory: string
+          ticker: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          evidence?: Json
+          id?: string
+          metrics?: Json
+          questions_explored?: Json
+          theory: string
+          ticker: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          evidence?: Json
+          id?: string
+          metrics?: Json
+          questions_explored?: Json
+          theory?: string
+          ticker?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
