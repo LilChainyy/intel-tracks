@@ -43,7 +43,7 @@ export function StoreScreen() {
             animate={{ opacity: 1, y: 0 }}
             className="text-2xl font-bold text-foreground"
           >
-            Rewards Store
+            奖励商城
           </motion.h1>
         </div>
         
@@ -59,8 +59,8 @@ export function StoreScreen() {
               <span className="text-xl">💰</span>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Your Balance</p>
-              <p className="text-lg font-bold text-foreground">{userCredits.toLocaleString()} Credits</p>
+              <p className="text-sm text-muted-foreground">你的余额</p>
+              <p className="text-lg font-bold text-foreground">{userCredits.toLocaleString()} 积分</p>
             </div>
           </div>
         </motion.div>
@@ -75,10 +75,10 @@ export function StoreScreen() {
       >
         <div className="flex items-center gap-2 mb-2">
           <Gift className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-semibold text-foreground">Redeem Gift Cards</h2>
+          <h2 className="text-lg font-semibold text-foreground">兑换礼品卡</h2>
         </div>
         <p className="text-sm text-muted-foreground">
-          Exchange your earned XP credits for gift cards from your favorite brands.
+          用你赚取的 XP 积分兑换心仪品牌的礼品卡。
         </p>
       </motion.div>
 
@@ -114,7 +114,7 @@ export function StoreScreen() {
                     : 'bg-muted text-muted-foreground cursor-not-allowed'
                 }`}
               >
-                {canRedeem ? 'Redeem' : 'Locked'}
+                {canRedeem ? '兑换' : '未解锁'}
               </button>
             </motion.div>
           );
@@ -129,7 +129,7 @@ export function StoreScreen() {
         className="text-center"
       >
         <button className="text-sm text-primary hover:text-primary/80 transition-colors">
-          View All Rewards (12 available) →
+          查看全部奖励（12 个可用）→
         </button>
       </motion.div>
     </div>

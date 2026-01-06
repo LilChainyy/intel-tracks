@@ -6,26 +6,26 @@ import { Progress } from '@/components/ui/progress';
 
 const answerLabels: Record<string, Record<string, string>> = {
   risk: {
-    safe: 'Steady wins',
-    balanced: 'Balanced',
-    growth: 'Growth',
-    yolo: 'Moon shots'
+    safe: '稳健型',
+    balanced: '平衡型',
+    growth: '成长型',
+    yolo: '激进型'
   },
   timeline: {
-    short: '< 1 year',
-    medium: '1-3 years',
-    long: '3-5 years',
-    forever: '5+ years'
+    short: '少于1年',
+    medium: '1-3年',
+    long: '3-5年',
+    forever: '5年以上'
   },
   sectors: {
-    tech: 'Tech',
-    energy: 'Energy',
-    healthcare: 'Healthcare',
-    finance: 'Finance',
-    consumer: 'Consumer',
-    industrial: 'Industrial',
-    space: 'Space',
-    entertainment: 'Entertainment'
+    tech: '科技',
+    energy: '能源',
+    healthcare: '医疗',
+    finance: '金融',
+    consumer: '消费',
+    industrial: '工业',
+    space: '航天',
+    entertainment: '娱乐'
   }
 };
 
@@ -48,18 +48,18 @@ export function ProfileScreen() {
   const summaryItems = quizCompleted
     ? [
         {
-          label: 'Risk',
-          value: answerLabels.risk[state.answers.risk as string] || 'Not set'
+          label: '风险偏好',
+          value: answerLabels.risk[state.answers.risk as string] || '未设置'
         },
         {
-          label: 'Sectors',
+          label: '行业偏好',
           value: Array.isArray(state.answers.sectors)
-            ? state.answers.sectors.map((s) => answerLabels.sectors[s]).join(', ')
-            : 'Not set'
+            ? state.answers.sectors.map((s) => answerLabels.sectors[s]).join('、')
+            : '未设置'
         },
         {
-          label: 'Timeline',
-          value: answerLabels.timeline[state.answers.timeline as string] || 'Not set'
+          label: '投资期限',
+          value: answerLabels.timeline[state.answers.timeline as string] || '未设置'
         }
       ]
     : [];
@@ -67,7 +67,7 @@ export function ProfileScreen() {
   // Mock progress data - in production this would come from user_research_xp table
   const progressData = {
     level: 2,
-    levelName: 'Intermediate Investor',
+    levelName: '进阶投资者',
     currentXP: 1250,
     nextLevelXP: 2000,
     companiesResearched: 3,
@@ -87,7 +87,7 @@ export function ProfileScreen() {
           animate={{ opacity: 1, y: 0 }}
           className="text-2xl font-bold text-foreground"
         >
-          Profile
+          个人中心
         </motion.h1>
       </div>
 
@@ -99,8 +99,8 @@ export function ProfileScreen() {
           transition={{ delay: 0.1 }}
           className="mb-6"
         >
-          <h3 className="text-xl font-bold text-foreground text-center mb-2">Your Investment DNA</h3>
-          <p className="text-sm text-muted-foreground text-center mb-6">Based on your answers, here's what we found</p>
+          <h3 className="text-xl font-bold text-foreground text-center mb-2">你的投资 DNA</h3>
+          <p className="text-sm text-muted-foreground text-center mb-6">根据你的答案，我们发现了以下特点</p>
           <div className="space-y-3">
             {summaryItems.map((item) => (
               <div key={item.label} className="card-surface p-4">
@@ -114,7 +114,7 @@ export function ProfileScreen() {
             className="w-full mt-4 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-2"
           >
             <RotateCcw className="w-4 h-4" />
-            Retake Quiz
+            重新测试
           </button>
         </motion.div>
       ) : (
@@ -124,14 +124,14 @@ export function ProfileScreen() {
           transition={{ delay: 0.1 }}
           className="mb-6"
         >
-          <h3 className="section-header mb-3">Personalize</h3>
+          <h3 className="section-header mb-3">个性化设置</h3>
           <div className="card-surface p-6 text-center">
-            <h4 className="font-semibold text-foreground mb-1">Take the Quiz</h4>
+            <h4 className="font-semibold text-foreground mb-1">开始测试</h4>
             <p className="text-sm text-muted-foreground mb-4">
-              Find themes that match your investment style
+              找到适合你投资风格的主题
             </p>
             <button onClick={handleTakeQuiz} className="btn-primary">
-              Start Quiz
+              开始测试
             </button>
           </div>
         </motion.div>
@@ -144,12 +144,12 @@ export function ProfileScreen() {
         transition={{ delay: 0.2 }}
         className="mb-6"
       >
-        <h3 className="section-header mb-3">🎓 YOUR PROGRESS</h3>
+        <h3 className="section-header mb-3">🎓 我的进度</h3>
         <div className="card-surface p-5">
           {/* Level Display */}
           <div className="text-center mb-4">
             <p className="text-lg font-bold text-foreground">
-              Level {progressData.level}: {progressData.levelName}
+              等级 {progressData.level}：{progressData.levelName}
             </p>
           </div>
 
@@ -157,7 +157,7 @@ export function ProfileScreen() {
           <div className="mb-4">
             <Progress value={xpProgress} className="h-3" />
             <p className="text-sm text-muted-foreground text-center mt-2">
-              {progressData.currentXP.toLocaleString()} / {progressData.nextLevelXP.toLocaleString()} XP to Level {progressData.level + 1}
+              {progressData.currentXP.toLocaleString()} / {progressData.nextLevelXP.toLocaleString()} XP 升至等级 {progressData.level + 1}
             </p>
           </div>
 
@@ -165,21 +165,21 @@ export function ProfileScreen() {
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-secondary/50 rounded-xl p-3 text-center">
               <p className="text-2xl font-bold text-foreground">{progressData.companiesResearched}</p>
-              <p className="text-xs text-muted-foreground">Companies Researched</p>
+              <p className="text-xs text-muted-foreground">已研究公司</p>
             </div>
             <div className="bg-secondary/50 rounded-xl p-3 text-center">
               <p className="text-2xl font-bold text-foreground">{progressData.theoriesCreated}</p>
-              <p className="text-xs text-muted-foreground">Theories Created</p>
+              <p className="text-xs text-muted-foreground">已创建理论</p>
             </div>
             <div className="bg-secondary/50 rounded-xl p-3 text-center">
               <p className="text-2xl font-bold text-foreground">{progressData.daysActive}</p>
-              <p className="text-xs text-muted-foreground">Days Active</p>
+              <p className="text-xs text-muted-foreground">活跃天数</p>
             </div>
             <div className="bg-secondary/50 rounded-xl p-3 text-center">
               <p className="text-2xl font-bold text-foreground flex items-center justify-center gap-1">
-                {progressData.currentStreak} days <Flame className="w-4 h-4 text-orange-500" />
+                {progressData.currentStreak} 天 <Flame className="w-4 h-4 text-orange-500" />
               </p>
-              <p className="text-xs text-muted-foreground">Current Streak</p>
+              <p className="text-xs text-muted-foreground">连续打卡</p>
             </div>
           </div>
         </div>
@@ -198,8 +198,8 @@ export function ProfileScreen() {
           <div className="flex items-center gap-3">
             <span className="text-2xl">🎁</span>
             <div className="text-left">
-              <p className="font-semibold text-foreground">Rewards Store</p>
-              <p className="text-sm text-muted-foreground">Redeem your XP for gift cards</p>
+              <p className="font-semibold text-foreground">奖励商城</p>
+              <p className="text-sm text-muted-foreground">用 XP 兑换礼品卡</p>
             </div>
           </div>
           <ChevronRight className="w-5 h-5 text-muted-foreground" />
