@@ -125,7 +125,15 @@ export function StockDetail() {
               This is a private company. Trading not available on public markets.
             </p>
           </div>
-        ) : null}
+        ) : (
+          <button 
+            onClick={() => setAiChatOpen(true)}
+            className="w-full py-4 rounded-xl font-medium flex items-center justify-center gap-3 bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg"
+          >
+            <Sparkles className="w-5 h-5" />
+            Explore the company with AI
+          </button>
+        )}
 
         <button 
           onClick={handleSaveStock}
@@ -139,19 +147,6 @@ export function StockDetail() {
           {isSaved ? 'Saved' : 'Save Stock'}
         </button>
       </motion.div>
-
-      {/* Floating Ask AI Button - Only for public stocks */}
-      {!stock.isPrivate && (
-        <motion.button
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.4, type: 'spring' }}
-          onClick={() => setAiChatOpen(true)}
-          className="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-105 transition-transform z-40"
-        >
-          <Sparkles className="w-6 h-6" />
-        </motion.button>
-      )}
 
       {/* AI Advisor Chat Dialog */}
       <AIAdvisorChat
