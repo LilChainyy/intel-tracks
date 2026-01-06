@@ -6,8 +6,8 @@ import { PlaylistDetail } from '@/components/playlist/PlaylistDetail';
 import { StockDetail } from '@/components/stock/StockDetail';
 import { ProfileScreen } from '@/components/profile/ProfileScreen';
 import { FollowingScreen } from '@/components/following/FollowingScreen';
+import { StoreScreen } from '@/components/store/StoreScreen';
 import { BottomNav } from '@/components/navigation/BottomNav';
-
 function AppContent() {
   const { currentScreen } = useApp();
 
@@ -25,6 +25,8 @@ function AppContent() {
         return <ProfileScreen />;
       case 'following':
         return <FollowingScreen />;
+      case 'store':
+        return <StoreScreen />;
       default:
         return <QuizFlow />;
     }
