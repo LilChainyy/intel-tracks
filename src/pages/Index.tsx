@@ -1,5 +1,6 @@
 import { QuizProvider } from '@/context/QuizContext';
 import { AppProvider, useApp } from '@/context/AppContext';
+import { LanguageProvider } from '@/context/LanguageContext';
 import { QuizFlow } from '@/components/quiz/QuizFlow';
 import { DiscoveryScreen } from '@/components/discovery/DiscoveryScreen';
 import { PlaylistDetail } from '@/components/playlist/PlaylistDetail';
@@ -8,6 +9,7 @@ import { ProfileScreen } from '@/components/profile/ProfileScreen';
 import { FollowingScreen } from '@/components/following/FollowingScreen';
 import { StoreScreen } from '@/components/store/StoreScreen';
 import { BottomNav } from '@/components/navigation/BottomNav';
+
 function AppContent() {
   const { currentScreen } = useApp();
 
@@ -44,10 +46,12 @@ function AppContent() {
 
 export default function Index() {
   return (
-    <QuizProvider>
-      <AppProvider>
-        <AppContent />
-      </AppProvider>
-    </QuizProvider>
+    <LanguageProvider>
+      <QuizProvider>
+        <AppProvider>
+          <AppContent />
+        </AppProvider>
+      </QuizProvider>
+    </LanguageProvider>
   );
 }

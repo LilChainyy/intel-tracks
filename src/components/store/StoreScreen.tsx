@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { ArrowLeft, Gift } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface RewardCard {
   id: string;
@@ -18,6 +19,7 @@ const rewards: RewardCard[] = [
 
 export function StoreScreen() {
   const { setCurrentScreen } = useApp();
+  const { t } = useLanguage();
   
   // Mock user credits - in production this would come from user_research_xp table
   const userCredits = 1450;
@@ -43,7 +45,7 @@ export function StoreScreen() {
             animate={{ opacity: 1, y: 0 }}
             className="text-2xl font-bold text-foreground"
           >
-            奖励商城
+            {t('store.title')}
           </motion.h1>
         </div>
         
@@ -59,8 +61,8 @@ export function StoreScreen() {
               <span className="text-xl">💰</span>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">你的余额</p>
-              <p className="text-lg font-bold text-foreground">{userCredits.toLocaleString()} 积分</p>
+              <p className="text-sm text-muted-foreground">{t('store.yourBalance')}</p>
+              <p className="text-lg font-bold text-foreground">{userCredits.toLocaleString()} {t('store.credits')}</p>
             </div>
           </div>
         </motion.div>
@@ -75,10 +77,10 @@ export function StoreScreen() {
       >
         <div className="flex items-center gap-2 mb-2">
           <Gift className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-semibold text-foreground">兑换礼品卡</h2>
+          <h2 className="text-lg font-semibold text-foreground">{t('store.redeemGiftCards')}</h2>
         </div>
         <p className="text-sm text-muted-foreground">
-          用你赚取的 XP 积分兑换心仪品牌的礼品卡。
+          {t('store.redeemDesc')}
         </p>
       </motion.div>
 
@@ -114,7 +116,7 @@ export function StoreScreen() {
                     : 'bg-muted text-muted-foreground cursor-not-allowed'
                 }`}
               >
-                {canRedeem ? '兑换' : '未解锁'}
+                {canRedeem ? t('store.redeem') : t('store.locked')}
               </button>
             </motion.div>
           );
@@ -129,7 +131,7 @@ export function StoreScreen() {
         className="text-center"
       >
         <button className="text-sm text-primary hover:text-primary/80 transition-colors">
-          查看全部奖励（12 个可用）→
+          {t('store.viewAll')} →
         </button>
       </motion.div>
     </div>
