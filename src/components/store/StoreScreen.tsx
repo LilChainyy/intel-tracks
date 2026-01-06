@@ -1,0 +1,137 @@
+import { motion } from 'framer-motion';
+import { ArrowLeft, Gift } from 'lucide-react';
+import { useApp } from '@/context/AppContext';
+
+interface RewardCard {
+  id: string;
+  icon: string;
+  name: string;
+  value: string;
+  cost: number;
+}
+
+const rewards: RewardCard[] = [
+  { id: 'starbucks', icon: '☕', name: 'Starbucks', value: '$5', cost: 1000 },
+  { id: 'amazon', icon: '📦', name: 'Amazon', value: '$5', cost: 1000 },
+  { id: 'apple', icon: '🍎', name: 'Apple', value: '$10', cost: 2000 },
+];
+
+export function StoreScreen() {
+  const { setCurrentScreen } = useApp();
+  
+  // Mock user credits - in production this would come from user_research_xp table
+  const userCredits = 1450;
+
+  const handleRedeem = (reward: RewardCard) => {
+    // TODO: Implement redemption logic
+    console.log('Redeeming:', reward.name);
+  };
+
+  return (
+    <div className="min-h-screen pb-24 px-6">
+      {/* Header */}
+      <div className="pt-12 pb-6">
+        <div className="flex items-center gap-4 mb-4">
+          <button
+            onClick={() => setCurrentScreen('profile')}
+            className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 text-foreground" />
+          </button>
+          <motion.h1
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-2xl font-bold text-foreground"
+          >
+            Rewards Store
+          </motion.h1>
+        </div>
+        
+        {/* Credits Display */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="card-surface p-4 flex items-center justify-between"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
+              <span className="text-xl">💰</span>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Your Balance</p>
+              <p className="text-lg font-bold text-foreground">{userCredits.toLocaleString()} Credits</p>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Description */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="mb-6"
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <Gift className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-semibold text-foreground">Redeem Gift Cards</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Exchange your earned XP credits for gift cards from your favorite brands.
+        </p>
+      </motion.div>
+
+      {/* Reward Cards Grid */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="grid grid-cols-3 gap-3 mb-6"
+      >
+        {rewards.map((reward, index) => {
+          const canRedeem = userCredits >= reward.cost;
+          
+          return (
+            <motion.div
+              key={reward.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.25 + index * 0.05 }}
+              className="card-surface p-4 flex flex-col items-center text-center"
+            >
+              <span className="text-4xl mb-3">{reward.icon}</span>
+              <h3 className="font-semibold text-foreground text-sm mb-1">{reward.name}</h3>
+              <p className="text-lg font-bold text-primary mb-1">{reward.value}</p>
+              <p className="text-xs text-muted-foreground mb-3">{reward.cost.toLocaleString()} 💰</p>
+              
+              <button
+                onClick={() => canRedeem && handleRedeem(reward)}
+                disabled={!canRedeem}
+                className={`w-full py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                  canRedeem
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    : 'bg-muted text-muted-foreground cursor-not-allowed'
+                }`}
+              >
+                {canRedeem ? 'Redeem' : 'Locked'}
+              </button>
+            </motion.div>
+          );
+        })}
+      </motion.div>
+
+      {/* View All Link */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4 }}
+        className="text-center"
+      >
+        <button className="text-sm text-primary hover:text-primary/80 transition-colors">
+          View All Rewards (12 available) →
+        </button>
+      </motion.div>
+    </div>
+  );
+}
