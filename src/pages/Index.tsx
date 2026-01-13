@@ -9,6 +9,7 @@ import { ProfileScreen } from '@/components/profile/ProfileScreen';
 import { FollowingScreen } from '@/components/following/FollowingScreen';
 import { StoreScreen } from '@/components/store/StoreScreen';
 import { BottomNav } from '@/components/navigation/BottomNav';
+import { FloatingAdvisor } from '@/components/advisor/FloatingAdvisor';
 
 function AppContent() {
   const { currentScreen } = useApp();
@@ -40,6 +41,7 @@ function AppContent() {
     <div className="max-w-md mx-auto min-h-screen bg-background relative">
       {renderScreen()}
       {showBottomNav && <BottomNav />}
+      {showBottomNav && <FloatingAdvisor />}
     </div>
   );
 }
