@@ -71,6 +71,14 @@ const translations: Record<Language, Record<string, string>> = {
     'store.redeem': 'Redeem',
     'store.locked': 'Locked',
     'store.viewAll': 'View All Rewards (12 available)',
+    
+    // AI Advisor
+    'advisor.title': 'AI Advisor',
+    'advisor.online': 'Online',
+    'advisor.askAnything': 'Ask me anything about investing...',
+    'advisor.thinking': 'Thinking...',
+    'advisor.welcome': "Hi! I'm your AI financial advisor. Ask me anything about stocks, investing strategies, market trends, or financial planning. I'm here to help!",
+    'advisor.send': 'Send',
   },
   zh: {
     // Profile Screen
@@ -134,6 +142,14 @@ const translations: Record<Language, Record<string, string>> = {
     'store.redeem': '兑换',
     'store.locked': '未解锁',
     'store.viewAll': '查看全部奖励（12 个可用）',
+    
+    // AI Advisor
+    'advisor.title': 'AI 顾问',
+    'advisor.online': '在线',
+    'advisor.askAnything': '问我任何关于投资的问题...',
+    'advisor.thinking': '思考中...',
+    'advisor.welcome': '您好！我是您的 AI 理财顾问。您可以问我任何关于股票、投资策略、市场趋势或财务规划的问题，我很乐意帮助您！',
+    'advisor.send': '发送',
   }
 };
 
