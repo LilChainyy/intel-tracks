@@ -1,8 +1,47 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle } from 'lucide-react';
 import { AdvisorChatDialog } from './AdvisorChatDialog';
 import { useLanguage } from '@/context/LanguageContext';
+
+function CuteAdvisorCharacter() {
+  return (
+    <svg viewBox="0 0 64 64" className="w-12 h-12" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Face background */}
+      <circle cx="32" cy="32" r="28" fill="#FFE4C4" />
+      
+      {/* Blush cheeks */}
+      <ellipse cx="16" cy="36" rx="5" ry="3" fill="#FFB6C1" opacity="0.6" />
+      <ellipse cx="48" cy="36" rx="5" ry="3" fill="#FFB6C1" opacity="0.6" />
+      
+      {/* Eyes */}
+      <ellipse cx="22" cy="28" rx="5" ry="6" fill="#2D1B0E" />
+      <ellipse cx="42" cy="28" rx="5" ry="6" fill="#2D1B0E" />
+      
+      {/* Eye sparkles */}
+      <circle cx="24" cy="26" r="2" fill="white" />
+      <circle cx="44" cy="26" r="2" fill="white" />
+      
+      {/* Cute smile */}
+      <path d="M24 42 Q32 50 40 42" stroke="#2D1B0E" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+      
+      {/* Glasses */}
+      <circle cx="22" cy="28" r="9" stroke="#4A5568" strokeWidth="2" fill="none" />
+      <circle cx="42" cy="28" r="9" stroke="#4A5568" strokeWidth="2" fill="none" />
+      <path d="M31 28 L33 28" stroke="#4A5568" strokeWidth="2" />
+      <path d="M13 26 L8 24" stroke="#4A5568" strokeWidth="2" strokeLinecap="round" />
+      <path d="M51 26 L56 24" stroke="#4A5568" strokeWidth="2" strokeLinecap="round" />
+      
+      {/* Hair/Top tuft */}
+      <path d="M28 6 Q32 2 36 6 Q38 4 40 8 Q42 6 43 10" stroke="#8B4513" strokeWidth="3" strokeLinecap="round" fill="none" />
+      
+      {/* Graduation cap */}
+      <rect x="18" y="2" width="28" height="4" fill="#2D3748" rx="1" />
+      <polygon points="32,0 20,6 32,12 44,6" fill="#2D3748" />
+      <circle cx="32" cy="0" r="2" fill="#FFD700" />
+      <path d="M32 0 L32 -4 L38 -2" stroke="#FFD700" strokeWidth="1.5" fill="none" />
+    </svg>
+  );
+}
 
 export function FloatingAdvisor() {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,30 +56,28 @@ export function FloatingAdvisor() {
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.1 }}
+            whileHover={{ scale: 1.1, rotate: [0, -5, 5, 0] }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-24 right-4 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg flex items-center justify-center"
+            className="fixed bottom-24 right-4 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 shadow-lg flex items-center justify-center border-2 border-amber-300 hover:shadow-xl transition-shadow"
             aria-label={t('advisor.title')}
           >
             <div className="relative">
-              {/* Advisor Avatar */}
-              <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-                <MessageCircle className="w-5 h-5" />
-              </div>
-              {/* Pulse Animation */}
+              <CuteAdvisorCharacter />
+              {/* Speech bubble indicator */}
               <motion.div
-                className="absolute inset-0 rounded-full bg-primary-foreground/30"
+                className="absolute -top-2 -right-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center"
                 animate={{
-                  scale: [1, 1.3, 1],
-                  opacity: [0.5, 0, 0.5],
+                  scale: [1, 1.2, 1],
                 }}
                 transition={{
-                  duration: 2,
+                  duration: 1.5,
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
-              />
+              >
+                <span className="text-[10px] text-primary-foreground font-bold">?</span>
+              </motion.div>
             </div>
           </motion.button>
         )}
