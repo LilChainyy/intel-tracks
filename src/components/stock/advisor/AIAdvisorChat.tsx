@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Sparkles, PanelRightClose, PanelRightOpen, X, Loader2 } from 'lucide-react';
+import { Send, Sparkles, PanelRightClose, PanelRightOpen, X, Loader2, BarChart3 } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/context/LanguageContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import { SummaryPanel } from './SummaryPanel';
 import { ThesisBuilder } from './ThesisBuilder';
@@ -28,16 +30,23 @@ interface AIAdvisorChatProps {
 
 export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdvisorChatProps) {
   const { language } = useLanguage();
+  const isMobile = useIsMobile();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showSummary, setShowSummary] = useState(true);
+  const [showSummary, setShowSummary] = useState(false); // Default closed on mobile
+  const [showMobileSummary, setShowMobileSummary] = useState(false);
   const [progress, setProgress] = useState<LearningProgress>(INITIAL_PROGRESS);
   const [suggestedQuestions, setSuggestedQuestions] = useState<SuggestedQuestion[]>([]);
   const [showThesisBuilder, setShowThesisBuilder] = useState(false);
   const [savedThesis, setSavedThesis] = useState<ThesisChoice | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Set summary panel default based on screen size
+  useEffect(() => {
+    setShowSummary(!isMobile);
+  }, [isMobile]);
 
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -301,38 +310,60 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
 
   const overallProgress = calculateOverallProgress(progress);
 
+  const handleToggleSummary = () => {
+    if (isMobile) {
+      setShowMobileSummary(true);
+    } else {
+      setShowSummary(!showSummary);
+    }
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-5xl h-[90vh] p-0 gap-0 bg-background border-border overflow-hidden">
+        <DialogContent className="max-w-5xl w-[95vw] md:w-full h-[95vh] md:h-[90vh] p-0 gap-0 bg-background border-border overflow-hidden">
           <div className="flex h-full">
-            {/* Main Chat Area (70%) */}
-            <div className={`flex flex-col ${showSummary ? 'w-[70%]' : 'w-full'} transition-all duration-300`}>
+            {/* Main Chat Area */}
+            <div className={`flex flex-col w-full ${showSummary && !isMobile ? 'md:w-[70%]' : 'w-full'} transition-all duration-300`}>
               {/* Header */}
-              <div className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-b border-border p-4">
+              <div className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-b border-border p-3 md:p-4">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Sparkles className="w-5 h-5 text-primary" />
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                     </div>
                     <div>
-                      <h2 className="font-semibold text-foreground">AI Advisor</h2>
-                      <p className="text-xs text-muted-foreground">{ticker} · {companyName}</p>
+                      <h2 className="font-semibold text-foreground text-sm md:text-base">AI Advisor</h2>
+                      <p className="text-[10px] md:text-xs text-muted-foreground">{ticker} · {companyName}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setShowSummary(!showSummary)}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      {showSummary ? (
-                        <PanelRightClose className="w-5 h-5" />
-                      ) : (
-                        <PanelRightOpen className="w-5 h-5" />
-                      )}
-                    </Button>
+                  <div className="flex items-center gap-1 md:gap-2">
+                    {/* Progress indicator for mobile */}
+                    {isMobile && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleToggleSummary}
+                        className="text-muted-foreground hover:text-foreground gap-1 px-2"
+                      >
+                        <BarChart3 className="w-4 h-4" />
+                        <span className="text-xs">{Math.round(overallProgress)}%</span>
+                      </Button>
+                    )}
+                    {!isMobile && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleToggleSummary}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        {showSummary ? (
+                          <PanelRightClose className="w-5 h-5" />
+                        ) : (
+                          <PanelRightOpen className="w-5 h-5" />
+                        )}
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -346,8 +377,8 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
               </div>
 
               {/* Messages */}
-              <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4 max-w-3xl mx-auto">
+              <ScrollArea className="flex-1 p-3 md:p-4">
+                <div className="space-y-3 md:space-y-4 max-w-3xl mx-auto">
                   <AnimatePresence mode="popLayout">
                     {messages.map((message) => (
                       <motion.div
@@ -358,11 +389,11 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
                         className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
                         {message.role === 'assistant' ? (
-                          <div className="flex gap-3 max-w-[85%]">
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                              <Sparkles className="w-4 h-4 text-primary" />
+                          <div className="flex gap-2 md:gap-3 max-w-[90%] md:max-w-[85%]">
+                            <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" />
                             </div>
-                            <div className="bg-secondary rounded-2xl rounded-tl-sm px-4 py-3">
+                            <div className="bg-secondary rounded-2xl rounded-tl-sm px-3 py-2 md:px-4 md:py-3">
                               <p className="text-sm text-foreground whitespace-pre-wrap">
                                 {message.content || (
                                   <span className="flex items-center gap-2 text-muted-foreground">
@@ -377,7 +408,7 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
                             </div>
                           </div>
                         ) : (
-                          <div className="bg-foreground text-background rounded-2xl rounded-tr-sm px-4 py-3 max-w-[85%]">
+                          <div className="bg-foreground text-background rounded-2xl rounded-tr-sm px-3 py-2 md:px-4 md:py-3 max-w-[90%] md:max-w-[85%]">
                             <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                             <p className="text-[10px] opacity-70 mt-2">
                               {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -393,8 +424,8 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
 
               {/* Suggested Questions */}
               {suggestedQuestions.length > 0 && !isLoading && (
-                <div className="px-4 py-2 border-t border-border">
-                  <div className="flex flex-wrap gap-2 max-w-3xl mx-auto">
+                <div className="px-3 md:px-4 py-2 border-t border-border overflow-x-auto">
+                  <div className="flex md:flex-wrap gap-2 max-w-3xl mx-auto">
                     {suggestedQuestions.map((question, index) => (
                       <motion.button
                         key={index}
@@ -402,7 +433,7 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
                         onClick={() => handleSuggestedQuestion(question)}
-                        className="px-3 py-2 text-sm bg-secondary hover:bg-secondary/80 rounded-full text-foreground transition-colors"
+                        className="px-3 py-2 text-xs md:text-sm bg-secondary hover:bg-secondary/80 rounded-full text-foreground transition-colors whitespace-nowrap flex-shrink-0"
                       >
                         {question.text}
                       </motion.button>
@@ -412,7 +443,7 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
               )}
 
               {/* Input Area */}
-              <div className="flex-shrink-0 p-4 border-t border-border">
+              <div className="flex-shrink-0 p-3 md:p-4 border-t border-border">
                 <div className="flex gap-2 max-w-3xl mx-auto">
                   <Input
                     ref={inputRef}
@@ -421,7 +452,7 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
                     onKeyDown={handleKeyDown}
                     placeholder={language === 'zh' ? '输入你的问题...' : 'Type your question...'}
                     disabled={isLoading}
-                    className="flex-1"
+                    className="flex-1 text-sm md:text-base"
                   />
                   <Button
                     onClick={() => sendMessage(input)}
@@ -438,27 +469,50 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
               </div>
             </div>
 
-            {/* Summary Panel (30%) */}
-            <AnimatePresence>
-              {showSummary && (
-                <motion.div
-                  initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: '30%', opacity: 1 }}
-                  exit={{ width: 0, opacity: 0 }}
-                  className="border-l border-border overflow-hidden"
-                >
-                  <SummaryPanel
-                    progress={progress}
-                    onAskAbout={handleAskAbout}
-                    onBuildThesis={() => setShowThesisBuilder(true)}
-                    companyName={companyName}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {/* Desktop Summary Panel (30%) */}
+            {!isMobile && (
+              <AnimatePresence>
+                {showSummary && (
+                  <motion.div
+                    initial={{ width: 0, opacity: 0 }}
+                    animate={{ width: '30%', opacity: 1 }}
+                    exit={{ width: 0, opacity: 0 }}
+                    className="border-l border-border overflow-hidden hidden md:block"
+                  >
+                    <SummaryPanel
+                      progress={progress}
+                      onAskAbout={handleAskAbout}
+                      onBuildThesis={() => setShowThesisBuilder(true)}
+                      companyName={companyName}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            )}
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Mobile Summary Sheet */}
+      <Sheet open={showMobileSummary} onOpenChange={setShowMobileSummary}>
+        <SheetContent side="bottom" className="h-[85vh] p-0">
+          <SheetHeader className="sr-only">
+            <SheetTitle>{language === 'zh' ? '学习进度' : 'Learning Progress'}</SheetTitle>
+          </SheetHeader>
+          <SummaryPanel
+            progress={progress}
+            onAskAbout={(topic) => {
+              setShowMobileSummary(false);
+              handleAskAbout(topic);
+            }}
+            onBuildThesis={() => {
+              setShowMobileSummary(false);
+              setShowThesisBuilder(true);
+            }}
+            companyName={companyName}
+          />
+        </SheetContent>
+      </Sheet>
 
       <ThesisBuilder
         open={showThesisBuilder}
