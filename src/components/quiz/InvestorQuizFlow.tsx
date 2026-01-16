@@ -1,6 +1,6 @@
 import { useInvestorQuiz } from '@/context/InvestorQuizContext';
 import { InvestorQuizLanding } from './InvestorQuizLanding';
-import { InvestorQuizQuestion } from './InvestorQuizQuestion';
+import { InvestorQuizChat } from './InvestorQuizChat';
 import { InvestorQuizResults } from './InvestorQuizResults';
 
 export function InvestorQuizFlow() {
@@ -11,7 +11,7 @@ export function InvestorQuizFlow() {
       return <InvestorQuizLanding />;
     case 'question':
     case 'reveal':
-      return <InvestorQuizQuestion />;
+      return <InvestorQuizChat />;
     case 'results':
       return <InvestorQuizResults />;
     default:
