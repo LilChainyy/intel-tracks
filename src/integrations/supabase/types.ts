@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      archetype_stats: {
+        Row: {
+          archetype_id: string
+          count: number | null
+          last_updated: string | null
+          percentage: number | null
+        }
+        Insert: {
+          archetype_id: string
+          count?: number | null
+          last_updated?: string | null
+          percentage?: number | null
+        }
+        Update: {
+          archetype_id?: string
+          count?: number | null
+          last_updated?: string | null
+          percentage?: number | null
+        }
+        Relationships: []
+      }
       macro_events: {
         Row: {
           description: string | null
@@ -124,6 +145,36 @@ export type Database = {
           display_name?: string | null
           id?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      quiz_responses: {
+        Row: {
+          answers: Json
+          archetype_id: string
+          calculated_scores: Json
+          completed: boolean | null
+          created_at: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          answers: Json
+          archetype_id: string
+          calculated_scores: Json
+          completed?: boolean | null
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          answers?: Json
+          archetype_id?: string
+          calculated_scores?: Json
+          completed?: boolean | null
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
