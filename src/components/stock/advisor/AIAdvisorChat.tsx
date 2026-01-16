@@ -377,50 +377,52 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
               </div>
 
               {/* Messages */}
-              <ScrollArea className="flex-1 p-3 md:p-4">
-                <div className="space-y-3 md:space-y-4 max-w-3xl mx-auto">
-                  <AnimatePresence mode="popLayout">
-                    {messages.map((message) => (
-                      <motion.div
-                        key={message.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                      >
-                        {message.role === 'assistant' ? (
-                          <div className="flex gap-2 md:gap-3 max-w-[90%] md:max-w-[85%]">
-                            <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                              <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" />
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <ScrollArea className="h-full">
+                  <div className="p-3 md:p-4 space-y-3 md:space-y-4 max-w-3xl mx-auto">
+                    <AnimatePresence mode="popLayout">
+                      {messages.map((message) => (
+                        <motion.div
+                          key={message.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                        >
+                          {message.role === 'assistant' ? (
+                            <div className="flex gap-2 md:gap-3 max-w-[90%] md:max-w-[85%]">
+                              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" />
+                              </div>
+                              <div className="bg-secondary rounded-2xl rounded-tl-sm px-3 py-2 md:px-4 md:py-3">
+                                <p className="text-sm text-foreground whitespace-pre-wrap">
+                                  {message.content || (
+                                    <span className="flex items-center gap-2 text-muted-foreground">
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                      {language === 'zh' ? '正在思考...' : 'Thinking...'}
+                                    </span>
+                                  )}
+                                </p>
+                                <p className="text-[10px] text-muted-foreground mt-2">
+                                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                              </div>
                             </div>
-                            <div className="bg-secondary rounded-2xl rounded-tl-sm px-3 py-2 md:px-4 md:py-3">
-                              <p className="text-sm text-foreground whitespace-pre-wrap">
-                                {message.content || (
-                                  <span className="flex items-center gap-2 text-muted-foreground">
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                    {language === 'zh' ? '正在思考...' : 'Thinking...'}
-                                  </span>
-                                )}
-                              </p>
-                              <p className="text-[10px] text-muted-foreground mt-2">
+                          ) : (
+                            <div className="bg-foreground text-background rounded-2xl rounded-tr-sm px-3 py-2 md:px-4 md:py-3 max-w-[90%] md:max-w-[85%]">
+                              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                              <p className="text-[10px] opacity-70 mt-2">
                                 {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </p>
                             </div>
-                          </div>
-                        ) : (
-                          <div className="bg-foreground text-background rounded-2xl rounded-tr-sm px-3 py-2 md:px-4 md:py-3 max-w-[90%] md:max-w-[85%]">
-                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                            <p className="text-[10px] opacity-70 mt-2">
-                              {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                          </div>
-                        )}
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                  <div ref={chatEndRef} />
-                </div>
-              </ScrollArea>
+                          )}
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                    <div ref={chatEndRef} />
+                  </div>
+                </ScrollArea>
+              </div>
 
               {/* Suggested Questions */}
               {suggestedQuestions.length > 0 && !isLoading && (
