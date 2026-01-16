@@ -50,32 +50,32 @@ Return JSON only (no markdown code blocks):
     const uncoveredTopics = getUncoveredTopics(currentProgress);
 
     const questionPrompt = language === 'zh'
-      ? `根据用户对 ${companyName} 的学习进度，生成3个他们应该接下来探索的简单问题。
+      ? `为 ${companyName} 生成3个后续问题。
 
-已覆盖的主题：${coveredTopics.join(', ') || '无'}
-未覆盖的主题：${uncoveredTopics.join(', ')}
+已覆盖：${coveredTopics.join(', ') || '无'}
+未覆盖：${uncoveredTopics.join(', ')}
 
 规则：
-- 优先问未覆盖的主题
-- 使用初学者能理解的日常语言
-- 每个类别最多一个问题
-- 如果某类别进度已达70%以上，不要问该类别的问题
+- 每个问题必须4-5个字以内
+- 只用最重要的关键词
+- 优先未覆盖的主题
+- 每类别最多一个问题
 
-返回JSON格式（不要markdown代码块）：
-{"questions": [{"text": "简单问题", "category": "understanding或risks或valuation"}]}`
-      : `Based on the user's learning progress about ${companyName}, generate 3 simple questions they should explore next.
+返回JSON（不要markdown）：
+{"questions": [{"text": "4-5字问题", "category": "understanding或risks或valuation"}]}`
+      : `Generate 3 follow-up questions for ${companyName}.
 
-Covered topics: ${coveredTopics.join(', ') || 'none'}
-Uncovered topics: ${uncoveredTopics.join(', ')}
+Covered: ${coveredTopics.join(', ') || 'none'}
+Uncovered: ${uncoveredTopics.join(', ')}
 
 Rules:
+- Each question MUST be 4-5 words MAX
+- Use only key words, no filler words
 - Prioritize uncovered topics
-- Use everyday language a beginner would understand
-- Maximum one question per category
-- If a category is 70%+ complete, don't suggest more questions about it
+- One question per category max
 
-Return JSON only (no markdown code blocks):
-{"questions": [{"text": "simple question", "category": "understanding or risks or valuation"}]}`;
+Return JSON only (no markdown):
+{"questions": [{"text": "4-5 word question", "category": "understanding or risks or valuation"}]}`;
 
     // Make parallel calls for analysis and question generation
     const [analysisResponse, questionsResponse] = await Promise.all([
