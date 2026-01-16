@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Bookmark, Lock, Sparkles } from 'lucide-react';
 import { useApp, SavedStock } from '@/context/AppContext';
 import { StockPriceChart } from './StockPriceChart';
-import { AIAdvisorChat } from './AIAdvisorChat';
+import { AIAdvisorChat } from './advisor';
 
 export function StockDetail() {
   const { selectedStock, setCurrentScreen, toggleSaveStock, isStockSaved } = useApp();
