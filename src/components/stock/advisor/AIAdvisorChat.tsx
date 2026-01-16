@@ -424,18 +424,18 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
                 </ScrollArea>
               </div>
 
-              {/* Suggested Questions - all in one line */}
+              {/* Suggested Questions - vertical left-aligned */}
               {suggestedQuestions.length > 0 && !isLoading && (
                 <div className="px-3 md:px-4 py-2 border-t border-border">
-                  <div className="flex justify-center gap-2 max-w-3xl mx-auto">
+                  <div className="flex flex-col items-start gap-1.5 max-w-3xl mx-auto">
                     {suggestedQuestions.map((question, index) => (
                       <motion.button
                         key={index}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
                         onClick={() => handleSuggestedQuestion(question)}
-                        className="px-3 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-full text-foreground transition-colors whitespace-nowrap"
+                        className="px-3 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-full text-foreground transition-colors"
                       >
                         {question.text}
                       </motion.button>
