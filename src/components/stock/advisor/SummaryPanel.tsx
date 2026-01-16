@@ -16,9 +16,10 @@ interface SummaryPanelProps {
   onAskAbout: (topic: string) => void;
   onBuildThesis: () => void;
   companyName: string;
+  onClose?: () => void;
 }
 
-export function SummaryPanel({ progress, onAskAbout, onBuildThesis, companyName }: SummaryPanelProps) {
+export function SummaryPanel({ progress, onAskAbout, onBuildThesis, companyName, onClose }: SummaryPanelProps) {
   const { language } = useLanguage();
   const overallProgress = calculateOverallProgress(progress);
   const showThesisButton = overallProgress >= 60;
