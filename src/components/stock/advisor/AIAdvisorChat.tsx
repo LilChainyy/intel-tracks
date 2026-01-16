@@ -73,17 +73,17 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
       };
       setMessages([welcomeMessage]);
 
-      // Set initial suggested questions
+      // Set initial suggested questions (max 5 words each)
       const initialQuestions: SuggestedQuestion[] = language === 'zh'
         ? [
-            { text: `${companyName} 是做什么的？`, category: 'understanding' },
-            { text: '最大的风险是什么？', category: 'risks' },
-            { text: '现在的股价合理吗？', category: 'valuation' },
+            { text: '公司做什么？', category: 'understanding' },
+            { text: '最大风险？', category: 'risks' },
+            { text: '股价合理吗？', category: 'valuation' },
           ]
         : [
-            { text: `What does ${companyName} actually do?`, category: 'understanding' },
-            { text: 'What are the biggest risks?', category: 'risks' },
-            { text: 'Is the stock price reasonable right now?', category: 'valuation' },
+            { text: 'What does it do?', category: 'understanding' },
+            { text: 'Biggest risks?', category: 'risks' },
+            { text: 'Is price fair?', category: 'valuation' },
           ];
       setSuggestedQuestions(initialQuestions);
 
@@ -424,18 +424,18 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
                 </ScrollArea>
               </div>
 
-              {/* Suggested Questions */}
+              {/* Suggested Questions - all in one line */}
               {suggestedQuestions.length > 0 && !isLoading && (
-                <div className="px-3 md:px-4 py-2 border-t border-border overflow-x-auto">
-                  <div className="flex md:flex-wrap gap-2 max-w-3xl mx-auto">
+                <div className="px-3 md:px-4 py-2 border-t border-border">
+                  <div className="flex justify-center gap-2 max-w-3xl mx-auto">
                     {suggestedQuestions.map((question, index) => (
                       <motion.button
                         key={index}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
+                        transition={{ delay: index * 0.05 }}
                         onClick={() => handleSuggestedQuestion(question)}
-                        className="px-3 py-2 text-xs md:text-sm bg-secondary hover:bg-secondary/80 rounded-full text-foreground transition-colors whitespace-nowrap flex-shrink-0"
+                        className="px-3 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-full text-foreground transition-colors whitespace-nowrap"
                       >
                         {question.text}
                       </motion.button>
