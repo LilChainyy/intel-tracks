@@ -321,10 +321,10 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-5xl w-[95vw] md:w-full h-[95vh] md:h-[90vh] p-0 gap-0 bg-background border-border overflow-hidden">
-          <div className="flex h-full">
+        <DialogContent className="max-w-5xl w-[95vw] md:w-full h-[95vh] md:h-[90vh] p-0 gap-0 bg-background border-border flex flex-col overflow-hidden">
+          <div className="flex flex-1 min-h-0 h-full">
             {/* Main Chat Area */}
-            <div className={`flex flex-col w-full ${showSummary && !isMobile ? 'md:w-[70%]' : 'w-full'} transition-all duration-300`}>
+            <div className={`flex flex-col h-full ${showSummary && !isMobile ? 'md:w-[70%]' : 'w-full'} transition-all duration-300`}>
               {/* Header */}
               <div className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-b border-border p-3 md:p-4">
                 <div className="flex items-center justify-between">
@@ -377,8 +377,8 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
               </div>
 
               {/* Messages */}
-              <div className="flex-1 min-h-0 overflow-hidden">
-                <ScrollArea className="h-full">
+              <div className="flex-1 min-h-0 overflow-y-auto">
+                <ScrollArea className="h-full [&>[data-radix-scroll-area-viewport]]:max-h-full">
                   <div className="p-3 md:p-4 space-y-3 md:space-y-4 max-w-3xl mx-auto">
                     <AnimatePresence mode="popLayout">
                       {messages.map((message) => (
