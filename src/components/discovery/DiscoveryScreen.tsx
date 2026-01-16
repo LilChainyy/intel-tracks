@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useApp } from '@/context/AppContext';
-import { useQuiz } from '@/context/QuizContext';
+import { useInvestorQuiz } from '@/context/InvestorQuizContext';
 import { playlists } from '@/data/playlists';
 import { PlaylistCard } from './PlaylistCard';
 import { calculateMatchScore } from '@/utils/matchScore';
@@ -8,9 +8,19 @@ import { Playlist } from '@/types/playlist';
 
 export function DiscoveryScreen() {
   const { setCurrentScreen, setSelectedPlaylist, quizCompleted } = useApp();
-  const { getUserProfile, resetQuiz, startQuiz } = useQuiz();
+  const { state, resetQuiz } = useInvestorQuiz();
 
-  const userProfile = getUserProfile();
+  // Build a simplified user profile from the new quiz state for match scoring
+  const userProfile = state.isComplete && state.calculatedScores ? {
+    risk: state.calculatedScores.riskTolerance <= 30 ? 'safe' as const :
+          state.calculatedScores.riskTolerance <= 50 ? 'balanced' as const :
+          state.calculatedScores.riskTolerance <= 70 ? 'growth' as const : 'yolo' as const,
+    sectors: [] as string[], // Could map from archetype later
+    timeline: state.calculatedScores.timeHorizon >= 70 ? 'forever' as const :
+              state.calculatedScores.timeHorizon >= 50 ? 'long' as const :
+              state.calculatedScores.timeHorizon >= 30 ? 'medium' as const : 'short' as const,
+    quizCompletedAt: new Date()
+  } : null;
 
   // Calculate match scores and sort playlists
   const sortedPlaylists: Playlist[] = playlists.map((playlist) => ({
@@ -30,7 +40,6 @@ export function DiscoveryScreen() {
 
   const handleTakeQuiz = () => {
     resetQuiz();
-    startQuiz();
     setCurrentScreen('quiz');
   };
 
