@@ -1,7 +1,7 @@
-import { QuizProvider } from '@/context/QuizContext';
+import { InvestorQuizProvider } from '@/context/InvestorQuizContext';
 import { AppProvider, useApp } from '@/context/AppContext';
 import { LanguageProvider } from '@/context/LanguageContext';
-import { QuizFlow } from '@/components/quiz/QuizFlow';
+import { InvestorQuizFlow } from '@/components/quiz/InvestorQuizFlow';
 import { DiscoveryScreen } from '@/components/discovery/DiscoveryScreen';
 import { PlaylistDetail } from '@/components/playlist/PlaylistDetail';
 import { StockDetail } from '@/components/stock/StockDetail';
@@ -17,7 +17,7 @@ function AppContent() {
   const renderScreen = () => {
     switch (currentScreen) {
       case 'quiz':
-        return <QuizFlow />;
+        return <InvestorQuizFlow />;
       case 'discovery':
         return <DiscoveryScreen />;
       case 'playlist':
@@ -31,7 +31,7 @@ function AppContent() {
       case 'store':
         return <StoreScreen />;
       default:
-        return <QuizFlow />;
+        return <InvestorQuizFlow />;
     }
   };
 
@@ -49,11 +49,11 @@ function AppContent() {
 export default function Index() {
   return (
     <LanguageProvider>
-      <QuizProvider>
+      <InvestorQuizProvider>
         <AppProvider>
           <AppContent />
         </AppProvider>
-      </QuizProvider>
+      </InvestorQuizProvider>
     </LanguageProvider>
   );
 }
