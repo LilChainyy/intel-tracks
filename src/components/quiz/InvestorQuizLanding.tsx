@@ -9,7 +9,7 @@ export function InvestorQuizLanding() {
   const { setCurrentScreen } = useApp();
 
   const handleSkip = () => {
-    setCurrentScreen('discovery');
+    setCurrentScreen('phase2-select');
   };
 
   return (

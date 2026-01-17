@@ -67,8 +67,8 @@ export function ThemeStoryViewer() {
   };
 
   const handleSeeStocks = () => {
-    // Navigate to discovery for now, can be enhanced to go to specific theme
-    setCurrentScreen('discovery');
+    // Navigate to theme selector home
+    setCurrentScreen('phase2-select');
   };
 
   if (!story) {

@@ -34,7 +34,7 @@ export function QuizResults() {
   const handleSeeMatches = () => {
     completeQuiz();
     setQuizCompleted(true);
-    setCurrentScreen('discovery');
+    setCurrentScreen('phase2-select');
   };
 
   const summaryItems = [

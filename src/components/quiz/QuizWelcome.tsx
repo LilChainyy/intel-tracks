@@ -8,7 +8,7 @@ export function QuizWelcome() {
 
   const handleSkip = () => {
     skipQuiz();
-    setCurrentScreen('discovery');
+    setCurrentScreen('phase2-select');
   };
 
   return (

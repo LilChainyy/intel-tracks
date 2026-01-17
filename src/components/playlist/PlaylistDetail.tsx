@@ -97,7 +97,7 @@ export function PlaylistDetail() {
   const isSaved = savedPlaylists.includes(selectedPlaylist.id);
 
   const handleBack = () => {
-    setCurrentScreen('discovery');
+    setCurrentScreen('phase2-select');
   };
 
   const handleStockClick = (ticker: string) => {
