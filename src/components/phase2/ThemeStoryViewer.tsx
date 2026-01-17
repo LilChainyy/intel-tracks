@@ -3,12 +3,13 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/context/AppContext';
 import { themeStories, selectorThemes } from '@/data/themeStoryData';
+import { playlists } from '@/data/playlists';
 import { StoryProgressIndicator } from './StoryProgressIndicator';
 import { PostStoryChoice } from './PostStoryChoice';
 import { ArrowLeft, ChevronDown, TrendingUp, Calendar, Layers, Eye } from 'lucide-react';
 
 export function ThemeStoryViewer() {
-  const { currentThemeStoryId, setCurrentScreen, addViewedTheme, phase2ViewedThemes } = useApp();
+  const { currentThemeStoryId, setCurrentScreen, addViewedTheme, phase2ViewedThemes, setSelectedPlaylist } = useApp();
   const [currentAct, setCurrentAct] = useState(1);
   const [showPostChoice, setShowPostChoice] = useState(false);
   
@@ -67,8 +68,14 @@ export function ThemeStoryViewer() {
   };
 
   const handleSeeStocks = () => {
-    // Navigate to theme selector home
-    setCurrentScreen('phase2-select');
+    // Find the matching playlist and navigate to it
+    const playlist = playlists.find(p => p.id === story?.themeId);
+    if (playlist) {
+      setSelectedPlaylist(playlist);
+      setCurrentScreen('playlist');
+    } else {
+      setCurrentScreen('phase2-select');
+    }
   };
 
   if (!story) {
