@@ -80,6 +80,13 @@ async function fetchStockData(ticker: string, apiKey: string): Promise<StockQuot
   }
 }
 
+// Validate ticker symbol format: 1-10 alphanumeric chars, may include hyphen and dot
+function isValidTicker(ticker: string): boolean {
+  if (!ticker || typeof ticker !== 'string') return false;
+  const tickerRegex = /^[A-Z0-9.-]{1,10}$/i;
+  return tickerRegex.test(ticker.trim());
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -92,6 +99,15 @@ serve(async (req) => {
     if (!tickers || !Array.isArray(tickers) || tickers.length === 0) {
       return new Response(
         JSON.stringify({ error: 'Please provide an array of ticker symbols' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate all tickers before processing
+    const invalidTickers = tickers.filter(t => !isValidTicker(t));
+    if (invalidTickers.length > 0) {
+      return new Response(
+        JSON.stringify({ error: `Invalid ticker symbols: ${invalidTickers.join(', ')}. Must be 1-10 alphanumeric characters.` }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -112,7 +128,8 @@ serve(async (req) => {
     
     for (let i = 0; i < tickers.length; i++) {
       const ticker = tickers[i];
-      results[ticker] = await fetchStockData(ticker, apiKey);
+      const safeTicker = encodeURIComponent(ticker.toUpperCase().trim());
+      results[ticker] = await fetchStockData(safeTicker, apiKey);
       
       // Add 12-second delay between requests (5 requests per minute limit)
       if (i < tickers.length - 1) {

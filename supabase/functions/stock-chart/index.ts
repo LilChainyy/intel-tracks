@@ -66,6 +66,15 @@ function getRangeParams(range: string): { period1: number; period2: number; inte
   return { period1, period2: now, interval };
 }
 
+// Validate ticker symbol format: 1-10 alphanumeric chars, may include hyphen and dot
+function isValidTicker(ticker: string): boolean {
+  if (!ticker || typeof ticker !== 'string') return false;
+  const tickerRegex = /^[A-Z0-9.-]{1,10}$/i;
+  return tickerRegex.test(ticker.trim());
+}
+
+const validRanges = ['1D', '1W', '1M', '3M', '1Y', 'YTD'];
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -74,19 +83,27 @@ serve(async (req) => {
   try {
     const { ticker, range = 'YTD' } = await req.json();
     
-    if (!ticker) {
+    if (!ticker || !isValidTicker(ticker)) {
       return new Response(
-        JSON.stringify({ error: 'Ticker is required' }),
+        JSON.stringify({ error: 'Invalid ticker symbol. Must be 1-10 alphanumeric characters.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Fetching chart data for ${ticker}, range: ${range}`);
+    if (!validRanges.includes(range)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid range parameter' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const safeTicker = encodeURIComponent(ticker.toUpperCase().trim());
+    console.log(`Fetching chart data for ${safeTicker}, range: ${range}`);
     
     const { period1, period2, interval } = getRangeParams(range);
     
     // Fetch chart data with events from Yahoo Finance
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?period1=${period1}&period2=${period2}&interval=${interval}&events=div,earnings`;
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${safeTicker}?period1=${period1}&period2=${period2}&interval=${interval}&events=div,earnings`;
     
     const response = await fetch(url, {
       headers: {
@@ -189,7 +206,7 @@ serve(async (req) => {
     }
     
     const chartResponse: ChartResponse = {
-      ticker,
+      ticker: safeTicker,
       currentPrice,
       priceChange: range === 'YTD' ? (currentPrice - (chartData[0]?.price || currentPrice)) : priceChange,
       priceChangePercent: range === 'YTD' ? ytdChange : priceChangePercent,

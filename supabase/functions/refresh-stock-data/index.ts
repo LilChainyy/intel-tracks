@@ -42,7 +42,9 @@ async function fetchStockYTD(ticker: string): Promise<StockQuote | null> {
     const endOf2024 = Math.floor(new Date('2024-12-30').getTime() / 1000);
     const now = Math.floor(Date.now() / 1000);
     
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?period1=${endOf2024}&period2=${now}&interval=1d`;
+    // URL-encode ticker for safety (tickers come from hardcoded list but encode anyway)
+    const safeTicker = encodeURIComponent(ticker.toUpperCase().trim());
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${safeTicker}?period1=${endOf2024}&period2=${now}&interval=1d`;
     
     const response = await fetch(url, {
       headers: {
