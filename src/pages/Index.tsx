@@ -11,6 +11,9 @@ import { StoreScreen } from '@/components/store/StoreScreen';
 import { BottomNav } from '@/components/navigation/BottomNav';
 import { Sidebar } from '@/components/navigation/Sidebar';
 import { FloatingAdvisor } from '@/components/advisor/FloatingAdvisor';
+import { Phase2Intro } from '@/components/phase2/Phase2Intro';
+import { ThemeSelector } from '@/components/phase2/ThemeSelector';
+import { ThemeStoryViewer } from '@/components/phase2/ThemeStoryViewer';
 
 function AppContent() {
   const { currentScreen } = useApp();
@@ -19,6 +22,12 @@ function AppContent() {
     switch (currentScreen) {
       case 'quiz':
         return <InvestorQuizFlow />;
+      case 'phase2-intro':
+        return <Phase2Intro />;
+      case 'phase2-select':
+        return <ThemeSelector />;
+      case 'phase2-story':
+        return <ThemeStoryViewer />;
       case 'discovery':
         return <DiscoveryScreen />;
       case 'playlist':
@@ -36,7 +45,9 @@ function AppContent() {
     }
   };
 
-  const showNav = currentScreen !== 'quiz';
+  // Hide nav during quiz and phase 2
+  const isOnboarding = currentScreen === 'quiz' || currentScreen.startsWith('phase2');
+  const showNav = !isOnboarding;
 
   return (
     <div className="min-h-screen bg-background flex">
