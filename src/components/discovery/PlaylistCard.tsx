@@ -15,13 +15,13 @@ export function PlaylistCard({ playlist, onClick, showMatchScore = false }: Play
   return (
     <motion.button
       onClick={onClick}
-      className="w-full card-interactive overflow-hidden"
+      className="w-full card-interactive overflow-hidden h-full"
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
       {/* Theme Illustration */}
-      <div className="relative h-32 bg-background flex items-center justify-center">
-        <ThemeIllustration themeId={playlist.id} className="w-20 h-20" />
+      <div className="relative h-32 md:h-40 bg-background flex items-center justify-center">
+        <ThemeIllustration themeId={playlist.id} className="w-20 h-20 md:w-24 md:h-24" />
         
         {/* Match Badge */}
         {showBadge && (
@@ -32,9 +32,9 @@ export function PlaylistCard({ playlist, onClick, showMatchScore = false }: Play
       </div>
 
       {/* Content */}
-      <div className="p-4 text-left">
-        <h3 className="font-semibold text-foreground mb-2">{playlist.title}</h3>
-        <p className="text-xs text-muted-foreground">
+      <div className="p-4 md:p-5 text-left">
+        <h3 className="font-semibold text-foreground mb-2 md:text-lg">{playlist.title}</h3>
+        <p className="text-xs md:text-sm text-muted-foreground">
           {playlist.stocks.length} stocks
         </p>
       </div>

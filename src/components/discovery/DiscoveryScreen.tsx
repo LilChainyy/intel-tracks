@@ -44,13 +44,13 @@ export function DiscoveryScreen() {
   };
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-24 md:pb-8">
       {/* Header */}
-      <div className="px-6 pt-12 pb-6">
+      <div className="px-6 md:px-8 lg:px-12 pt-12 md:pt-8 pb-6 max-w-6xl mx-auto">
         <motion.h1
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold text-foreground"
+          className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground"
         >
           Discover
         </motion.h1>
@@ -58,7 +58,7 @@ export function DiscoveryScreen() {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-sm text-muted-foreground mt-1"
+          className="text-sm md:text-base text-muted-foreground mt-1"
         >
           Where smart money is flowing
         </motion.p>
@@ -70,19 +70,19 @@ export function DiscoveryScreen() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mx-6 mb-6"
+          className="px-6 md:px-8 lg:px-12 mb-6 max-w-6xl mx-auto"
         >
-          <div className="card-surface p-4 flex items-center justify-between gap-4 bg-gradient-to-r from-card to-secondary">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl"></span>
+          <div className="card-surface p-4 md:p-6 flex items-center justify-between gap-4 bg-gradient-to-r from-card to-secondary">
+            <div className="flex items-center gap-3 md:gap-4">
+              <span className="text-2xl md:text-3xl">🎯</span>
               <div>
-                <p className="text-sm font-medium text-foreground">Personalize your feed</p>
-                <p className="text-xs text-muted-foreground">Take 30s quiz to see your matches</p>
+                <p className="text-sm md:text-base font-medium text-foreground">Personalize your feed</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Take 30s quiz to see your matches</p>
               </div>
             </div>
             <button
               onClick={handleTakeQuiz}
-              className="px-3 py-1.5 bg-primary text-primary-foreground text-sm font-medium rounded-full whitespace-nowrap"
+              className="px-3 md:px-5 py-1.5 md:py-2 bg-primary text-primary-foreground text-sm md:text-base font-medium rounded-full whitespace-nowrap"
             >
               Take Quiz
             </button>
@@ -91,21 +91,23 @@ export function DiscoveryScreen() {
       )}
 
       {/* Playlist grid */}
-      <div className="px-6 space-y-4">
-        {sortedPlaylists.map((playlist, index) => (
-          <motion.div
-            key={playlist.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 + index * 0.05 }}
-          >
-            <PlaylistCard
-              playlist={playlist}
-              onClick={() => handlePlaylistClick(playlist)}
-              showMatchScore={quizCompleted}
-            />
-          </motion.div>
-        ))}
+      <div className="px-6 md:px-8 lg:px-12 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          {sortedPlaylists.map((playlist, index) => (
+            <motion.div
+              key={playlist.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + index * 0.05 }}
+            >
+              <PlaylistCard
+                playlist={playlist}
+                onClick={() => handlePlaylistClick(playlist)}
+                showMatchScore={quizCompleted}
+              />
+            </motion.div>
+          ))}
+        </div>
       </div>
     </div>
   );
