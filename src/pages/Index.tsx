@@ -42,8 +42,8 @@ function AppContent() {
     }
   };
 
-  // Hide nav during quiz and phase 2
-  const isOnboarding = currentScreen === 'quiz' || currentScreen.startsWith('phase2');
+  // Hide nav only during quiz and phase2 intro
+  const isOnboarding = currentScreen === 'quiz' || currentScreen === 'phase2-intro';
   const showNav = !isOnboarding;
 
   return (
