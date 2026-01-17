@@ -1,38 +1,39 @@
 import { Home, Search, Bookmark, User } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
-type Tab = 'discovery' | 'search' | 'following' | 'profile';
+type Tab = 'home' | 'search' | 'following' | 'profile';
 
 export function BottomNav() {
   const { currentScreen, setCurrentScreen } = useApp();
 
   const getActiveTab = (): Tab => {
     switch (currentScreen) {
-      case 'discovery':
+      case 'phase2-select':
+      case 'phase2-story':
       case 'playlist':
       case 'stock':
-        return 'discovery';
+        return 'home';
       case 'following':
         return 'following';
       case 'profile':
         return 'profile';
       default:
-        return 'discovery';
+        return 'home';
     }
   };
 
   const activeTab = getActiveTab();
 
   const tabs = [
-    { id: 'discovery' as Tab, icon: Home, label: 'Home' },
+    { id: 'home' as Tab, icon: Home, label: 'Home' },
     { id: 'search' as Tab, icon: Search, label: 'Search' },
     { id: 'following' as Tab, icon: Bookmark, label: 'Saved' },
     { id: 'profile' as Tab, icon: User, label: 'Profile' }
   ];
 
   const handleTabClick = (tab: Tab) => {
-    if (tab === 'discovery') {
-      setCurrentScreen('discovery');
+    if (tab === 'home') {
+      setCurrentScreen('phase2-select');
     } else if (tab === 'profile') {
       setCurrentScreen('profile');
     } else if (tab === 'following') {

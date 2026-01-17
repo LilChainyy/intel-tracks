@@ -13,11 +13,11 @@ export function PostStoryChoice({ onSeeAnother, viewedCount, totalCount }: PostS
   const { setCurrentScreen } = useApp();
 
   const handleViewAll = () => {
-    setCurrentScreen('discovery');
+    setCurrentScreen('phase2-select');
   };
 
   const handleStartApp = () => {
-    setCurrentScreen('discovery');
+    setCurrentScreen('phase2-select');
   };
 
   const hasMoreThemes = viewedCount < totalCount;
