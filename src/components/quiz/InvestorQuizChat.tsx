@@ -117,16 +117,16 @@ export function InvestorQuizChat() {
         progress={progress}
       />
 
-      <div className="flex-1 flex flex-col pt-16">
+      <div className="flex-1 flex flex-col pt-16 max-w-3xl mx-auto w-full">
         {/* Back button */}
-        <div className="px-4 py-3">
+        <div className="px-4 md:px-6 py-3">
           <motion.button
             onClick={prevQuestion}
-            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-1 text-sm md:text-base text-muted-foreground hover:text-foreground transition-colors"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
             Back
           </motion.button>
         </div>
@@ -134,7 +134,7 @@ export function InvestorQuizChat() {
         {/* Chat Messages */}
         <div 
           ref={scrollRef}
-          className="flex-1 overflow-y-auto px-4 pb-4 space-y-4"
+          className="flex-1 overflow-y-auto px-4 md:px-6 pb-4 space-y-4 md:space-y-6"
         >
           <AnimatePresence mode="popLayout">
             {messages.map((message) => (
@@ -151,7 +151,7 @@ export function InvestorQuizChat() {
               >
                 <div
                   className={cn(
-                    "max-w-[85%] rounded-2xl px-4 py-3",
+                    "max-w-[85%] md:max-w-[70%] rounded-2xl px-4 md:px-6 py-3 md:py-4",
                     message.type === 'user' 
                       ? "bg-primary text-primary-foreground rounded-br-md" 
                       : message.type === 'reveal'
@@ -159,7 +159,7 @@ export function InvestorQuizChat() {
                       : "bg-secondary text-foreground rounded-bl-md"
                   )}
                 >
-                  <p className="text-sm whitespace-pre-line leading-relaxed">
+                  <p className="text-sm md:text-base whitespace-pre-line leading-relaxed">
                     {message.content}
                   </p>
                 </div>
@@ -176,20 +176,20 @@ export function InvestorQuizChat() {
                 exit={{ opacity: 0 }}
                 className="flex justify-start"
               >
-                <div className="bg-secondary rounded-2xl rounded-bl-md px-4 py-3">
+                <div className="bg-secondary rounded-2xl rounded-bl-md px-4 md:px-6 py-3 md:py-4">
                   <div className="flex gap-1">
                     <motion.span
-                      className="w-2 h-2 bg-muted-foreground/50 rounded-full"
+                      className="w-2 h-2 md:w-2.5 md:h-2.5 bg-muted-foreground/50 rounded-full"
                       animate={{ opacity: [0.4, 1, 0.4] }}
                       transition={{ duration: 1, repeat: Infinity, delay: 0 }}
                     />
                     <motion.span
-                      className="w-2 h-2 bg-muted-foreground/50 rounded-full"
+                      className="w-2 h-2 md:w-2.5 md:h-2.5 bg-muted-foreground/50 rounded-full"
                       animate={{ opacity: [0.4, 1, 0.4] }}
                       transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
                     />
                     <motion.span
-                      className="w-2 h-2 bg-muted-foreground/50 rounded-full"
+                      className="w-2 h-2 md:w-2.5 md:h-2.5 bg-muted-foreground/50 rounded-full"
                       animate={{ opacity: [0.4, 1, 0.4] }}
                       transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
                     />
@@ -201,14 +201,14 @@ export function InvestorQuizChat() {
         </div>
 
         {/* Options / Continue Button */}
-        <div className="border-t border-border bg-background/80 backdrop-blur-sm p-4">
+        <div className="border-t border-border bg-background/80 backdrop-blur-sm p-4 md:p-6">
           <AnimatePresence mode="wait">
             {showOptions && currentQuestion && !hasAnswered && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
-                className="space-y-2"
+                className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3"
               >
                 {currentQuestion.options.map((option, index) => (
                   <motion.button
@@ -218,7 +218,7 @@ export function InvestorQuizChat() {
                     transition={{ delay: index * 0.05 }}
                     onClick={() => handleSelectOption(option.id)}
                     className={cn(
-                      "w-full p-3 text-left text-sm rounded-xl border-2 transition-all duration-200",
+                      "w-full p-3 md:p-4 text-left text-sm md:text-base rounded-xl border-2 transition-all duration-200",
                       "hover:border-primary/50 hover:bg-secondary/50",
                       "focus:outline-none focus:ring-2 focus:ring-primary/20",
                       "border-border bg-background text-foreground"
@@ -235,7 +235,7 @@ export function InvestorQuizChat() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 onClick={continueAfterReveal}
-                className="w-full p-3 bg-primary text-primary-foreground rounded-xl font-medium text-sm"
+                className="w-full md:w-auto md:min-w-[200px] md:mx-auto md:block p-3 md:p-4 bg-primary text-primary-foreground rounded-xl font-medium text-sm md:text-base"
               >
                 Continue
               </motion.button>

@@ -5,7 +5,7 @@ import { useLanguage } from '@/context/LanguageContext';
 
 function CuteAdvisorCharacter() {
   return (
-    <svg viewBox="0 0 64 64" className="w-12 h-12" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 64 64" className="w-12 h-12 md:w-14 md:h-14" fill="none" xmlns="http://www.w3.org/2000/svg">
       {/* Face background */}
       <circle cx="32" cy="32" r="28" fill="#FFE4C4" />
       
@@ -59,14 +59,14 @@ export function FloatingAdvisor() {
             whileHover={{ scale: 1.1, rotate: [0, -5, 5, 0] }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-24 right-4 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 shadow-lg flex items-center justify-center border-2 border-amber-300 hover:shadow-xl transition-shadow"
+            className="fixed bottom-24 md:bottom-8 right-4 md:right-8 z-50 w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 shadow-lg flex items-center justify-center border-2 border-amber-300 hover:shadow-xl transition-shadow"
             aria-label={t('advisor.title')}
           >
             <div className="relative">
               <CuteAdvisorCharacter />
               {/* Speech bubble indicator */}
               <motion.div
-                className="absolute -top-2 -right-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center"
+                className="absolute -top-2 -right-2 w-5 h-5 md:w-6 md:h-6 bg-primary rounded-full flex items-center justify-center"
                 animate={{
                   scale: [1, 1.2, 1],
                 }}
@@ -76,7 +76,7 @@ export function FloatingAdvisor() {
                   ease: "easeInOut",
                 }}
               >
-                <span className="text-[10px] text-primary-foreground font-bold">?</span>
+                <span className="text-[10px] md:text-xs text-primary-foreground font-bold">?</span>
               </motion.div>
             </div>
           </motion.button>

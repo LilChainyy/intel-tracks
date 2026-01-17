@@ -42,7 +42,7 @@ export function BottomNav() {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border safe-bottom">
+    <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border safe-bottom md:hidden">
       <div className="flex items-center justify-around py-2">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;

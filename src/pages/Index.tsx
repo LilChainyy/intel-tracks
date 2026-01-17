@@ -9,6 +9,7 @@ import { ProfileScreen } from '@/components/profile/ProfileScreen';
 import { FollowingScreen } from '@/components/following/FollowingScreen';
 import { StoreScreen } from '@/components/store/StoreScreen';
 import { BottomNav } from '@/components/navigation/BottomNav';
+import { Sidebar } from '@/components/navigation/Sidebar';
 import { FloatingAdvisor } from '@/components/advisor/FloatingAdvisor';
 
 function AppContent() {
@@ -35,13 +36,16 @@ function AppContent() {
     }
   };
 
-  const showBottomNav = currentScreen !== 'quiz';
+  const showNav = currentScreen !== 'quiz';
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-background relative">
-      {renderScreen()}
-      {showBottomNav && <BottomNav />}
-      {showBottomNav && <FloatingAdvisor />}
+    <div className="min-h-screen bg-background flex">
+      {showNav && <Sidebar />}
+      <main className="flex-1 relative">
+        {renderScreen()}
+        {showNav && <BottomNav />}
+        {showNav && <FloatingAdvisor />}
+      </main>
     </div>
   );
 }
