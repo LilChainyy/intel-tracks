@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { supabase } from '@/integrations/supabase/client';
-import { useLanguage } from '@/context/LanguageContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import { SummaryPanel } from './SummaryPanel';
@@ -29,12 +28,11 @@ interface AIAdvisorChatProps {
 }
 
 export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdvisorChatProps) {
-  const { language } = useLanguage();
   const isMobile = useIsMobile();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showSummary, setShowSummary] = useState(false); // Default closed on mobile
+  const [showSummary, setShowSummary] = useState(false);
   const [showMobileSummary, setShowMobileSummary] = useState(false);
   const [progress, setProgress] = useState<LearningProgress>(INITIAL_PROGRESS);
   const [suggestedQuestions, setSuggestedQuestions] = useState<SuggestedQuestion[]>([]);
@@ -43,7 +41,6 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Set summary panel default based on screen size
   useEffect(() => {
     setShowSummary(!isMobile);
   }, [isMobile]);
@@ -62,34 +59,24 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
       setProgress(INITIAL_PROGRESS);
       setSavedThesis(null);
       
-      // Add welcome message
       const welcomeMessage: Message = {
         id: '1',
         role: 'assistant',
-        content: language === 'zh'
-          ? `👋 你好！我是你的投资顾问。让我们一起了解 **${companyName} (${ticker})**。\n\n我会帮助你理解这家公司，识别风险，评估它是否值得投资。\n\n你可以问我任何问题，或者点击下面的建议开始！`
-          : `👋 Hi! I'm your investment advisor. Let's explore **${companyName} (${ticker})** together.\n\nI'll help you understand this company, identify risks, and evaluate if it's worth investing in.\n\nAsk me anything, or click a suggestion below to get started!`,
+        content: `👋 Hi! I'm your investment advisor. Let's explore **${companyName} (${ticker})** together.\n\nI'll help you understand this company, identify risks, and evaluate if it's worth investing in.\n\nAsk me anything, or click a suggestion below to get started!`,
         timestamp: new Date(),
       };
       setMessages([welcomeMessage]);
 
-      // Set initial suggested questions (max 5 words each)
-      const initialQuestions: SuggestedQuestion[] = language === 'zh'
-        ? [
-            { text: '公司做什么？', category: 'understanding' },
-            { text: '最大风险？', category: 'risks' },
-            { text: '股价合理吗？', category: 'valuation' },
-          ]
-        : [
-            { text: 'What does it do?', category: 'understanding' },
-            { text: 'Biggest risks?', category: 'risks' },
-            { text: 'Is price fair?', category: 'valuation' },
-          ];
+      const initialQuestions: SuggestedQuestion[] = [
+        { text: 'What does it do?', category: 'understanding' },
+        { text: 'Biggest risks?', category: 'risks' },
+        { text: 'Is price fair?', category: 'valuation' },
+      ];
       setSuggestedQuestions(initialQuestions);
 
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [open, companyName, ticker, language]);
+  }, [open, companyName, ticker]);
 
   const sendMessage = async (content: string) => {
     if (!content.trim() || isLoading) return;
@@ -106,7 +93,6 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
     setIsLoading(true);
 
     try {
-      // Build conversation history (last 6 messages)
       const history = [...messages.slice(-6), userMessage].map(m => ({
         role: m.role,
         content: m.content,
@@ -123,17 +109,17 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
           ticker,
           companyName,
           progress,
-          language,
+          language: 'en',
         }),
       });
 
       if (!response.ok) {
         if (response.status === 429) {
-          toast.error(language === 'zh' ? '请求太频繁，请稍后再试' : 'Too many requests, please try again later');
+          toast.error('Too many requests, please try again later');
           throw new Error('Rate limited');
         }
         if (response.status === 402) {
-          toast.error(language === 'zh' ? '需要充值' : 'Payment required');
+          toast.error('Payment required');
           throw new Error('Payment required');
         }
         throw new Error('Failed to get response');
@@ -146,7 +132,6 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
       let assistantContent = '';
       const assistantId = (Date.now() + 1).toString();
 
-      // Add empty assistant message that we'll update
       setMessages(prev => [...prev, {
         id: assistantId,
         role: 'assistant',
@@ -162,7 +147,6 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
 
         buffer += decoder.decode(value, { stream: true });
 
-        // Process complete lines
         let newlineIndex: number;
         while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
           let line = buffer.slice(0, newlineIndex);
@@ -191,13 +175,12 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
         }
       }
 
-      // After response, update progress and get new suggestions
       await updateProgressAndSuggestions(userMessage.content, assistantContent);
 
     } catch (error) {
       console.error('Chat error:', error);
       if (error instanceof Error && !error.message.includes('Rate limited') && !error.message.includes('Payment')) {
-        toast.error(language === 'zh' ? '发送消息失败' : 'Failed to send message');
+        toast.error('Failed to send message');
       }
     } finally {
       setIsLoading(false);
@@ -213,7 +196,7 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
           ticker,
           companyName,
           currentProgress: progress,
-          language,
+          language: 'en',
         },
       });
 
@@ -262,19 +245,19 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
   };
 
   const handleAskAbout = (topic: string) => {
-    const topicQuestions: Record<string, { en: string; zh: string }> = {
-      company_fundamental: { en: `What does ${companyName} do and how does it make money?`, zh: `${companyName} 是做什么的，如何赚钱？` },
-      financial_health: { en: `Is ${companyName} profitable and financially healthy?`, zh: `${companyName} 盈利吗？财务健康吗？` },
-      industry_context: { en: `What industry is ${companyName} in and who are its competitors?`, zh: `${companyName} 属于什么行业？竞争对手是谁？` },
-      company_risks: { en: `What are the biggest risks specific to ${companyName}?`, zh: `${companyName} 特有的最大风险是什么？` },
-      external_risks: { en: 'What economic or market risks could affect this company?', zh: '哪些经济或市场风险可能影响这家公司？' },
-      investment_risks: { en: 'How volatile is this stock and what should I consider for risk management?', zh: '这只股票波动性如何？风险管理需要考虑什么？' },
-      current_price: { en: `What is ${companyName}'s current stock price and how has it performed?`, zh: `${companyName} 当前股价是多少？表现如何？` },
-      company_valuation: { en: `Is ${companyName} expensive compared to its earnings and competitors?`, zh: `相比盈利和竞争对手，${companyName} 贵吗？` },
-      expected_returns: { en: 'Is the potential return worth the risks for this stock?', zh: '这只股票的潜在回报值得承担风险吗？' },
+    const topicQuestions: Record<string, string> = {
+      company_fundamental: `What does ${companyName} do and how does it make money?`,
+      financial_health: `Is ${companyName} profitable and financially healthy?`,
+      industry_context: `What industry is ${companyName} in and who are its competitors?`,
+      company_risks: `What are the biggest risks specific to ${companyName}?`,
+      external_risks: 'What economic or market risks could affect this company?',
+      investment_risks: 'How volatile is this stock and what should I consider for risk management?',
+      current_price: `What is ${companyName}'s current stock price and how has it performed?`,
+      company_valuation: `Is ${companyName} expensive compared to its earnings and competitors?`,
+      expected_returns: 'Is the potential return worth the risks for this stock?',
     };
 
-    const question = topicQuestions[topic]?.[language] || topicQuestions[topic]?.en;
+    const question = topicQuestions[topic];
     if (question) {
       sendMessage(question);
     }
@@ -284,18 +267,16 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
     setSavedThesis(thesis);
     
     const stanceLabels = {
-      bullish: language === 'zh' ? '看涨' : 'bullish',
-      neutral: language === 'zh' ? '中性' : 'neutral',
-      bearish: language === 'zh' ? '看跌' : 'bearish',
-      custom: language === 'zh' ? '自定义' : 'custom',
+      bullish: 'bullish',
+      neutral: 'neutral',
+      bearish: 'bearish',
+      custom: 'custom',
     };
 
     const confirmMessage: Message = {
       id: Date.now().toString(),
       role: 'assistant',
-      content: language === 'zh'
-        ? `✅ 论点已保存！你对 **${companyName}** 持${stanceLabels[thesis.stance]}态度。你可以继续聊天或随时更新你的论点。`
-        : `✅ Thesis saved! You're **${stanceLabels[thesis.stance]}** on **${companyName}**. You can continue chatting or update your thesis anytime.`,
+      content: `✅ Thesis saved! You're **${stanceLabels[thesis.stance]}** on **${companyName}**. You can continue chatting or update your thesis anytime.`,
       timestamp: new Date(),
     };
     setMessages(prev => [...prev, confirmMessage]);
@@ -338,7 +319,6 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
                     </div>
                   </div>
                   <div className="flex items-center gap-1 md:gap-2">
-                    {/* Progress indicator for mobile */}
                     {isMobile && (
                       <Button
                         variant="ghost"
@@ -399,7 +379,7 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
                                   {message.content || (
                                     <span className="flex items-center gap-2 text-muted-foreground">
                                       <Loader2 className="w-4 h-4 animate-spin" />
-                                      {language === 'zh' ? '正在思考...' : 'Thinking...'}
+                                      Thinking...
                                     </span>
                                   )}
                                 </p>
@@ -424,72 +404,65 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
                 </ScrollArea>
               </div>
 
-              {/* Suggested Questions - vertical left-aligned */}
+              {/* Suggested Questions */}
               {suggestedQuestions.length > 0 && !isLoading && (
-                <div className="px-3 md:px-4 py-2 border-t border-border">
-                  <div className="flex flex-col items-start gap-1.5 max-w-3xl mx-auto">
-                    {suggestedQuestions.map((question, index) => (
-                      <motion.button
-                        key={index}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        onClick={() => handleSuggestedQuestion(question)}
-                        className="px-3 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-full text-foreground transition-colors"
-                      >
-                        {question.text}
-                      </motion.button>
-                    ))}
-                  </div>
+                <div className="flex-shrink-0 px-3 md:px-4 pb-2">
+                  <ScrollArea className="w-full">
+                    <div className="flex gap-2 pb-2">
+                      {suggestedQuestions.map((q, idx) => (
+                        <Button
+                          key={idx}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleSuggestedQuestion(q)}
+                          className="whitespace-nowrap flex-shrink-0 text-xs md:text-sm"
+                        >
+                          {q.text}
+                        </Button>
+                      ))}
+                    </div>
+                  </ScrollArea>
                 </div>
               )}
 
-              {/* Input Area */}
-              <div className="flex-shrink-0 p-3 md:p-4 border-t border-border">
+              {/* Input */}
+              <div className="flex-shrink-0 p-3 md:p-4 border-t border-border bg-background">
                 <div className="flex gap-2 max-w-3xl mx-auto">
                   <Input
                     ref={inputRef}
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder={language === 'zh' ? '输入你的问题...' : 'Type your question...'}
+                    placeholder="Ask about this company..."
+                    className="flex-1"
                     disabled={isLoading}
-                    className="flex-1 text-sm md:text-base"
                   />
                   <Button
                     onClick={() => sendMessage(input)}
                     disabled={!input.trim() || isLoading}
                     size="icon"
                   >
-                    {isLoading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Send className="w-4 h-4" />
-                    )}
+                    <Send className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
             </div>
 
-            {/* Desktop Summary Panel (30%) */}
-            {!isMobile && (
-              <AnimatePresence>
-                {showSummary && (
-                  <motion.div
-                    initial={{ width: 0, opacity: 0 }}
-                    animate={{ width: '30%', opacity: 1 }}
-                    exit={{ width: 0, opacity: 0 }}
-                    className="border-l border-border overflow-hidden hidden md:block"
-                  >
-                    <SummaryPanel
-                      progress={progress}
-                      onAskAbout={handleAskAbout}
-                      onBuildThesis={() => setShowThesisBuilder(true)}
-                      companyName={companyName}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+            {/* Summary Panel - Desktop */}
+            {showSummary && !isMobile && (
+              <motion.div
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: '30%', opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                className="hidden md:block min-w-[280px] max-w-[360px] h-full"
+              >
+                <SummaryPanel
+                  progress={progress}
+                  onAskAbout={handleAskAbout}
+                  onBuildThesis={() => setShowThesisBuilder(true)}
+                  companyName={companyName}
+                />
+              </motion.div>
             )}
           </div>
         </DialogContent>
@@ -497,25 +470,27 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
 
       {/* Mobile Summary Sheet */}
       <Sheet open={showMobileSummary} onOpenChange={setShowMobileSummary}>
-        <SheetContent side="bottom" className="h-[85vh] p-0">
-          <SheetHeader className="sr-only">
-            <SheetTitle>{language === 'zh' ? '学习进度' : 'Learning Progress'}</SheetTitle>
+        <SheetContent side="bottom" className="h-[80vh] p-0">
+          <SheetHeader className="p-4 border-b border-border">
+            <SheetTitle>Research Progress</SheetTitle>
           </SheetHeader>
           <SummaryPanel
             progress={progress}
             onAskAbout={(topic) => {
-              setShowMobileSummary(false);
               handleAskAbout(topic);
+              setShowMobileSummary(false);
             }}
             onBuildThesis={() => {
-              setShowMobileSummary(false);
               setShowThesisBuilder(true);
+              setShowMobileSummary(false);
             }}
             companyName={companyName}
+            onClose={() => setShowMobileSummary(false)}
           />
         </SheetContent>
       </Sheet>
 
+      {/* Thesis Builder Dialog */}
       <ThesisBuilder
         open={showThesisBuilder}
         onOpenChange={setShowThesisBuilder}

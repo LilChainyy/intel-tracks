@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AdvisorChatDialog } from './AdvisorChatDialog';
-import { useLanguage } from '@/context/LanguageContext';
 
 function CuteAdvisorCharacter() {
   return (
@@ -45,7 +44,6 @@ function CuteAdvisorCharacter() {
 
 export function FloatingAdvisor() {
   const [isOpen, setIsOpen] = useState(false);
-  const { t } = useLanguage();
 
   return (
     <>
@@ -60,7 +58,7 @@ export function FloatingAdvisor() {
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(true)}
             className="fixed bottom-24 md:bottom-8 right-4 md:right-8 z-50 w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 shadow-lg flex items-center justify-center border-2 border-amber-300 hover:shadow-xl transition-shadow"
-            aria-label={t('advisor.title')}
+            aria-label="AI Advisor"
           >
             <div className="relative">
               <CuteAdvisorCharacter />

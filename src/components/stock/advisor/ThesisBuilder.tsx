@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { LearningProgress, ThesisChoice } from './types';
-import { useLanguage } from '@/context/LanguageContext';
 
 interface ThesisBuilderProps {
   open: boolean;
@@ -24,54 +23,29 @@ export function ThesisBuilder({
   progress,
   onSaveThesis,
 }: ThesisBuilderProps) {
-  const { language } = useLanguage();
   const [selectedStance, setSelectedStance] = useState<'bullish' | 'neutral' | 'bearish' | 'custom' | null>(null);
   const [customText, setCustomText] = useState('');
 
   const labels = {
-    en: {
-      title: 'Build Your Investment Thesis',
-      subtitle: `Based on your research of ${companyName}`,
-      summaryTitle: 'Your Summary',
-      understanding: '📊 What you understand about the business',
-      risks: '⚠️ Risks you identified',
-      valuation: '💰 Your view on the price',
-      stanceTitle: 'Your Thesis Stance',
-      bullish: 'Bullish - I want to invest',
-      bullishDesc: `I believe ${companyName} is a strong company at a fair price with manageable risks`,
-      neutral: 'Neutral - Watchlist only',
-      neutralDesc: 'Interesting company but too expensive or risky for me right now',
-      bearish: 'Bearish - Not for me',
-      bearishDesc: 'The risks outweigh the potential, I\'ll look elsewhere',
-      custom: 'Custom - Write my own thesis',
-      customPlaceholder: 'Write your investment thesis here...',
-      keepExploring: 'Keep Exploring',
-      saveThesis: 'Save Thesis',
-      noPoints: 'Keep exploring to learn more',
-    },
-    zh: {
-      title: '建立您的投资论点',
-      subtitle: `基于您对 ${companyName} 的研究`,
-      summaryTitle: '您的总结',
-      understanding: '📊 您对业务的理解',
-      risks: '⚠️ 您识别的风险',
-      valuation: '💰 您对价格的看法',
-      stanceTitle: '您的投资立场',
-      bullish: '看涨 - 我想投资',
-      bullishDesc: `我相信 ${companyName} 是一家估值合理、风险可控的优秀公司`,
-      neutral: '中性 - 仅加入观察列表',
-      neutralDesc: '有趣的公司，但目前价格过高或风险太大',
-      bearish: '看跌 - 不适合我',
-      bearishDesc: '风险大于潜力，我会另寻他处',
-      custom: '自定义 - 写下我自己的论点',
-      customPlaceholder: '在这里写下您的投资论点...',
-      keepExploring: '继续探索',
-      saveThesis: '保存论点',
-      noPoints: '继续探索以了解更多',
-    },
+    title: 'Build Your Investment Thesis',
+    subtitle: `Based on your research of ${companyName}`,
+    summaryTitle: 'Your Summary',
+    understanding: '📊 What you understand about the business',
+    risks: '⚠️ Risks you identified',
+    valuation: '💰 Your view on the price',
+    stanceTitle: 'Your Thesis Stance',
+    bullish: 'Bullish - I want to invest',
+    bullishDesc: `I believe ${companyName} is a strong company at a fair price with manageable risks`,
+    neutral: 'Neutral - Watchlist only',
+    neutralDesc: 'Interesting company but too expensive or risky for me right now',
+    bearish: 'Bearish - Not for me',
+    bearishDesc: 'The risks outweigh the potential, I\'ll look elsewhere',
+    custom: 'Custom - Write my own thesis',
+    customPlaceholder: 'Write your investment thesis here...',
+    keepExploring: 'Keep Exploring',
+    saveThesis: 'Save Thesis',
+    noPoints: 'Keep exploring to learn more',
   };
-
-  const t = labels[language];
 
   const getSummaryPoints = (section: { [key: string]: { summaryPoints: string[] } }): string[] => {
     return Object.values(section).flatMap(s => s.summaryPoints);
@@ -96,8 +70,8 @@ export function ThesisBuilder({
     {
       id: 'bullish' as const,
       icon: TrendingUp,
-      label: t.bullish,
-      description: t.bullishDesc,
+      label: labels.bullish,
+      description: labels.bullishDesc,
       color: 'text-green-500',
       bgColor: 'bg-green-500/10 border-green-500/30 hover:bg-green-500/20',
       selectedBg: 'bg-green-500/20 border-green-500',
@@ -105,8 +79,8 @@ export function ThesisBuilder({
     {
       id: 'neutral' as const,
       icon: Minus,
-      label: t.neutral,
-      description: t.neutralDesc,
+      label: labels.neutral,
+      description: labels.neutralDesc,
       color: 'text-yellow-500',
       bgColor: 'bg-yellow-500/10 border-yellow-500/30 hover:bg-yellow-500/20',
       selectedBg: 'bg-yellow-500/20 border-yellow-500',
@@ -114,8 +88,8 @@ export function ThesisBuilder({
     {
       id: 'bearish' as const,
       icon: TrendingDown,
-      label: t.bearish,
-      description: t.bearishDesc,
+      label: labels.bearish,
+      description: labels.bearishDesc,
       color: 'text-red-500',
       bgColor: 'bg-red-500/10 border-red-500/30 hover:bg-red-500/20',
       selectedBg: 'bg-red-500/20 border-red-500',
@@ -123,7 +97,7 @@ export function ThesisBuilder({
     {
       id: 'custom' as const,
       icon: PenLine,
-      label: t.custom,
+      label: labels.custom,
       description: '',
       color: 'text-primary',
       bgColor: 'bg-primary/10 border-primary/30 hover:bg-primary/20',
@@ -137,20 +111,20 @@ export function ThesisBuilder({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            {t.title}
+            {labels.title}
           </DialogTitle>
-          <p className="text-sm text-muted-foreground">{t.subtitle}</p>
+          <p className="text-sm text-muted-foreground">{labels.subtitle}</p>
         </DialogHeader>
 
         <div className="space-y-6 mt-4">
           {/* Summary Section */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-foreground">{t.summaryTitle}</h3>
+            <h3 className="font-semibold text-foreground">{labels.summaryTitle}</h3>
             
             <div className="grid gap-3">
               <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
                 <h4 className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-2">
-                  {t.understanding}
+                  {labels.understanding}
                 </h4>
                 {understandingPoints.length > 0 ? (
                   <ul className="text-sm text-foreground space-y-1">
@@ -162,13 +136,13 @@ export function ThesisBuilder({
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-muted-foreground">{t.noPoints}</p>
+                  <p className="text-sm text-muted-foreground">{labels.noPoints}</p>
                 )}
               </div>
 
               <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
                 <h4 className="text-sm font-medium text-amber-600 dark:text-amber-400 mb-2">
-                  {t.risks}
+                  {labels.risks}
                 </h4>
                 {riskPoints.length > 0 ? (
                   <ul className="text-sm text-foreground space-y-1">
@@ -180,13 +154,13 @@ export function ThesisBuilder({
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-muted-foreground">{t.noPoints}</p>
+                  <p className="text-sm text-muted-foreground">{labels.noPoints}</p>
                 )}
               </div>
 
               <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
                 <h4 className="text-sm font-medium text-green-600 dark:text-green-400 mb-2">
-                  {t.valuation}
+                  {labels.valuation}
                 </h4>
                 {valuationPoints.length > 0 ? (
                   <ul className="text-sm text-foreground space-y-1">
@@ -198,7 +172,7 @@ export function ThesisBuilder({
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-muted-foreground">{t.noPoints}</p>
+                  <p className="text-sm text-muted-foreground">{labels.noPoints}</p>
                 )}
               </div>
             </div>
@@ -206,7 +180,7 @@ export function ThesisBuilder({
 
           {/* Stance Selection */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-foreground">{t.stanceTitle}</h3>
+            <h3 className="font-semibold text-foreground">{labels.stanceTitle}</h3>
             
             <div className="grid gap-3">
               {stanceOptions.map((option) => (
@@ -241,7 +215,7 @@ export function ThesisBuilder({
                 <Textarea
                   value={customText}
                   onChange={(e) => setCustomText(e.target.value)}
-                  placeholder={t.customPlaceholder}
+                  placeholder={labels.customPlaceholder}
                   className="min-h-[100px]"
                 />
               </motion.div>
@@ -255,14 +229,14 @@ export function ThesisBuilder({
               className="flex-1"
               onClick={() => onOpenChange(false)}
             >
-              {t.keepExploring}
+              {labels.keepExploring}
             </Button>
             <Button
               className="flex-1 bg-gradient-to-r from-primary to-purple-500"
               onClick={handleSave}
               disabled={!selectedStance || (selectedStance === 'custom' && !customText.trim())}
             >
-              {t.saveThesis}
+              {labels.saveThesis}
             </Button>
           </div>
         </div>

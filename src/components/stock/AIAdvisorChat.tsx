@@ -4,7 +4,6 @@ import { X, Sparkles, DollarSign, TrendingUp, Gem, ChevronRight, CheckCircle2, A
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { useLanguage } from '@/context/LanguageContext';
 
 interface AIAdvisorChatProps {
   open: boolean;
@@ -53,7 +52,6 @@ interface ChatMessage {
 type ChatScreen = 'chat' | 'summary' | 'theoryBuilder' | 'timeline';
 
 export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdvisorChatProps) {
-  const { t, language } = useLanguage();
   const [screen, setScreen] = useState<ChatScreen>('chat');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
@@ -85,31 +83,22 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
         {
           id: '1',
           type: 'ai',
-          content: language === 'zh' 
-            ? `🤔 让我们一起来了解 ${companyName}。\n\n你想从哪个方面开始探索？`
-            : `🤔 Let's understand ${companyName} together.\n\nWhat would you like to explore first?`
+          content: `🤔 Let's understand ${companyName} together.\n\nWhat would you like to explore first?`
         },
         {
           id: '2',
           type: 'options',
           options: [
-            { type: 'profitability', label: language === 'zh' ? '💰 它赚钱吗？' : '💰 Is it making money?', icon: '💰', explored: false },
-            { type: 'growth', label: language === 'zh' ? '🚀 它在增长吗？' : '🚀 Is it growing?', icon: '🚀', explored: false },
-            { type: 'valuation', label: language === 'zh' ? '💎 它贵吗？' : '💎 Is it expensive?', icon: '💎', explored: false }
+            { type: 'profitability', label: '💰 Is it making money?', icon: '💰', explored: false },
+            { type: 'growth', label: '🚀 Is it growing?', icon: '🚀', explored: false },
+            { type: 'valuation', label: '💎 Is it expensive?', icon: '💎', explored: false }
           ]
         }
       ]);
     }
-  }, [open, companyName, language]);
+  }, [open, companyName]);
 
   const getQuestionLabel = (type: 'profitability' | 'growth' | 'valuation') => {
-    if (language === 'zh') {
-      switch (type) {
-        case 'profitability': return '它赚钱吗？';
-        case 'growth': return '它在增长吗？';
-        case 'valuation': return '它贵吗？';
-      }
-    }
     switch (type) {
       case 'profitability': return 'Is it making money?';
       case 'growth': return 'Is it growing?';
@@ -180,7 +169,7 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       type: 'user',
-      content: language === 'zh' ? '告诉我为什么？' : 'Tell me why?'
+      content: 'Tell me why?'
     };
     
     const loadingMessage: ChatMessage = {
@@ -248,18 +237,16 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
     const newOptions: ChatMessage = {
       id: Date.now().toString(),
       type: 'ai',
-      content: language === 'zh' 
-        ? '还想了解什么？' 
-        : 'What else would you like to know?'
+      content: 'What else would you like to know?'
     };
     
     const optionsMessage: ChatMessage = {
       id: (Date.now() + 1).toString(),
       type: 'options',
       options: [
-        { type: 'profitability', label: language === 'zh' ? '💰 它赚钱吗？' : '💰 Is it making money?', icon: '💰', explored: exploredQuestions.some(q => q.type === 'profitability') },
-        { type: 'growth', label: language === 'zh' ? '🚀 它在增长吗？' : '🚀 Is it growing?', icon: '🚀', explored: exploredQuestions.some(q => q.type === 'growth') },
-        { type: 'valuation', label: language === 'zh' ? '💎 它贵吗？' : '💎 Is it expensive?', icon: '💎', explored: exploredQuestions.some(q => q.type === 'valuation') }
+        { type: 'profitability', label: '💰 Is it making money?', icon: '💰', explored: exploredQuestions.some(q => q.type === 'profitability') },
+        { type: 'growth', label: '🚀 Is it growing?', icon: '🚀', explored: exploredQuestions.some(q => q.type === 'growth') },
+        { type: 'valuation', label: '💎 Is it expensive?', icon: '💎', explored: exploredQuestions.some(q => q.type === 'valuation') }
       ]
     };
 
@@ -267,18 +254,10 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
   };
 
   const theories = [
-    language === 'zh' 
-      ? `${companyName} 安全可靠，适合稳健增长。`
-      : `${companyName} is safe and reliable. Good for steady growth.`,
-    language === 'zh'
-      ? `${companyName} 估值过高，我会等待更好的价格。`
-      : `${companyName} is too expensive. I'll wait for a better price.`,
-    language === 'zh'
-      ? `这里有隐藏的增长潜力，适合长期持有。`
-      : `There's hidden growth potential here. Long-term hold.`,
-    language === 'zh'
-      ? `核心业务正在放缓，当前价格风险较高。`
-      : `The core business is stalling. Risky at this price.`
+    `${companyName} is safe and reliable. Good for steady growth.`,
+    `${companyName} is too expensive. I'll wait for a better price.`,
+    `There's hidden growth potential here. Long-term hold.`,
+    `The core business is stalling. Risky at this price.`
   ];
 
   const handleSaveTheory = async () => {
@@ -435,7 +414,7 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
                                   <div>
                                     <p className="text-sm text-foreground">{detail.point}</p>
                                     <p className="text-xs text-muted-foreground">
-                                      {detail.metric}: <span className="font-medium">{detail.value}</span>
+                                      {detail.metric}: {detail.value}
                                     </p>
                                   </div>
                                 </div>
@@ -443,334 +422,156 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
                             </div>
                           )}
 
-                          {/* Analogy */}
-                          {message.analysis.analogy && (
-                            <div className="bg-primary/5 border-l-2 border-primary rounded-r-xl px-3 py-2">
-                              <p className="text-sm text-muted-foreground italic">
-                                💡 {message.analysis.analogy}
-                              </p>
-                            </div>
-                          )}
-
-                          {/* Competitor Comparison */}
-                          {message.analysis.competitorComparison && message.analysis.competitorComparison.length > 0 && (
-                            <div className="bg-secondary/50 rounded-xl p-3 space-y-2">
-                              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                                {language === 'zh' ? '同行对比' : 'Compared to peers'}
-                              </p>
-                              {message.analysis.competitorComparison.map((comp, idx) => (
-                                <div key={idx} className="flex items-center gap-2">
-                                  <span className="text-xs text-foreground w-16 truncate">{comp.name}</span>
-                                  <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                                    <div 
-                                      className="h-full bg-primary rounded-full transition-all"
-                                      style={{ width: `${Math.min(comp.value, 100)}%` }}
-                                    />
-                                  </div>
-                                  <span className="text-xs text-muted-foreground w-12 text-right">{comp.label}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
                           {/* Follow-up button */}
-                          {message.showFollowUp && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-full"
-                              onClick={() => message.questionType && handleFollowUp(message.questionType)}
+                          {message.showFollowUp && message.questionType && (
+                            <button
+                              onClick={() => handleFollowUp(message.questionType!)}
                               disabled={loading}
+                              className="text-sm text-primary hover:underline disabled:opacity-50"
                             >
-                              {language === 'zh' ? '告诉我为什么？' : 'Tell me why?'} <ChevronRight className="w-4 h-4 ml-1" />
-                            </Button>
+                              Tell me more →
+                            </button>
+                          )}
+
+                          {/* Show more options */}
+                          {!message.showFollowUp && (
+                            <div className="flex gap-2">
+                              <button
+                                onClick={handleShowMoreOptions}
+                                className="text-sm text-primary hover:underline"
+                              >
+                                Explore more →
+                              </button>
+                            </div>
                           )}
                         </div>
                       </div>
                     )}
                   </motion.div>
                 ))}
+                <div ref={chatEndRef} />
               </>
             )}
 
-            {/* Summary Screen */}
             {screen === 'summary' && (
               <motion.div
-                key="summary"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 className="space-y-4"
               >
-                <div className="text-center pt-2">
-                  <h2 className="text-xl font-bold text-foreground mb-1">
-                    {language === 'zh' ? `让我们一起了解 ${companyName}` : `Let's understand ${companyName} together`}
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    {language === 'zh' ? '以下是我们的发现' : "Here's what we learned"}
-                  </p>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setScreen('chat')} className="p-2">
+                    <ArrowLeft className="w-5 h-5" />
+                  </button>
+                  <h2 className="font-semibold text-lg">Your Research Summary</h2>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  {exploredQuestions.map((q, idx) => (
-                    <div
-                      key={idx}
-                      className="px-3 py-1.5 rounded-full bg-secondary text-secondary-foreground text-sm font-medium"
-                    >
-                      {q.analysis.summaryTag}
+                {exploredQuestions.map((q) => (
+                  <div key={q.type} className="bg-secondary rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      {getQuestionIcon(q.type)}
+                      <span className="font-medium capitalize">{q.type}</span>
                     </div>
-                  ))}
-                </div>
+                    <p className="text-sm text-muted-foreground">{q.analysis.summaryTag}</p>
+                  </div>
+                ))}
 
-                <div className="space-y-3">
-                  {exploredQuestions.map((q, idx) => (
-                    <div key={idx} className="card-surface rounded-xl overflow-hidden">
-                      <button
-                        className="w-full p-4 flex items-center justify-between text-left"
-                        onClick={() => setScreen('chat')}
-                      >
-                        <div className="flex items-center gap-2">
-                          {getQuestionIcon(q.type)}
-                          <span className="font-medium text-foreground capitalize">
-                            {q.type === 'profitability' 
-                              ? (language === 'zh' ? '盈利能力' : 'Making Money')
-                              : q.type === 'growth' 
-                              ? (language === 'zh' ? '增长情况' : 'Growing')
-                              : (language === 'zh' ? '估值分析' : 'Expensive')}
-                          </span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="space-y-2 pt-2">
-                  <Button
-                    className="w-full"
-                    onClick={() => setScreen('theoryBuilder')}
-                  >
-                    📝 {language === 'zh' ? '形成我的投资理论' : 'Form My Investment Theory'}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full text-muted-foreground"
-                    onClick={() => setScreen('chat')}
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-1" />
-                    {language === 'zh' ? '继续提问' : 'Ask More Questions'}
-                  </Button>
-                </div>
+                <Button
+                  onClick={() => setScreen('theoryBuilder')}
+                  className="w-full"
+                  disabled={exploredQuestions.length === 0}
+                >
+                  <Target className="w-4 h-4 mr-2" />
+                  Build Your Theory
+                </Button>
               </motion.div>
             )}
 
-            {/* Theory Builder Screen */}
             {screen === 'theoryBuilder' && (
               <motion.div
-                key="theoryBuilder"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 className="space-y-4"
               >
-                <div className="text-center pt-2">
-                  <div className="text-3xl mb-2">🎯</div>
-                  <h2 className="text-xl font-bold text-foreground mb-1">
-                    {language === 'zh' ? `构建你的 ${companyName} 理论` : `Let's Build Your ${companyName} Theory`}
-                  </h2>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setScreen('summary')} className="p-2">
+                    <ArrowLeft className="w-5 h-5" />
+                  </button>
+                  <h2 className="font-semibold text-lg">Your Investment Theory</h2>
                 </div>
 
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">
-                    {language === 'zh' ? `我们了解到 ${companyName} 是：` : `We've learned that ${companyName} is:`}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {exploredQuestions.map((q, idx) => (
-                      <div
-                        key={idx}
-                        className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-medium"
-                      >
-                        {q.analysis.summaryTag}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  Based on your research, which theory fits your view?
+                </p>
 
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-foreground">
-                    {language === 'zh' ? '基于此，哪个观点最合适？' : 'Based on this, which story fits best?'}
-                  </p>
-                  {theories.map((theory, idx) => (
+                  {theories.map((theory) => (
                     <button
-                      key={idx}
-                      className={`w-full p-3 rounded-xl text-left text-sm transition-all ${
-                        selectedTheory === theory
-                          ? 'bg-primary text-primary-foreground'
-                          : 'card-surface text-foreground hover:bg-secondary'
-                      }`}
+                      key={theory}
                       onClick={() => setSelectedTheory(theory)}
+                      className={`w-full p-4 rounded-xl text-left transition-all ${
+                        selectedTheory === theory
+                          ? 'bg-primary/10 border-2 border-primary'
+                          : 'bg-secondary hover:bg-secondary/80 border-2 border-transparent'
+                      }`}
                     >
-                      <div className="flex items-center gap-2">
-                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                          selectedTheory === theory ? 'border-primary-foreground bg-primary-foreground' : 'border-muted-foreground'
-                        }`}>
-                          {selectedTheory === theory && (
-                            <div className="w-2 h-2 rounded-full bg-primary" />
-                          )}
-                        </div>
-                        {theory}
-                      </div>
+                      <p className="text-sm text-foreground">{theory}</p>
                     </button>
                   ))}
                 </div>
 
                 <Button
+                  onClick={handleSaveTheory}
                   className="w-full"
                   disabled={!selectedTheory}
-                  onClick={handleSaveTheory}
                 >
-                  <Target className="w-4 h-4 mr-2" />
-                  {language === 'zh' ? '保存我的理论' : 'Save My Theory'}
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  Save My Theory
                 </Button>
               </motion.div>
             )}
 
-            {/* Timeline Screen */}
             {screen === 'timeline' && (
               <motion.div
-                key="timeline"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="space-y-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="space-y-4 text-center py-8"
               >
-                <div className="text-center pt-2">
-                  <div className="text-3xl mb-2">📖</div>
-                  <h2 className="text-xl font-bold text-foreground mb-1">
-                    {language === 'zh' ? `你的 ${companyName} 观点演变` : `Your ${companyName} Story Evolution`}
-                  </h2>
+                <div className="w-16 h-16 rounded-full bg-success/20 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-8 h-8 text-success" />
                 </div>
-
-                <div className="card-surface p-4 rounded-xl border-l-4 border-primary">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                    <span className="font-medium">{language === 'zh' ? '今天' : 'TODAY'}</span>
-                    <span>•</span>
-                    <span>{language === 'zh' ? '当前理论' : 'CURRENT THEORY'}</span>
-                  </div>
-                  <div className="flex items-start gap-2 mb-3">
-                    <Target className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                    <p className="text-foreground font-medium">"{savedTheory}"</p>
-                  </div>
-                  
-                  <div className="mb-3">
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="text-muted-foreground">{language === 'zh' ? '信心度' : 'Confidence'}</span>
-                      <span className="font-medium text-foreground">65%</span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-primary rounded-full" style={{ width: '65%' }} />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground font-medium">
-                      {language === 'zh' ? '我相信这个的原因：' : 'Why I believe this:'}
-                    </p>
-                    {exploredQuestions.slice(0, 3).map((q, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-sm text-foreground">
-                        <CheckCircle2 className="w-4 h-4 text-success" />
-                        <span>{q.analysis.summaryTag}</span>
-                      </div>
-                    ))}
-                  </div>
+                <h2 className="font-semibold text-xl">Theory Saved!</h2>
+                <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                  We'll track {companyName} and notify you of important changes that might affect your theory.
+                </p>
+                <div className="bg-secondary rounded-xl p-4 text-left">
+                  <p className="text-xs text-muted-foreground mb-1">Your Theory</p>
+                  <p className="text-sm text-foreground">{savedTheory}</p>
                 </div>
-
-                <div className="card-surface p-4 rounded-xl">
-                  <p className="text-sm font-medium text-foreground mb-3">
-                    {language === 'zh' ? '你的旅程' : 'Your Journey'}
-                  </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="w-4 h-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">
-                          {language === 'zh' ? '提问数' : 'Questions asked'}
-                        </p>
-                        <p className="font-bold text-foreground">{exploredQuestions.length}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">🎓</span>
-                      <div>
-                        <p className="text-xs text-muted-foreground">
-                          {language === 'zh' ? '等级' : 'Level'}
-                        </p>
-                        <p className="font-bold text-foreground">{language === 'zh' ? '初学者' : 'Beginner'}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">⏱️</span>
-                      <div>
-                        <p className="text-xs text-muted-foreground">
-                          {language === 'zh' ? '研究时间' : 'Research time'}
-                        </p>
-                        <p className="font-bold text-foreground">~2 min</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">🏆</span>
-                      <div>
-                        <p className="text-xs text-muted-foreground">
-                          {language === 'zh' ? '获得经验' : 'XP earned'}
-                        </p>
-                        <p className="font-bold text-foreground">{xpEarned} XP</p>
-                      </div>
-                    </div>
-                  </div>
+                <div className="pt-4">
+                  <p className="text-amber font-semibold">+{xpEarned} XP Earned!</p>
                 </div>
-
-                <div className="space-y-2">
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => setScreen('theoryBuilder')}
-                  >
-                    {language === 'zh' ? '更新理论' : 'Update Theory'}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full text-muted-foreground"
-                    onClick={() => onOpenChange(false)}
-                  >
-                    {language === 'zh' ? '完成' : 'Done'}
-                  </Button>
-                </div>
+                <Button onClick={() => onOpenChange(false)} className="w-full mt-4">
+                  Done
+                </Button>
               </motion.div>
             )}
           </AnimatePresence>
-          <div ref={chatEndRef} />
         </div>
 
-        {/* Bottom Action Bar */}
-        {screen === 'chat' && !loading && exploredQuestions.length > 0 && (
-          <div className="flex-shrink-0 border-t border-border p-3 bg-background space-y-2">
+        {/* Bottom Actions */}
+        {screen === 'chat' && exploredQuestions.length > 0 && (
+          <div className="flex-shrink-0 border-t border-border p-4 bg-background">
             <Button
+              onClick={() => setScreen('summary')}
               variant="outline"
-              size="sm"
               className="w-full"
-              onClick={handleShowMoreOptions}
             >
-              {language === 'zh' ? '问其他问题' : 'Ask another question'}
+              View Summary ({exploredQuestions.length}/3 explored)
             </Button>
-            {exploredQuestions.length >= 3 && (
-              <Button
-                size="sm"
-                className="w-full"
-                onClick={() => setScreen('summary')}
-              >
-                📊 {language === 'zh' ? '查看总结' : 'View Summary'}
-              </Button>
-            )}
           </div>
         )}
       </DialogContent>

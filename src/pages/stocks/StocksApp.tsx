@@ -1,20 +1,18 @@
 import { InvestorQuizProvider } from '@/context/InvestorQuizContext';
 import { AppProvider, useApp } from '@/context/AppContext';
-import { LanguageProvider } from '@/context/LanguageContext';
 import { InvestorQuizFlow } from '@/components/quiz/InvestorQuizFlow';
 import { PlaylistDetail } from '@/components/playlist/PlaylistDetail';
 import { StockDetail } from '@/components/stock/StockDetail';
 import { ProfileScreen } from '@/components/profile/ProfileScreen';
 import { FollowingScreen } from '@/components/following/FollowingScreen';
 import { StoreScreen } from '@/components/store/StoreScreen';
-import { BottomNav } from '@/components/navigation/BottomNav';
-import { Sidebar } from '@/components/navigation/Sidebar';
 import { FloatingAdvisor } from '@/components/advisor/FloatingAdvisor';
 import { Phase2Intro } from '@/components/phase2/Phase2Intro';
 import { ThemeSelector } from '@/components/phase2/ThemeSelector';
 import { ThemeStoryViewer } from '@/components/phase2/ThemeStoryViewer';
+import { TopNav } from '@/components/navigation/TopNav';
 
-function AppContent() {
+function StocksContent() {
   const { currentScreen } = useApp();
 
   const renderScreen = () => {
@@ -42,29 +40,26 @@ function AppContent() {
     }
   };
 
-  // Show nav on all pages except phase2-intro
-  const showNav = currentScreen !== 'phase2-intro';
+  // Hide TopNav during quiz and phase2-intro for focused experience
+  const showTopNav = currentScreen !== 'quiz' && currentScreen !== 'phase2-intro';
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {showNav && <Sidebar />}
-      <main className="flex-1 relative">
+    <div className="min-h-screen bg-background">
+      {showTopNav && <TopNav />}
+      <main className="relative">
         {renderScreen()}
-        {showNav && <BottomNav />}
-        {showNav && <FloatingAdvisor />}
+        {showTopNav && <FloatingAdvisor />}
       </main>
     </div>
   );
 }
 
-export default function Index() {
+export default function StocksApp() {
   return (
-    <LanguageProvider>
-      <InvestorQuizProvider>
-        <AppProvider>
-          <AppContent />
-        </AppProvider>
-      </InvestorQuizProvider>
-    </LanguageProvider>
+    <InvestorQuizProvider>
+      <AppProvider>
+        <StocksContent />
+      </AppProvider>
+    </InvestorQuizProvider>
   );
 }

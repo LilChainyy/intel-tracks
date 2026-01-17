@@ -4,7 +4,6 @@ import { X, Send, Bot, User, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useLanguage } from '@/context/LanguageContext';
 
 interface Message {
   id: string;
@@ -18,7 +17,6 @@ interface AdvisorChatDialogProps {
 }
 
 export function AdvisorChatDialog({ open, onOpenChange }: AdvisorChatDialogProps) {
-  const { t, language } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -32,11 +30,11 @@ export function AdvisorChatDialog({ open, onOpenChange }: AdvisorChatDialogProps
         {
           id: 'welcome',
           role: 'assistant',
-          content: t('advisor.welcome'),
+          content: "Hi! I'm your AI financial advisor. Ask me anything about stocks, investing strategies, market trends, or financial planning. I'm here to help!",
         },
       ]);
     }
-  }, [open, messages.length, t]);
+  }, [open, messages.length]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -79,19 +77,19 @@ export function AdvisorChatDialog({ open, onOpenChange }: AdvisorChatDialogProps
               role: m.role,
               content: m.content,
             })),
-            language,
+            language: 'en',
           }),
         }
       );
 
       if (!response.ok) {
         if (response.status === 429) {
-          throw new Error(language === 'zh' ? '请求过于频繁，请稍后再试' : 'Too many requests. Please try again later.');
+          throw new Error('Too many requests. Please try again later.');
         }
         if (response.status === 402) {
-          throw new Error(language === 'zh' ? '服务暂时不可用' : 'Service temporarily unavailable.');
+          throw new Error('Service temporarily unavailable.');
         }
-        throw new Error(language === 'zh' ? '发生错误，请重试' : 'An error occurred. Please try again.');
+        throw new Error('An error occurred. Please try again.');
       }
 
       // Handle streaming response
@@ -152,7 +150,7 @@ export function AdvisorChatDialog({ open, onOpenChange }: AdvisorChatDialogProps
         {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: error instanceof Error ? error.message : (language === 'zh' ? '发生错误，请重试' : 'An error occurred. Please try again.'),
+          content: error instanceof Error ? error.message : 'An error occurred. Please try again.',
         },
       ]);
     } finally {
@@ -184,10 +182,8 @@ export function AdvisorChatDialog({ open, onOpenChange }: AdvisorChatDialogProps
                 <Bot className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold text-foreground">{t('advisor.title')}</h3>
-                <p className="text-xs text-muted-foreground">
-                  {t('advisor.online')}
-                </p>
+                <h3 className="font-semibold text-foreground">AI Advisor</h3>
+                <p className="text-xs text-muted-foreground">Online</p>
               </div>
             </div>
             <Button
@@ -248,9 +244,7 @@ export function AdvisorChatDialog({ open, onOpenChange }: AdvisorChatDialogProps
                   <div className="bg-muted rounded-2xl px-4 py-2">
                     <div className="flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-sm text-muted-foreground">
-                        {t('advisor.thinking')}
-                      </span>
+                      <span className="text-sm text-muted-foreground">Thinking...</span>
                     </div>
                   </div>
                 </motion.div>
@@ -266,7 +260,7 @@ export function AdvisorChatDialog({ open, onOpenChange }: AdvisorChatDialogProps
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={t('advisor.askAnything')}
+                placeholder="Ask me anything about investing..."
                 className="flex-1 rounded-full bg-background"
                 disabled={isLoading}
               />
