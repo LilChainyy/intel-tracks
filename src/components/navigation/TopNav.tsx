@@ -1,5 +1,5 @@
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Home, Bookmark } from 'lucide-react';
+import { Layers, Newspaper, Bookmark } from 'lucide-react';
 
 export function TopNav() {
   const navigate = useNavigate();
@@ -32,9 +32,16 @@ export function TopNav() {
               onClick={handleHomeClick}
               className="flex items-center gap-2 text-sm md:text-base text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Home className="w-4 h-4" />
-              <span className="hidden sm:inline">Home</span>
+              <Layers className="w-4 h-4" />
+              <span className="hidden sm:inline">Themes</span>
             </button>
+            <Link
+              to="/stocks/news"
+              className="flex items-center gap-2 text-sm md:text-base text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Newspaper className="w-4 h-4" />
+              <span className="hidden sm:inline">News</span>
+            </Link>
             <Link
               to="/saved"
               className="flex items-center gap-2 text-sm md:text-base text-muted-foreground hover:text-foreground transition-colors"
