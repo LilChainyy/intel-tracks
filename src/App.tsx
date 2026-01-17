@@ -9,6 +9,7 @@ import HomePage from "./pages/HomePage";
 import SavedPage from "./pages/SavedPage";
 import EmptyCategory from "./pages/EmptyCategory";
 import StocksApp from "./pages/stocks/StocksApp";
+import NewsPage from "./pages/stocks/NewsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
               <Route path="/" element={<HomePage />} />
               
               {/* Stocks - existing content */}
+              <Route path="/stocks/news" element={<NewsPage />} />
               <Route path="/stocks/*" element={<StocksApp />} />
               
               {/* Saved page */}
