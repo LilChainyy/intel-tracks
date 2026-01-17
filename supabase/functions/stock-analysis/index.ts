@@ -12,6 +12,15 @@ interface StockAnalysisRequest {
   followUp?: boolean;
 }
 
+// Validate ticker symbol format: 1-10 alphanumeric chars, may include hyphen and dot
+function isValidTicker(ticker: string): boolean {
+  if (!ticker || typeof ticker !== 'string') return false;
+  const tickerRegex = /^[A-Z0-9.-]{1,10}$/i;
+  return tickerRegex.test(ticker.trim());
+}
+
+const validQuestions = ['profitability', 'growth', 'valuation'];
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -20,13 +29,29 @@ serve(async (req) => {
   try {
     const { ticker, companyName, question, followUp } = await req.json() as StockAnalysisRequest;
     
+    if (!ticker || !isValidTicker(ticker)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid ticker symbol. Must be 1-10 alphanumeric characters.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!validQuestions.includes(question)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid question type. Must be profitability, growth, or valuation.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const safeTicker = encodeURIComponent(ticker.toUpperCase().trim());
+    
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
     // Fetch real stock data from Yahoo Finance
-    const stockData = await fetchStockData(ticker);
+    const stockData = await fetchStockData(safeTicker);
     
     // Build prompt based on question type
     const systemPrompt = buildSystemPrompt(question, followUp);
@@ -144,10 +169,10 @@ serve(async (req) => {
   }
 });
 
-async function fetchStockData(ticker: string) {
+async function fetchStockData(safeTicker: string) {
   try {
-    // Fetch summary data from Yahoo Finance
-    const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${ticker}?modules=financialData,defaultKeyStatistics,incomeStatementHistory,earnings,price`;
+    // safeTicker is already validated and URL-encoded
+    const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${safeTicker}?modules=financialData,defaultKeyStatistics,incomeStatementHistory,earnings,price`;
     
     const response = await fetch(url, {
       headers: {
@@ -156,7 +181,7 @@ async function fetchStockData(ticker: string) {
     });
 
     if (!response.ok) {
-      console.error(`Yahoo Finance error for ${ticker}: ${response.status}`);
+      console.error(`Yahoo Finance error for ${safeTicker}: ${response.status}`);
       return null;
     }
 
@@ -171,8 +196,8 @@ async function fetchStockData(ticker: string) {
     const earnings = result.earnings || {};
 
     return {
-      ticker,
-      name: price.shortName || price.longName || ticker,
+      ticker: safeTicker,
+      name: price.shortName || price.longName || safeTicker,
       currentPrice: price.regularMarketPrice?.raw,
       marketCap: price.marketCap?.raw,
       marketCapFormatted: price.marketCap?.fmt,

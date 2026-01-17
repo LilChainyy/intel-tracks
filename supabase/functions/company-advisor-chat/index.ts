@@ -47,6 +47,13 @@ const SYSTEM_PROMPT_ZH = `你是一位友好的投资顾问，帮助初学者了
 
 如果被问到其他话题，温和地引导回这些投资基础。`;
 
+// Validate ticker symbol format: 1-10 alphanumeric chars, may include hyphen and dot
+function isValidTicker(ticker: string): boolean {
+  if (!ticker || typeof ticker !== 'string') return false;
+  const tickerRegex = /^[A-Z0-9.-]{1,10}$/i;
+  return tickerRegex.test(ticker.trim());
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -55,13 +62,22 @@ serve(async (req) => {
   try {
     const { messages, ticker, companyName, language = 'en' } = await req.json();
     
+    if (!ticker || !isValidTicker(ticker)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid ticker symbol. Must be 1-10 alphanumeric characters.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const safeTicker = encodeURIComponent(ticker.toUpperCase().trim());
+    
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
     // Fetch real stock data
-    const stockData = await fetchStockData(ticker);
+    const stockData = await fetchStockData(safeTicker);
     
     const systemPrompt = language === 'zh' ? SYSTEM_PROMPT_ZH : SYSTEM_PROMPT_EN;
     const contextPrompt = stockData 
@@ -117,9 +133,10 @@ serve(async (req) => {
   }
 });
 
-async function fetchStockData(ticker: string) {
+async function fetchStockData(safeTicker: string) {
   try {
-    const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${ticker}?modules=financialData,defaultKeyStatistics,price`;
+    // safeTicker is already validated and URL-encoded
+    const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${safeTicker}?modules=financialData,defaultKeyStatistics,price`;
     
     const response = await fetch(url, {
       headers: {
