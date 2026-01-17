@@ -1,10 +1,8 @@
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { useInvestorQuiz } from '@/context/InvestorQuizContext';
 import { useApp } from '@/context/AppContext';
 import { getOrderedThemes } from '@/data/themeStoryData';
 import { ThemeCard } from './ThemeCard';
-import { ArrowRight } from 'lucide-react';
 
 export function ThemeSelector() {
   const { state } = useInvestorQuiz();
@@ -13,16 +11,11 @@ export function ThemeSelector() {
   const archetypeId = state.archetype?.id || 'momentum_hunter';
   const orderedThemes = getOrderedThemes(archetypeId);
   
-  // Filter out already viewed themes for "See Another" flow, but show all initially
   const availableThemes = orderedThemes;
 
   const handleThemeSelect = (themeId: string) => {
     setCurrentThemeStoryId(themeId);
     setCurrentScreen('phase2-story');
-  };
-
-  const handleSkipToAll = () => {
-    setCurrentScreen('discovery');
   };
 
   return (
@@ -60,28 +53,11 @@ export function ThemeSelector() {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center text-sm text-muted-foreground mb-4"
+            className="text-center text-sm text-muted-foreground"
           >
             You've explored {phase2ViewedThemes.length} of {availableThemes.length} themes
           </motion.p>
         )}
-
-        {/* Skip Button */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="text-center"
-        >
-          <Button
-            variant="ghost"
-            onClick={handleSkipToAll}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            Show Me All Themes
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </motion.div>
       </div>
     </div>
   );

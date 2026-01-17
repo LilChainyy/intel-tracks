@@ -1,37 +1,44 @@
 import { Home, Bookmark, User } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
-type NavItem = 'discovery' | 'following' | 'profile';
+type NavItem = 'home' | 'following' | 'profile';
 
 export function Sidebar() {
   const { currentScreen, setCurrentScreen } = useApp();
 
   const getActiveItem = (): NavItem => {
     switch (currentScreen) {
-      case 'discovery':
+      case 'phase2-select':
+      case 'phase2-story':
       case 'playlist':
       case 'stock':
-        return 'discovery';
+        return 'home';
       case 'following':
         return 'following';
       case 'profile':
       case 'store':
         return 'profile';
       default:
-        return 'discovery';
+        return 'home';
     }
   };
 
   const activeItem = getActiveItem();
 
   const navItems = [
-    { id: 'discovery' as NavItem, icon: Home, label: 'Home' },
+    { id: 'home' as NavItem, icon: Home, label: 'Home' },
     { id: 'following' as NavItem, icon: Bookmark, label: 'Saved' },
     { id: 'profile' as NavItem, icon: User, label: 'Profile' }
   ];
 
   const handleNavClick = (item: NavItem) => {
-    setCurrentScreen(item);
+    if (item === 'home') {
+      setCurrentScreen('phase2-select');
+    } else if (item === 'following') {
+      setCurrentScreen('following');
+    } else if (item === 'profile') {
+      setCurrentScreen('profile');
+    }
   };
 
   return (
