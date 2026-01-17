@@ -2,7 +2,6 @@ import { InvestorQuizProvider } from '@/context/InvestorQuizContext';
 import { AppProvider, useApp } from '@/context/AppContext';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { InvestorQuizFlow } from '@/components/quiz/InvestorQuizFlow';
-import { DiscoveryScreen } from '@/components/discovery/DiscoveryScreen';
 import { PlaylistDetail } from '@/components/playlist/PlaylistDetail';
 import { StockDetail } from '@/components/stock/StockDetail';
 import { ProfileScreen } from '@/components/profile/ProfileScreen';
@@ -28,8 +27,6 @@ function AppContent() {
         return <ThemeSelector />;
       case 'phase2-story':
         return <ThemeStoryViewer />;
-      case 'discovery':
-        return <DiscoveryScreen />;
       case 'playlist':
         return <PlaylistDetail />;
       case 'stock':
