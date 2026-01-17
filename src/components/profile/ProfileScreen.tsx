@@ -1,14 +1,12 @@
 import { motion } from 'framer-motion';
-import { RotateCcw, ChevronRight, Flame, Globe } from 'lucide-react';
+import { RotateCcw, ChevronRight, Flame } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useQuiz } from '@/context/QuizContext';
-import { useLanguage } from '@/context/LanguageContext';
 import { Progress } from '@/components/ui/progress';
 
 export function ProfileScreen() {
   const { quizCompleted, setCurrentScreen } = useApp();
   const { state, resetQuiz, startQuiz } = useQuiz();
-  const { language, setLanguage, t } = useLanguage();
 
   const handleTakeQuiz = () => {
     resetQuiz();
@@ -22,25 +20,55 @@ export function ProfileScreen() {
     setCurrentScreen('quiz');
   };
 
-  const getRiskLabel = (risk: string) => t(`risk.${risk}`);
-  const getTimelineLabel = (timeline: string) => t(`timeline.${timeline}`);
-  const getSectorLabel = (sector: string) => t(`sector.${sector}`);
+  const getRiskLabel = (risk: string) => {
+    const labels: Record<string, string> = {
+      safe: 'Steady wins',
+      balanced: 'Balanced',
+      growth: 'Growth',
+      yolo: 'Moon shots'
+    };
+    return labels[risk] || risk;
+  };
+  
+  const getTimelineLabel = (timeline: string) => {
+    const labels: Record<string, string> = {
+      short: '< 1 year',
+      medium: '1-3 years',
+      long: '3-5 years',
+      forever: '5+ years'
+    };
+    return labels[timeline] || timeline;
+  };
+  
+  const getSectorLabel = (sector: string) => {
+    const labels: Record<string, string> = {
+      tech: 'Tech',
+      energy: 'Energy',
+      healthcare: 'Healthcare',
+      finance: 'Finance',
+      consumer: 'Consumer',
+      industrial: 'Industrial',
+      space: 'Space',
+      entertainment: 'Entertainment'
+    };
+    return labels[sector] || sector;
+  };
 
   const summaryItems = quizCompleted
     ? [
         {
-          label: t('summary.risk'),
-          value: state.answers.risk ? getRiskLabel(state.answers.risk as string) : t('summary.notSet')
+          label: 'Risk',
+          value: state.answers.risk ? getRiskLabel(state.answers.risk as string) : 'Not set'
         },
         {
-          label: t('summary.sectors'),
+          label: 'Sectors',
           value: Array.isArray(state.answers.sectors)
-            ? state.answers.sectors.map((s) => getSectorLabel(s)).join(language === 'zh' ? '、' : ', ')
-            : t('summary.notSet')
+            ? state.answers.sectors.map((s) => getSectorLabel(s)).join(', ')
+            : 'Not set'
         },
         {
-          label: t('summary.timeline'),
-          value: state.answers.timeline ? getTimelineLabel(state.answers.timeline as string) : t('summary.notSet')
+          label: 'Timeline',
+          value: state.answers.timeline ? getTimelineLabel(state.answers.timeline as string) : 'Not set'
         }
       ]
     : [];
@@ -48,7 +76,7 @@ export function ProfileScreen() {
   // Mock progress data - in production this would come from user_research_xp table
   const progressData = {
     level: 2,
-    levelName: t('level.intermediate'),
+    levelName: 'Intermediate Investor',
     currentXP: 1250,
     nextLevelXP: 2000,
     companiesResearched: 3,
@@ -69,46 +97,9 @@ export function ProfileScreen() {
             animate={{ opacity: 1, y: 0 }}
             className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground"
           >
-            {t('profile.title')}
+            Profile
           </motion.h1>
         </div>
-
-        {/* Language Toggle */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="mb-6"
-        >
-          <div className="card-surface p-4 md:p-5 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Globe className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground" />
-              <span className="text-foreground md:text-lg">{t('profile.language')}</span>
-            </div>
-            <div className="flex bg-secondary rounded-lg p-1">
-              <button
-                onClick={() => setLanguage('en')}
-                className={`px-3 md:px-4 py-1.5 md:py-2 rounded-md text-sm md:text-base font-medium transition-all ${
-                  language === 'en'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => setLanguage('zh')}
-                className={`px-3 md:px-4 py-1.5 md:py-2 rounded-md text-sm md:text-base font-medium transition-all ${
-                  language === 'zh'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                中文
-              </button>
-            </div>
-          </div>
-        </motion.div>
 
         {/* Investment DNA or Quiz CTA */}
         {quizCompleted ? (
@@ -118,8 +109,8 @@ export function ProfileScreen() {
             transition={{ delay: 0.1 }}
             className="mb-6"
           >
-            <h3 className="text-xl md:text-2xl font-bold text-foreground text-center mb-2">{t('profile.investmentDna')}</h3>
-            <p className="text-sm md:text-base text-muted-foreground text-center mb-6">{t('profile.investmentDnaDesc')}</p>
+            <h3 className="text-xl md:text-2xl font-bold text-foreground text-center mb-2">Your Investment DNA</h3>
+            <p className="text-sm md:text-base text-muted-foreground text-center mb-6">Based on your answers, here's what we found</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
               {summaryItems.map((item) => (
                 <div key={item.label} className="card-surface p-4 md:p-5">
@@ -133,7 +124,7 @@ export function ProfileScreen() {
               className="w-full mt-4 py-2.5 md:py-3 text-sm md:text-base text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-2"
             >
               <RotateCcw className="w-4 h-4 md:w-5 md:h-5" />
-              {t('profile.retakeQuiz')}
+              Retake Quiz
             </button>
           </motion.div>
         ) : (
@@ -143,14 +134,14 @@ export function ProfileScreen() {
             transition={{ delay: 0.1 }}
             className="mb-6"
           >
-            <h3 className="section-header mb-3 md:text-lg">{t('profile.personalize')}</h3>
+            <h3 className="section-header mb-3 md:text-lg">Personalize</h3>
             <div className="card-surface p-6 md:p-8 text-center">
-              <h4 className="font-semibold text-foreground mb-1 md:text-lg">{t('profile.takeQuiz')}</h4>
+              <h4 className="font-semibold text-foreground mb-1 md:text-lg">Take the Quiz</h4>
               <p className="text-sm md:text-base text-muted-foreground mb-4">
-                {t('profile.takeQuizDesc')}
+                Find themes that match your investment style
               </p>
               <button onClick={handleTakeQuiz} className="btn-primary md:px-8 md:py-3">
-                {t('profile.startQuiz')}
+                Start Quiz
               </button>
             </div>
           </motion.div>
@@ -163,12 +154,12 @@ export function ProfileScreen() {
           transition={{ delay: 0.2 }}
           className="mb-6"
         >
-          <h3 className="section-header mb-3 md:text-lg">{t('profile.progress')}</h3>
+          <h3 className="section-header mb-3 md:text-lg">🎓 YOUR PROGRESS</h3>
           <div className="card-surface p-5 md:p-6">
             {/* Level Display */}
             <div className="text-center mb-4">
               <p className="text-lg md:text-xl font-bold text-foreground">
-                {t('profile.level')} {progressData.level}: {progressData.levelName}
+                Level {progressData.level}: {progressData.levelName}
               </p>
             </div>
 
@@ -176,7 +167,7 @@ export function ProfileScreen() {
             <div className="mb-4 md:mb-6">
               <Progress value={xpProgress} className="h-3 md:h-4" />
               <p className="text-sm md:text-base text-muted-foreground text-center mt-2">
-                {progressData.currentXP.toLocaleString()} / {progressData.nextLevelXP.toLocaleString()} {t('profile.xpToLevel')} {progressData.level + 1}
+                {progressData.currentXP.toLocaleString()} / {progressData.nextLevelXP.toLocaleString()} XP to Level {progressData.level + 1}
               </p>
             </div>
 
@@ -184,21 +175,21 @@ export function ProfileScreen() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               <div className="bg-secondary/50 rounded-xl p-3 md:p-4 text-center">
                 <p className="text-2xl md:text-3xl font-bold text-foreground">{progressData.companiesResearched}</p>
-                <p className="text-xs md:text-sm text-muted-foreground">{t('profile.companiesResearched')}</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Companies Researched</p>
               </div>
               <div className="bg-secondary/50 rounded-xl p-3 md:p-4 text-center">
                 <p className="text-2xl md:text-3xl font-bold text-foreground">{progressData.theoriesCreated}</p>
-                <p className="text-xs md:text-sm text-muted-foreground">{t('profile.theoriesCreated')}</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Theories Created</p>
               </div>
               <div className="bg-secondary/50 rounded-xl p-3 md:p-4 text-center">
                 <p className="text-2xl md:text-3xl font-bold text-foreground">{progressData.daysActive}</p>
-                <p className="text-xs md:text-sm text-muted-foreground">{t('profile.daysActive')}</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Days Active</p>
               </div>
               <div className="bg-secondary/50 rounded-xl p-3 md:p-4 text-center">
                 <p className="text-2xl md:text-3xl font-bold text-foreground flex items-center justify-center gap-1">
-                  {progressData.currentStreak} {t('profile.days')} <Flame className="w-4 h-4 md:w-5 md:h-5 text-orange-500" />
+                  {progressData.currentStreak} days <Flame className="w-4 h-4 md:w-5 md:h-5 text-orange-500" />
                 </p>
-                <p className="text-xs md:text-sm text-muted-foreground">{t('profile.currentStreak')}</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Current Streak</p>
               </div>
             </div>
           </div>
@@ -217,8 +208,8 @@ export function ProfileScreen() {
             <div className="flex items-center gap-3 md:gap-4">
               <span className="text-2xl md:text-3xl">🎁</span>
               <div className="text-left">
-                <p className="font-semibold text-foreground md:text-lg">{t('profile.rewardsStore')}</p>
-                <p className="text-sm md:text-base text-muted-foreground">{t('profile.rewardsStoreDesc')}</p>
+                <p className="font-semibold text-foreground md:text-lg">Rewards Store</p>
+                <p className="text-sm md:text-base text-muted-foreground">Redeem your XP for gift cards</p>
               </div>
             </div>
             <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground" />

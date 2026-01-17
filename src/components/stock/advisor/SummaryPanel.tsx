@@ -11,7 +11,6 @@ import {
   calculateSectionProgress, 
   calculateOverallProgress 
 } from './types';
-import { useLanguage } from '@/context/LanguageContext';
 
 interface SummaryPanelProps {
   progress: LearningProgress;
@@ -22,7 +21,6 @@ interface SummaryPanelProps {
 }
 
 export function SummaryPanel({ progress, onAskAbout, onBuildThesis, companyName, onClose }: SummaryPanelProps) {
-  const { language } = useLanguage();
   const overallProgress = calculateOverallProgress(progress);
   const showThesisButton = overallProgress >= 60;
 
@@ -52,45 +50,23 @@ export function SummaryPanel({ progress, onAskAbout, onBuildThesis, companyName,
   };
 
   const labels = {
-    en: {
-      overallProgress: 'Overall Progress',
-      understanding: 'Understanding',
-      companyFundamental: 'Company Fundamental',
-      financialHealth: 'Financial Health',
-      industryContext: 'Industry Context',
-      risks: 'Risks',
-      companyRisks: 'Company Risks',
-      externalRisks: 'External Risks',
-      investmentRisks: 'Investment Risks',
-      valuation: 'Valuation',
-      currentPrice: 'Current Price',
-      companyValuation: 'Company Valuation',
-      expectedReturns: 'Expected Returns',
-      askAbout: 'Ask about this →',
-      buildThesis: '✨ Build Your Thesis',
-      ready: "🎉 You've learned enough! Ready to build your thesis.",
-    },
-    zh: {
-      overallProgress: '整体进度',
-      understanding: '理解',
-      companyFundamental: '公司基本面',
-      financialHealth: '财务健康',
-      industryContext: '行业背景',
-      risks: '风险',
-      companyRisks: '公司风险',
-      externalRisks: '外部风险',
-      investmentRisks: '投资风险',
-      valuation: '估值',
-      currentPrice: '当前价格',
-      companyValuation: '公司估值',
-      expectedReturns: '预期回报',
-      askAbout: '了解更多 →',
-      buildThesis: '✨ 建立投资论点',
-      ready: "🎉 你已经学到足够多了！准备建立你的论点。",
-    },
+    overallProgress: 'Overall Progress',
+    understanding: 'Understanding',
+    companyFundamental: 'Company Fundamental',
+    financialHealth: 'Financial Health',
+    industryContext: 'Industry Context',
+    risks: 'Risks',
+    companyRisks: 'Company Risks',
+    externalRisks: 'External Risks',
+    investmentRisks: 'Investment Risks',
+    valuation: 'Valuation',
+    currentPrice: 'Current Price',
+    companyValuation: 'Company Valuation',
+    expectedReturns: 'Expected Returns',
+    askAbout: 'Ask about this →',
+    buildThesis: '✨ Build Your Thesis',
+    ready: "🎉 You've learned enough! Ready to build your thesis.",
   };
-
-  const t = labels[language];
 
   const renderSubsection = (
     label: string,
@@ -124,7 +100,7 @@ export function SummaryPanel({ progress, onAskAbout, onBuildThesis, companyName,
             onClick={() => onAskAbout(topic)}
             className="text-xs text-primary hover:underline mt-1 ml-6"
           >
-            {t.askAbout}
+            {labels.askAbout}
           </button>
         )}
       </div>
@@ -174,7 +150,7 @@ export function SummaryPanel({ progress, onAskAbout, onBuildThesis, companyName,
       {/* Header with overall progress */}
       <div className="p-4 border-b border-border flex-shrink-0">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-foreground">{t.overallProgress}</span>
+          <span className="text-sm font-medium text-foreground">{labels.overallProgress}</span>
           <span className={`text-sm font-bold ${getProgressColor(overallProgress)}`}>
             {Math.round(overallProgress)}%
           </span>
@@ -187,12 +163,12 @@ export function SummaryPanel({ progress, onAskAbout, onBuildThesis, companyName,
             animate={{ opacity: 1, y: 0 }}
             className="mt-4"
           >
-            <p className="text-xs text-green-600 dark:text-green-400 mb-2">{t.ready}</p>
+            <p className="text-xs text-green-600 dark:text-green-400 mb-2">{labels.ready}</p>
             <Button
               onClick={onBuildThesis}
               className="w-full bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90"
             >
-              {t.buildThesis}
+              {labels.buildThesis}
             </Button>
           </motion.div>
         )}
@@ -204,7 +180,7 @@ export function SummaryPanel({ progress, onAskAbout, onBuildThesis, companyName,
           <Collapsible open={expandedSections.understanding}>
             {renderSectionHeader(
               <BarChart3 className="w-4 h-4 text-blue-500 flex-shrink-0" />,
-              t.understanding,
+              labels.understanding,
               understandingProgress,
               'understanding'
             )}
@@ -216,9 +192,9 @@ export function SummaryPanel({ progress, onAskAbout, onBuildThesis, companyName,
                   exit={{ opacity: 0, height: 0 }}
                   className="space-y-1 ml-2 border-l-2 border-blue-500/20 pl-2"
                 >
-                  {renderSubsection(t.companyFundamental, progress.understanding.company_fundamental, 'company_fundamental')}
-                  {renderSubsection(t.financialHealth, progress.understanding.financial_health, 'financial_health')}
-                  {renderSubsection(t.industryContext, progress.understanding.industry_context, 'industry_context')}
+                  {renderSubsection(labels.companyFundamental, progress.understanding.company_fundamental, 'company_fundamental')}
+                  {renderSubsection(labels.financialHealth, progress.understanding.financial_health, 'financial_health')}
+                  {renderSubsection(labels.industryContext, progress.understanding.industry_context, 'industry_context')}
                 </motion.div>
               </AnimatePresence>
             </CollapsibleContent>
@@ -228,7 +204,7 @@ export function SummaryPanel({ progress, onAskAbout, onBuildThesis, companyName,
           <Collapsible open={expandedSections.risks}>
             {renderSectionHeader(
               <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />,
-              t.risks,
+              labels.risks,
               risksProgress,
               'risks'
             )}
@@ -240,9 +216,9 @@ export function SummaryPanel({ progress, onAskAbout, onBuildThesis, companyName,
                   exit={{ opacity: 0, height: 0 }}
                   className="space-y-1 ml-2 border-l-2 border-amber-500/20 pl-2"
                 >
-                  {renderSubsection(t.companyRisks, progress.risks.company_risks, 'company_risks')}
-                  {renderSubsection(t.externalRisks, progress.risks.external_risks, 'external_risks')}
-                  {renderSubsection(t.investmentRisks, progress.risks.investment_risks, 'investment_risks')}
+                  {renderSubsection(labels.companyRisks, progress.risks.company_risks, 'company_risks')}
+                  {renderSubsection(labels.externalRisks, progress.risks.external_risks, 'external_risks')}
+                  {renderSubsection(labels.investmentRisks, progress.risks.investment_risks, 'investment_risks')}
                 </motion.div>
               </AnimatePresence>
             </CollapsibleContent>
@@ -252,7 +228,7 @@ export function SummaryPanel({ progress, onAskAbout, onBuildThesis, companyName,
           <Collapsible open={expandedSections.valuation}>
             {renderSectionHeader(
               <DollarSign className="w-4 h-4 text-green-500 flex-shrink-0" />,
-              t.valuation,
+              labels.valuation,
               valuationProgress,
               'valuation'
             )}
@@ -264,9 +240,9 @@ export function SummaryPanel({ progress, onAskAbout, onBuildThesis, companyName,
                   exit={{ opacity: 0, height: 0 }}
                   className="space-y-1 ml-2 border-l-2 border-green-500/20 pl-2"
                 >
-                  {renderSubsection(t.currentPrice, progress.valuation.current_price, 'current_price')}
-                  {renderSubsection(t.companyValuation, progress.valuation.company_valuation, 'company_valuation')}
-                  {renderSubsection(t.expectedReturns, progress.valuation.expected_returns, 'expected_returns')}
+                  {renderSubsection(labels.currentPrice, progress.valuation.current_price, 'current_price')}
+                  {renderSubsection(labels.companyValuation, progress.valuation.company_valuation, 'company_valuation')}
+                  {renderSubsection(labels.expectedReturns, progress.valuation.expected_returns, 'expected_returns')}
                 </motion.div>
               </AnimatePresence>
             </CollapsibleContent>

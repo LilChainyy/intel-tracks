@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { ArrowLeft, Gift } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { useLanguage } from '@/context/LanguageContext';
 
 interface RewardCard {
   id: string;
@@ -22,7 +21,6 @@ const rewards: RewardCard[] = [
 
 export function StoreScreen() {
   const { setCurrentScreen } = useApp();
-  const { t } = useLanguage();
   
   // Mock user credits - in production this would come from user_research_xp table
   const userCredits = 1450;
@@ -49,7 +47,7 @@ export function StoreScreen() {
               animate={{ opacity: 1, y: 0 }}
               className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground"
             >
-              {t('store.title')}
+              Rewards Store
             </motion.h1>
           </div>
           
@@ -65,8 +63,8 @@ export function StoreScreen() {
                 <span className="text-xl md:text-2xl">💰</span>
               </div>
               <div>
-                <p className="text-sm md:text-base text-muted-foreground">{t('store.yourBalance')}</p>
-                <p className="text-lg md:text-xl font-bold text-foreground">{userCredits.toLocaleString()} {t('store.credits')}</p>
+                <p className="text-sm md:text-base text-muted-foreground">Your Balance</p>
+                <p className="text-lg md:text-xl font-bold text-foreground">{userCredits.toLocaleString()} Credits</p>
               </div>
             </div>
           </motion.div>
@@ -81,10 +79,10 @@ export function StoreScreen() {
         >
           <div className="flex items-center gap-2 mb-2">
             <Gift className="w-5 h-5 md:w-6 md:h-6 text-primary" />
-            <h2 className="text-lg md:text-xl font-semibold text-foreground">{t('store.redeemGiftCards')}</h2>
+            <h2 className="text-lg md:text-xl font-semibold text-foreground">Redeem Gift Cards</h2>
           </div>
           <p className="text-sm md:text-base text-muted-foreground">
-            {t('store.redeemDesc')}
+            Exchange your earned XP credits for gift cards from your favorite brands.
           </p>
         </motion.div>
 
@@ -120,7 +118,7 @@ export function StoreScreen() {
                       : 'bg-muted text-muted-foreground cursor-not-allowed'
                   }`}
                 >
-                  {canRedeem ? t('store.redeem') : t('store.locked')}
+                  {canRedeem ? 'Redeem' : 'Locked'}
                 </button>
               </motion.div>
             );
@@ -135,7 +133,7 @@ export function StoreScreen() {
           className="text-center"
         >
           <button className="text-sm md:text-base text-primary hover:text-primary/80 transition-colors">
-            {t('store.viewAll')} →
+            View All Rewards (12 available) →
           </button>
         </motion.div>
       </div>
