@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import { Playlist, Stock } from '@/types/playlist';
 
-type Screen = 'quiz' | 'discovery' | 'playlist' | 'stock' | 'profile' | 'following' | 'store';
+type Screen = 'quiz' | 'discovery' | 'playlist' | 'stock' | 'profile' | 'following' | 'store' | 'phase2-intro' | 'phase2-select' | 'phase2-story';
 
 export interface SavedStock {
   ticker: string;
@@ -25,6 +25,11 @@ interface AppContextType {
   savedStocks: SavedStock[];
   toggleSaveStock: (stock: SavedStock) => void;
   isStockSaved: (ticker: string) => boolean;
+  // Phase 2 state
+  phase2ViewedThemes: string[];
+  currentThemeStoryId: string | null;
+  addViewedTheme: (themeId: string) => void;
+  setCurrentThemeStoryId: (id: string | null) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -36,6 +41,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [savedPlaylists, setSavedPlaylists] = useState<string[]>([]);
   const [savedStocks, setSavedStocks] = useState<SavedStock[]>([]);
+  // Phase 2 state
+  const [phase2ViewedThemes, setPhase2ViewedThemes] = useState<string[]>([]);
+  const [currentThemeStoryId, setCurrentThemeStoryId] = useState<string | null>(null);
+
+  const addViewedTheme = useCallback((themeId: string) => {
+    setPhase2ViewedThemes(prev => 
+      prev.includes(themeId) ? prev : [...prev, themeId]
+    );
+  }, []);
 
   const toggleSavePlaylist = (playlistId: string) => {
     setSavedPlaylists(prev =>
@@ -72,7 +86,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         toggleSavePlaylist,
         savedStocks,
         toggleSaveStock,
-        isStockSaved
+        isStockSaved,
+        // Phase 2
+        phase2ViewedThemes,
+        currentThemeStoryId,
+        addViewedTheme,
+        setCurrentThemeStoryId
       }}
     >
       {children}
