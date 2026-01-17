@@ -42,9 +42,8 @@ function AppContent() {
     }
   };
 
-  // Hide nav only during quiz and phase2 intro
-  const isOnboarding = currentScreen === 'quiz' || currentScreen === 'phase2-intro';
-  const showNav = !isOnboarding;
+  // Show nav on all pages except phase2-intro
+  const showNav = currentScreen !== 'phase2-intro';
 
   return (
     <div className="min-h-screen bg-background flex">
