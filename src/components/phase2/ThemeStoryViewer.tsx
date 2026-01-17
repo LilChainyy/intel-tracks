@@ -1,15 +1,94 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { useApp } from '@/context/AppContext';
 import { themeStories, selectorThemes } from '@/data/themeStoryData';
 import { playlists } from '@/data/playlists';
+import { useStockData } from '@/hooks/useStockData';
 import { StoryProgressIndicator } from './StoryProgressIndicator';
 import { PostStoryChoice } from './PostStoryChoice';
-import { ArrowLeft, ChevronDown, TrendingUp, Calendar, Layers, Eye } from 'lucide-react';
+import { ArrowLeft, ChevronDown, TrendingUp, TrendingDown, Calendar, Layers, Eye, Radio, Lightbulb } from 'lucide-react';
+import { Stock } from '@/types/playlist';
+
+interface StockRowProps {
+  stock: Stock;
+  ytdChange?: string;
+  isLoading: boolean;
+  onClick: () => void;
+}
+
+function StockRow({ stock, ytdChange, isLoading, onClick }: StockRowProps) {
+  const isPositive = ytdChange && !ytdChange.startsWith('-') && ytdChange !== 'N/A';
+  const isNegative = ytdChange && ytdChange.startsWith('-');
+
+  return (
+    <motion.button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 p-3 md:p-4 rounded-xl hover:bg-secondary/50 transition-colors text-left"
+      whileTap={{ scale: 0.98 }}
+    >
+      {/* Logo */}
+      <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
+        {stock.logoUrl ? (
+          <img
+            src={stock.logoUrl}
+            alt={stock.name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
+          />
+        ) : (
+          <span className="text-xs md:text-sm font-bold text-muted-foreground">
+            {stock.ticker.slice(0, 2)}
+          </span>
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-foreground md:text-lg">{stock.ticker}</span>
+          {stock.isPrivate && (
+            <span className="text-[10px] md:text-xs px-1.5 py-0.5 rounded bg-amber/20 text-amber">
+              Private
+            </span>
+          )}
+        </div>
+        <p className="text-xs md:text-sm text-muted-foreground truncate">{stock.name}</p>
+      </div>
+
+      {/* YTD Change */}
+      {!stock.isPrivate && (
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {isLoading ? (
+            <div className="w-12 h-4 bg-secondary animate-pulse rounded" />
+          ) : ytdChange && ytdChange !== 'N/A' ? (
+            <>
+              {isPositive && <TrendingUp className="w-3 h-3 md:w-4 md:h-4 text-emerald" />}
+              {isNegative && <TrendingDown className="w-3 h-3 md:w-4 md:h-4 text-destructive" />}
+              <span
+                className={`text-sm md:text-base font-medium ${
+                  isPositive
+                    ? 'text-emerald'
+                    : isNegative
+                    ? 'text-destructive'
+                    : 'text-muted-foreground'
+                }`}
+              >
+                {ytdChange}
+              </span>
+            </>
+          ) : (
+            <span className="text-xs text-muted-foreground">—</span>
+          )}
+        </div>
+      )}
+    </motion.button>
+  );
+}
 
 export function ThemeStoryViewer() {
-  const { currentThemeStoryId, setCurrentScreen, addViewedTheme, phase2ViewedThemes, setSelectedPlaylist } = useApp();
+  const { currentThemeStoryId, setCurrentScreen, addViewedTheme, phase2ViewedThemes, setSelectedStock } = useApp();
   const [currentAct, setCurrentAct] = useState(1);
   const [showPostChoice, setShowPostChoice] = useState(false);
   
@@ -19,6 +98,14 @@ export function ThemeStoryViewer() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const story = currentThemeStoryId ? themeStories[currentThemeStoryId] : null;
+  const playlist = story ? playlists.find(p => p.id === story.themeId) : null;
+  
+  // Get tickers for YTD data
+  const tickers = playlist?.stocks
+    .filter((s) => !s.isPrivate)
+    .map((s) => s.ticker) || [];
+
+  const { isLoading, formatYtdChange } = useStockData(tickers);
 
   useEffect(() => {
     if (currentThemeStoryId && !phase2ViewedThemes.includes(currentThemeStoryId)) {
@@ -67,14 +154,10 @@ export function ThemeStoryViewer() {
     setCurrentScreen('phase2-select');
   };
 
-  const handleSeeStocks = () => {
-    // Find the matching playlist and navigate to it
-    const playlist = playlists.find(p => p.id === story?.themeId);
+  const handleStockClick = (ticker: string) => {
     if (playlist) {
-      setSelectedPlaylist(playlist);
-      setCurrentScreen('playlist');
-    } else {
-      setCurrentScreen('phase2-select');
+      setSelectedStock({ ticker, playlist });
+      setCurrentScreen('stock');
     }
   };
 
@@ -277,19 +360,61 @@ export function ThemeStoryViewer() {
                   ))}
                 </ul>
               </div>
-
-              {/* CTA */}
-              <div className="pt-6">
-                <Button
-                  onClick={handleSeeStocks}
-                  size="lg"
-                  className="w-full md:w-auto"
-                >
-                  See {story.stockCount} Stocks in This Theme
-                </Button>
-              </div>
             </motion.div>
           </div>
+
+          {/* Signal & Thesis Section */}
+          {playlist && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="mb-8 space-y-4"
+            >
+              {/* Signal */}
+              <div className="p-4 md:p-6 rounded-lg bg-card border border-border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Radio className="w-4 h-4 text-primary" />
+                  <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Signal</h3>
+                </div>
+                <p className="text-foreground/80 leading-relaxed">{playlist.signal}</p>
+              </div>
+
+              {/* Thesis */}
+              <div className="p-4 md:p-6 rounded-lg bg-card border border-border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Lightbulb className="w-4 h-4 text-primary" />
+                  <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Thesis</h3>
+                </div>
+                <p className="text-foreground/80 leading-relaxed">{playlist.thesis}</p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Stocks Section */}
+          {playlist && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="mb-8"
+            >
+              <h3 className="text-lg font-bold text-foreground mb-4">
+                Stocks ({playlist.stocks.length})
+              </h3>
+              <div className="rounded-lg bg-card border border-border p-2 md:p-3">
+                {playlist.stocks.map((stock) => (
+                  <StockRow
+                    key={stock.ticker}
+                    stock={stock}
+                    ytdChange={stock.isPrivate ? undefined : formatYtdChange(stock.ticker)}
+                    isLoading={isLoading}
+                    onClick={() => handleStockClick(stock.ticker)}
+                  />
+                ))}
+              </div>
+            </motion.div>
+          )}
 
           {/* Post Story Choice */}
           <PostStoryChoice
