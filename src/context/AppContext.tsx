@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import { Playlist, Stock } from '@/types/playlist';
 
-type Screen = 'quiz' | 'playlist' | 'stock' | 'profile' | 'following' | 'store' | 'phase2-intro' | 'phase2-select' | 'phase2-story';
+type Screen = 'game-map' | 'quiz' | 'playlist' | 'stock' | 'profile' | 'following' | 'store' | 'phase2-intro' | 'phase2-select' | 'phase2-story';
 
 export interface SavedStock {
   ticker: string;
@@ -35,7 +35,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('quiz');
+  const [currentScreen, setCurrentScreen] = useState<Screen>('game-map');
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
   const [selectedStock, setSelectedStock] = useState<{ ticker: string; playlist: Playlist } | null>(null);
   const [quizCompleted, setQuizCompleted] = useState(false);

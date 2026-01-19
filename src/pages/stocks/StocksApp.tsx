@@ -11,12 +11,15 @@ import { Phase2Intro } from '@/components/phase2/Phase2Intro';
 import { ThemeSelector } from '@/components/phase2/ThemeSelector';
 import { ThemeStoryViewer } from '@/components/phase2/ThemeStoryViewer';
 import { TopNav } from '@/components/navigation/TopNav';
+import { GameMap } from '@/components/game-map/GameMap';
 
 function StocksContent() {
   const { currentScreen } = useApp();
 
   const renderScreen = () => {
     switch (currentScreen) {
+      case 'game-map':
+        return <GameMap />;
       case 'quiz':
         return <InvestorQuizFlow />;
       case 'phase2-intro':
@@ -36,12 +39,12 @@ function StocksContent() {
       case 'store':
         return <StoreScreen />;
       default:
-        return <InvestorQuizFlow />;
+        return <GameMap />;
     }
   };
 
   // Hide TopNav during quiz and phase2-intro for focused experience
-  const showTopNav = currentScreen !== 'quiz' && currentScreen !== 'phase2-intro';
+  const showTopNav = currentScreen !== 'game-map' && currentScreen !== 'quiz' && currentScreen !== 'phase2-intro';
 
   return (
     <div className="min-h-screen bg-background">
