@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, TrendingUp, Newspaper, Calendar } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { playlists } from '@/data/playlists';
 
 interface NewsItem {
   id: string;
@@ -55,7 +56,7 @@ const marketUpdates: NewsItem[] = [
 ];
 
 export function MarketScreen() {
-  const { setCurrentScreen } = useApp();
+  const { setCurrentScreen, setSelectedStock } = useApp();
   
   const catalysts = marketUpdates.filter(item => item.type === 'catalyst');
   const news = marketUpdates.filter(item => item.type === 'news');
@@ -63,6 +64,43 @@ export function MarketScreen() {
   const handleBack = () => {
     setCurrentScreen('game-map');
   };
+
+  const handleTickerClick = (ticker: string) => {
+    // Find the playlist that contains this stock
+    for (const playlist of playlists) {
+      const stock = playlist.stocks.find(s => s.ticker === ticker);
+      if (stock) {
+        setSelectedStock({ ticker, playlist });
+        setCurrentScreen('stock');
+        return;
+      }
+    }
+  };
+
+  const renderNewsItem = (item: NewsItem, index: number) => (
+    <motion.div
+      key={item.id}
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.1 + index * 0.05 }}
+      className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border hover:border-primary/30 transition-colors"
+    >
+      <span className="text-xs text-muted-foreground whitespace-nowrap pt-0.5">
+        {item.date}
+      </span>
+      <p className="text-sm text-foreground flex-1">
+        {item.headline}
+      </p>
+      {item.ticker && (
+        <button
+          onClick={() => handleTickerClick(item.ticker!)}
+          className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded hover:bg-primary/20 transition-colors"
+        >
+          {item.ticker}
+        </button>
+      )}
+    </motion.div>
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -109,27 +147,7 @@ export function MarketScreen() {
           </div>
           
           <div className="space-y-2">
-            {catalysts.map((item, index) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 + index * 0.05 }}
-                className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border hover:border-primary/30 transition-colors"
-              >
-                <span className="text-xs text-muted-foreground whitespace-nowrap pt-0.5">
-                  {item.date}
-                </span>
-                <p className="text-sm text-foreground flex-1">
-                  {item.headline}
-                </p>
-                {item.ticker && (
-                  <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded">
-                    {item.ticker}
-                  </span>
-                )}
-              </motion.div>
-            ))}
+            {catalysts.map((item, index) => renderNewsItem(item, index))}
           </div>
         </motion.div>
 
@@ -146,30 +164,13 @@ export function MarketScreen() {
           </div>
           
           <div className="space-y-2">
-            {news.map((item, index) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 + index * 0.05 }}
-                className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border hover:border-primary/30 transition-colors"
-              >
-                <span className="text-xs text-muted-foreground whitespace-nowrap pt-0.5">
-                  {item.date}
-                </span>
-                <p className="text-sm text-foreground flex-1">
-                  {item.headline}
-                </p>
-                {item.ticker && (
-                  <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded">
-                    {item.ticker}
-                  </span>
-                )}
-              </motion.div>
-            ))}
+            {news.map((item, index) => renderNewsItem(item, index))}
           </div>
         </motion.div>
       </div>
     </div>
   );
 }
+
+// Export the market updates for use in StockDetail
+export { marketUpdates };

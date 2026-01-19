@@ -46,10 +46,7 @@ export default function HomePage() {
               onClick={() => handleCategoryClick(category.id)}
               className="group card-surface p-6 md:p-8 flex flex-col items-center justify-center gap-3 hover:bg-secondary/50 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
-              <span className="text-4xl md:text-5xl group-hover:scale-110 transition-transform">
-                {category.icon}
-              </span>
-              <span className="text-sm md:text-base font-medium text-foreground">
+              <span className="text-base md:text-lg font-medium text-foreground">
                 {category.name}
               </span>
             </motion.button>

@@ -3,25 +3,43 @@ import { ArrowLeft, Lock, Newspaper } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { StockPriceChart } from './StockPriceChart';
 import { AIAdvisorChat } from './advisor';
+import { marketUpdates } from '@/components/market/MarketScreen';
 
-// Mock news data for today's catalysts
-const getMockNews = (ticker: string) => [
-  {
-    id: '1',
-    headline: `${ticker} announces strategic partnership with major tech firm`,
-    date: 'Today',
-  },
-  {
-    id: '2',
-    headline: `Analysts upgrade ${ticker} price target following strong guidance`,
-    date: 'Yesterday',
-  },
-  {
-    id: '3',
-    headline: `${ticker} expands operations into new markets amid growing demand`,
-    date: '2 days ago',
-  },
-];
+// Get news for a specific ticker from market updates + generate some stock-specific news
+const getStockNews = (ticker: string) => {
+  // First, get any news from marketUpdates that matches this ticker
+  const marketNews = marketUpdates
+    .filter(item => item.ticker === ticker)
+    .map(item => ({
+      id: item.id,
+      headline: item.headline,
+      date: item.date,
+    }));
+
+  // If we have market news for this ticker, use it
+  if (marketNews.length > 0) {
+    return marketNews.slice(0, 3);
+  }
+
+  // Otherwise, generate generic news for the stock
+  return [
+    {
+      id: '1',
+      headline: `${ticker} announces strategic partnership with major tech firm`,
+      date: 'Today',
+    },
+    {
+      id: '2',
+      headline: `Analysts upgrade ${ticker} price target following strong guidance`,
+      date: 'Yesterday',
+    },
+    {
+      id: '3',
+      headline: `${ticker} expands operations into new markets amid growing demand`,
+      date: '2 days ago',
+    },
+  ];
+};
 
 export function StockDetail() {
   const { selectedStock, setCurrentScreen } = useApp();
@@ -33,7 +51,7 @@ export function StockDetail() {
 
   if (!stock) return null;
 
-  const newsItems = getMockNews(stock.ticker);
+  const newsItems = getStockNews(stock.ticker);
 
   const handleBack = () => {
     setCurrentScreen('phase2-story');
