@@ -2,15 +2,9 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useInvestorQuiz } from '@/context/InvestorQuizContext';
-import { useApp } from '@/context/AppContext';
 
 export function InvestorQuizLanding() {
   const { startQuiz } = useInvestorQuiz();
-  const { setCurrentScreen } = useApp();
-
-  const handleSkip = () => {
-    setCurrentScreen('phase2-select');
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/20 px-4 md:px-8">
@@ -57,7 +51,7 @@ export function InvestorQuizLanding() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.4 }}
-            className="space-y-4 mt-8 md:mt-10"
+            className="mt-8 md:mt-10"
           >
             <Button 
               onClick={startQuiz}
@@ -67,15 +61,6 @@ export function InvestorQuizLanding() {
               Start
               <ArrowRight className="w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-1 transition-transform" />
             </Button>
-            
-            <div>
-              <button
-                onClick={handleSkip}
-                className="text-sm md:text-base text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
-              >
-                Skip to home
-              </button>
-            </div>
           </motion.div>
 
           <motion.p 

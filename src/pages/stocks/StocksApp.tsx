@@ -7,9 +7,8 @@ import { ProfileScreen } from '@/components/profile/ProfileScreen';
 import { FollowingScreen } from '@/components/following/FollowingScreen';
 import { StoreScreen } from '@/components/store/StoreScreen';
 import { FloatingAdvisor } from '@/components/advisor/FloatingAdvisor';
-import { Phase2Intro } from '@/components/phase2/Phase2Intro';
 import { ThemeSelector } from '@/components/phase2/ThemeSelector';
-import { ThemeStoryViewer } from '@/components/phase2/ThemeStoryViewer';
+import { ThemeDetailView } from '@/components/phase2/ThemeDetailView';
 import { TopNav } from '@/components/navigation/TopNav';
 import { GameMap } from '@/components/game-map/GameMap';
 
@@ -22,12 +21,10 @@ function StocksContent() {
         return <GameMap />;
       case 'quiz':
         return <InvestorQuizFlow />;
-      case 'phase2-intro':
-        return <Phase2Intro />;
       case 'phase2-select':
         return <ThemeSelector />;
       case 'phase2-story':
-        return <ThemeStoryViewer />;
+        return <ThemeDetailView />;
       case 'playlist':
         return <PlaylistDetail />;
       case 'stock':
@@ -43,8 +40,8 @@ function StocksContent() {
     }
   };
 
-  // Hide TopNav during quiz and phase2-intro for focused experience
-  const showTopNav = currentScreen !== 'game-map' && currentScreen !== 'quiz' && currentScreen !== 'phase2-intro';
+  // Hide TopNav during quiz for focused experience
+  const showTopNav = currentScreen !== 'game-map' && currentScreen !== 'quiz';
 
   return (
     <div className="min-h-screen bg-background">
