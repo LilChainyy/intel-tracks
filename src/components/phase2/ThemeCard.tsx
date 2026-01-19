@@ -16,13 +16,8 @@ export function ThemeCard({ theme, onClick, index }: ThemeCardProps) {
       onClick={onClick}
       className="group relative flex flex-col items-center p-6 rounded-xl bg-card border border-border hover:border-primary/50 hover:shadow-lg transition-all duration-200 hover:-translate-y-1 text-left w-full"
     >
-      {/* Icon */}
-      <div className="text-5xl mb-4">
-        {theme.icon}
-      </div>
       
-      {/* Title */}
-      <h3 className="text-lg font-bold text-foreground text-center mb-3">
+      <h3 className="text-lg font-bold text-foreground text-center mb-3 mt-2">
         {theme.title}
       </h3>
       

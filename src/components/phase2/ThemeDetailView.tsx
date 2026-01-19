@@ -158,12 +158,9 @@ export function ThemeDetailView() {
           className="mb-8"
         >
           <div className="flex items-start justify-between gap-4 mb-4">
-            <div className="flex items-center gap-3">
-              <span className="text-4xl">{story.icon}</span>
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-                {story.title}
-              </h1>
-            </div>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+              {story.title}
+            </h1>
             
             {/* YTD Metric */}
             {themeYtd && (
@@ -203,7 +200,7 @@ export function ThemeDetailView() {
               }`}
             >
               <ThumbsUp className={`w-4 h-4 ${userVote === 'up' ? 'fill-current' : ''}`} />
-              <span className="font-medium">{upPercentage}%</span>
+              {userVote && <span className="font-medium">{upPercentage}%</span>}
             </button>
             
             <button
@@ -215,12 +212,14 @@ export function ThemeDetailView() {
               }`}
             >
               <ThumbsDown className={`w-4 h-4 ${userVote === 'down' ? 'fill-current' : ''}`} />
-              <span className="font-medium">{downPercentage}%</span>
+              {userVote && <span className="font-medium">{downPercentage}%</span>}
             </button>
             
-            <span className="text-xs text-muted-foreground ml-auto">
-              {totalVotes} votes
-            </span>
+            {userVote && (
+              <span className="text-xs text-muted-foreground ml-auto">
+                {totalVotes} votes
+              </span>
+            )}
           </div>
         </motion.div>
 
