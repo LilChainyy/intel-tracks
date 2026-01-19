@@ -1,9 +1,8 @@
 export interface QuizOptionScores {
   riskTolerance?: number;
-  knowledge?: number;
   decisionStyle?: number;
   timeHorizon?: number;
-  motivation?: 'money' | 'status' | 'balanced' | 'private';
+  archetype?: 'deal_maker' | 'compounder' | 'protector';
 }
 
 export interface QuizOption {
@@ -22,10 +21,13 @@ export interface InvestorQuestion {
 
 export interface QuizScores {
   riskTolerance: number;    // 0-100
-  knowledge: number;        // 0-100
   decisionStyle: number;    // 0-100 (0=impulsive, 100=analytical)
   timeHorizon: number;      // 0-100 (0=short-term, 100=long-term)
-  motivation: 'money' | 'status' | 'balanced' | 'private';
+  archetypeCounts: {
+    deal_maker: number;
+    compounder: number;
+    protector: number;
+  };
 }
 
 export interface FamousInvestor {
