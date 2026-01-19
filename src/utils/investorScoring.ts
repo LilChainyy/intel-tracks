@@ -1,76 +1,82 @@
 import { QuizScores, QuizAnswer, Archetype } from '@/types/investorQuiz';
 import { archetypes, investorQuestions } from '@/data/investorQuizData';
 
-// Questions that contribute to each score category
-const RISK_TOLERANCE_QUESTIONS = [2, 7, 9, 11];
-const KNOWLEDGE_QUESTIONS = [3, 4, 5];
-const DECISION_STYLE_QUESTIONS = [1, 6, 7];
-const TIME_HORIZON_QUESTIONS = [5, 10, 11];
-const MOTIVATION_QUESTION = 8;
-
-function averageScores(answers: Record<number, QuizAnswer>, questionIds: number[], scoreKey: keyof QuizAnswer['scores']): number {
-  const validScores: number[] = [];
+export function calculateScores(answers: Record<number, QuizAnswer>): QuizScores {
+  let totalRisk = 0;
+  let riskCount = 0;
+  let totalDecision = 0;
+  let decisionCount = 0;
+  let totalHorizon = 0;
+  let horizonCount = 0;
   
-  for (const qId of questionIds) {
-    const answer = answers[qId];
-    if (answer && answer.scores[scoreKey] !== undefined) {
-      validScores.push(answer.scores[scoreKey] as number);
+  const archetypeCounts = {
+    deal_maker: 0,
+    compounder: 0,
+    protector: 0
+  };
+  
+  for (const answer of Object.values(answers)) {
+    if (answer.scores.riskTolerance !== undefined) {
+      totalRisk += answer.scores.riskTolerance;
+      riskCount++;
+    }
+    if (answer.scores.decisionStyle !== undefined) {
+      totalDecision += answer.scores.decisionStyle;
+      decisionCount++;
+    }
+    if (answer.scores.timeHorizon !== undefined) {
+      totalHorizon += answer.scores.timeHorizon;
+      horizonCount++;
+    }
+    if (answer.scores.archetype) {
+      archetypeCounts[answer.scores.archetype]++;
     }
   }
   
-  if (validScores.length === 0) return 50; // Default to middle
-  return Math.round(validScores.reduce((a, b) => a + b, 0) / validScores.length);
-}
-
-export function calculateScores(answers: Record<number, QuizAnswer>): QuizScores {
-  const riskTolerance = averageScores(answers, RISK_TOLERANCE_QUESTIONS, 'riskTolerance');
-  const knowledge = averageScores(answers, KNOWLEDGE_QUESTIONS, 'knowledge');
-  const decisionStyle = averageScores(answers, DECISION_STYLE_QUESTIONS, 'decisionStyle');
-  const timeHorizon = averageScores(answers, TIME_HORIZON_QUESTIONS, 'timeHorizon');
-  
-  // Motivation comes from question 8 only
-  const motivationAnswer = answers[MOTIVATION_QUESTION];
-  const motivation = (motivationAnswer?.scores?.motivation as QuizScores['motivation']) || 'balanced';
-  
   return {
-    riskTolerance,
-    knowledge,
-    decisionStyle,
-    timeHorizon,
-    motivation
+    riskTolerance: riskCount > 0 ? Math.round(totalRisk / riskCount) : 50,
+    decisionStyle: decisionCount > 0 ? Math.round(totalDecision / decisionCount) : 50,
+    timeHorizon: horizonCount > 0 ? Math.round(totalHorizon / horizonCount) : 50,
+    archetypeCounts
   };
 }
 
 export function determineArchetype(scores: QuizScores): Archetype {
-  const { riskTolerance, knowledge, decisionStyle, timeHorizon } = scores;
+  const { archetypeCounts } = scores;
   
-  // Momentum Hunter: High risk (70+), impulsive (0-40), short-term (0-40)
-  if (riskTolerance >= 70 && decisionStyle <= 40 && timeHorizon <= 40) {
-    return archetypes.momentum_hunter;
+  // Find the archetype with the highest count
+  let maxCount = 0;
+  let winningArchetype: 'deal_maker' | 'compounder' | 'protector' = 'compounder';
+  
+  if (archetypeCounts.deal_maker > maxCount) {
+    maxCount = archetypeCounts.deal_maker;
+    winningArchetype = 'deal_maker';
+  }
+  if (archetypeCounts.compounder > maxCount) {
+    maxCount = archetypeCounts.compounder;
+    winningArchetype = 'compounder';
+  }
+  if (archetypeCounts.protector > maxCount) {
+    maxCount = archetypeCounts.protector;
+    winningArchetype = 'protector';
   }
   
-  // Strategic Analyst: Moderate risk (40-70), analytical (70+), medium-long (50+)
-  if (riskTolerance >= 40 && riskTolerance <= 70 && decisionStyle >= 70 && timeHorizon >= 50) {
-    return archetypes.strategic_analyst;
+  // Handle ties by checking secondary scores
+  if (archetypeCounts.deal_maker === archetypeCounts.compounder && 
+      archetypeCounts.deal_maker === maxCount) {
+    // Tie between deal_maker and compounder - use risk tolerance to decide
+    winningArchetype = scores.riskTolerance >= 70 ? 'deal_maker' : 'compounder';
+  } else if (archetypeCounts.compounder === archetypeCounts.protector && 
+             archetypeCounts.compounder === maxCount) {
+    // Tie between compounder and protector - use time horizon to decide
+    winningArchetype = scores.timeHorizon >= 70 ? 'compounder' : 'protector';
+  } else if (archetypeCounts.deal_maker === archetypeCounts.protector && 
+             archetypeCounts.deal_maker === maxCount) {
+    // Tie between deal_maker and protector - use risk tolerance to decide
+    winningArchetype = scores.riskTolerance >= 50 ? 'deal_maker' : 'protector';
   }
   
-  // Cautious Builder: Low risk (0-40), analytical (60+), long-term (70+)
-  if (riskTolerance <= 40 && decisionStyle >= 60 && timeHorizon >= 70) {
-    return archetypes.cautious_builder;
-  }
-  
-  // Curious Learner: Low knowledge (0-50), any other scores
-  if (knowledge <= 50) {
-    return archetypes.curious_learner;
-  }
-  
-  // Calculated Risk-Taker: High risk (70+), analytical (70+), any horizon
-  if (riskTolerance >= 70 && decisionStyle >= 70) {
-    return archetypes.calculated_risk_taker;
-  }
-  
-  // Balanced Realist: Everything moderate (40-70 range) - fallback
-  return archetypes.balanced_realist;
+  return archetypes[winningArchetype];
 }
 
 export function getQuestionById(id: number) {
