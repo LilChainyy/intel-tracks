@@ -6,7 +6,7 @@ import { playlists } from '@/data/playlists';
 import { getStockRole } from '@/data/stockRoles';
 import { useStockData } from '@/hooks/useStockData';
 import { StockAssetCard } from './StockAssetCard';
-import { MicroResearchDrawer } from './MicroResearchDrawer';
+
 import {
   ArrowLeft,
   MessageCircle,
@@ -33,9 +33,6 @@ export function ThemeDetailView() {
   // Chat expansion state
   const [isChatExpanded, setIsChatExpanded] = useState(false);
 
-  // Drawer state
-  const [selectedStockForDrawer, setSelectedStockForDrawer] = useState<Stock | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const story = currentThemeStoryId ? themeStories[currentThemeStoryId] : null;
   const playlist = story ? playlists.find((p) => p.id === story.themeId) : null;
@@ -119,13 +116,8 @@ export function ThemeDetailView() {
   };
 
   const handleStockCardClick = (stock: Stock) => {
-    setSelectedStockForDrawer(stock);
-    setDrawerOpen(true);
-  };
-
-  const handleViewFullAnalysis = () => {
-    if (selectedStockForDrawer && playlist) {
-      setSelectedStock({ ticker: selectedStockForDrawer.ticker, playlist });
+    if (playlist) {
+      setSelectedStock({ ticker: stock.ticker, playlist });
       setCurrentScreen('stock');
     }
   };
@@ -342,23 +334,6 @@ export function ThemeDetailView() {
         </motion.div>
       </div>
 
-      {/* Micro Research Drawer */}
-      <MicroResearchDrawer
-        stock={selectedStockForDrawer}
-        roleData={
-          selectedStockForDrawer && story
-            ? getStockRole(story.themeId, selectedStockForDrawer.ticker)
-            : undefined
-        }
-        ytdChange={
-          selectedStockForDrawer && !selectedStockForDrawer.isPrivate
-            ? formatYtdChange(selectedStockForDrawer.ticker)
-            : undefined
-        }
-        isOpen={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        onViewFull={handleViewFullAnalysis}
-      />
     </div>
   );
 }
