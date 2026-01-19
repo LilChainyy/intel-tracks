@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import { Playlist, Stock } from '@/types/playlist';
 
-type Screen = 'game-map' | 'quiz' | 'playlist' | 'stock' | 'profile' | 'following' | 'store' | 'phase2-intro' | 'phase2-select' | 'phase2-story';
+type Screen = 'game-map' | 'quiz' | 'playlist' | 'stock' | 'profile' | 'following' | 'store' | 'phase2-select' | 'phase2-story';
 
 export interface SavedStock {
   ticker: string;

@@ -14,7 +14,7 @@ export function InvestorQuizResults() {
 
   const handleContinue = () => {
     setQuizCompleted(true);
-    setCurrentScreen('phase2-intro');
+    setCurrentScreen('game-map');
   };
 
   const handleShare = async () => {
