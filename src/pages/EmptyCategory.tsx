@@ -33,14 +33,6 @@ export default function EmptyCategory() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center"
         >
-          <motion.span
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.1 }}
-            className="text-6xl md:text-7xl block mb-6"
-          >
-            {categoryData.icon}
-          </motion.span>
           
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-3">
             {categoryData.name}

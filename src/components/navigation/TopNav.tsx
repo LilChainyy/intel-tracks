@@ -1,17 +1,17 @@
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Layers, Newspaper, Bookmark } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { User, Package } from 'lucide-react';
+import { useApp } from '@/context/AppContext';
 
 export function TopNav() {
   const navigate = useNavigate();
-  const { category } = useParams<{ category?: string }>();
-  const currentCategory = category || 'stocks';
+  const { setCurrentScreen } = useApp();
 
-  const handleHomeClick = () => {
-    if (currentCategory === 'stocks') {
-      navigate('/stocks');
-    } else {
-      navigate(`/${currentCategory}`);
-    }
+  const handleProfileClick = () => {
+    setCurrentScreen('profile');
+  };
+
+  const handleProductsClick = () => {
+    navigate('/');
   };
 
   return (
@@ -29,26 +29,19 @@ export function TopNav() {
           {/* Navigation Links */}
           <nav className="flex items-center gap-6 md:gap-8">
             <button
-              onClick={handleHomeClick}
+              onClick={handleProductsClick}
               className="flex items-center gap-2 text-sm md:text-base text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Layers className="w-4 h-4" />
-              <span className="hidden sm:inline">Themes</span>
+              <Package className="w-4 h-4" />
+              <span className="hidden sm:inline">Products</span>
             </button>
-            <Link
-              to="/stocks/news"
+            <button
+              onClick={handleProfileClick}
               className="flex items-center gap-2 text-sm md:text-base text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Newspaper className="w-4 h-4" />
-              <span className="hidden sm:inline">News</span>
-            </Link>
-            <Link
-              to="/saved"
-              className="flex items-center gap-2 text-sm md:text-base text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Bookmark className="w-4 h-4" />
-              <span className="hidden sm:inline">Saved</span>
-            </Link>
+              <User className="w-4 h-4" />
+              <span className="hidden sm:inline">Profile</span>
+            </button>
           </nav>
         </div>
       </div>
