@@ -99,11 +99,26 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName, embedde
         content: m.content,
       }));
 
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+
+      if (!accessToken) {
+        const msg: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: "You're not signed in yet. Please sign in to use the AI Advisor.",
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, msg]);
+        toast.error('Please sign in to use the AI Advisor');
+        return;
+      }
+
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/company-advisor-chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           messages: history,
@@ -115,6 +130,10 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName, embedde
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          toast.error('Session expired. Please sign in again.');
+          throw new Error('Unauthorized');
+        }
         if (response.status === 429) {
           toast.error('Too many requests, please try again later');
           throw new Error('Rate limited');
