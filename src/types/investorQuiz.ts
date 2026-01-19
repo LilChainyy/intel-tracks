@@ -2,7 +2,7 @@ export interface QuizOptionScores {
   riskTolerance?: number;
   decisionStyle?: number;
   timeHorizon?: number;
-  archetype?: 'deal_maker' | 'compounder' | 'protector';
+  archetype?: 'bargain_hunter' | 'collector' | 'safe_player' | 'visionary';
 }
 
 export interface QuizOption {
@@ -24,9 +24,10 @@ export interface QuizScores {
   decisionStyle: number;    // 0-100 (0=impulsive, 100=analytical)
   timeHorizon: number;      // 0-100 (0=short-term, 100=long-term)
   archetypeCounts: {
-    deal_maker: number;
-    compounder: number;
-    protector: number;
+    bargain_hunter: number;
+    collector: number;
+    safe_player: number;
+    visionary: number;
   };
 }
 
