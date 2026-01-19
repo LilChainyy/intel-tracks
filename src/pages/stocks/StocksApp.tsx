@@ -11,6 +11,7 @@ import { ThemeSelector } from '@/components/phase2/ThemeSelector';
 import { ThemeDetailView } from '@/components/phase2/ThemeDetailView';
 import { TopNav } from '@/components/navigation/TopNav';
 import { GameMap } from '@/components/game-map/GameMap';
+import { MarketScreen } from '@/components/market/MarketScreen';
 
 function StocksContent() {
   const { currentScreen } = useApp();
@@ -35,13 +36,15 @@ function StocksContent() {
         return <FollowingScreen />;
       case 'store':
         return <StoreScreen />;
+      case 'market':
+        return <MarketScreen />;
       default:
         return <GameMap />;
     }
   };
 
-  // Hide TopNav during quiz for focused experience
-  const showTopNav = currentScreen !== 'game-map' && currentScreen !== 'quiz';
+  // Always show TopNav except during quiz for focused experience
+  const showTopNav = currentScreen !== 'quiz';
 
   return (
     <div className="min-h-screen bg-background">

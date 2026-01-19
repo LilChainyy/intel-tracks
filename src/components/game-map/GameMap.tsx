@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useApp } from '@/context/AppContext';
-import { Brain, Layers, Sparkles, Trophy } from 'lucide-react';
+import { Brain, Layers, TrendingUp, Trophy } from 'lucide-react';
 
 interface MapPin {
   id: string;
@@ -9,7 +9,7 @@ interface MapPin {
   description: string;
   position: { x: number; y: number };
   available: boolean;
-  screen?: 'quiz' | 'phase2-select';
+  screen?: 'quiz' | 'phase2-select' | 'market';
 }
 
 const mapPins: MapPin[] = [
@@ -32,12 +32,13 @@ const mapPins: MapPin[] = [
     screen: 'phase2-select',
   },
   {
-    id: 'tbc-1',
-    name: 'Coming Soon',
-    icon: <Sparkles className="w-6 h-6" />,
-    description: 'New adventure awaits',
+    id: 'market',
+    name: 'Market',
+    icon: <TrendingUp className="w-6 h-6" />,
+    description: 'Catalysts & breaking news',
     position: { x: 25, y: 65 },
-    available: false,
+    available: true,
+    screen: 'market',
   },
   {
     id: 'tbc-2',

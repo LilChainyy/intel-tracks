@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '@/context/AppContext';
 import { themeStories, selectorThemes } from '@/data/themeStoryData';
@@ -12,8 +12,6 @@ import {
   MessageCircle,
   ThumbsUp,
   ThumbsDown,
-  ChevronDown,
-  ChevronUp,
 } from 'lucide-react';
 import { Stock } from '@/types/playlist';
 
@@ -30,8 +28,6 @@ export function ThemeDetailView() {
   const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
   const [votes, setVotes] = useState({ up: 0, down: 0 });
   
-  // Chat expansion state
-  const [isChatExpanded, setIsChatExpanded] = useState(false);
 
 
   const story = currentThemeStoryId ? themeStories[currentThemeStoryId] : null;
@@ -260,7 +256,7 @@ export function ThemeDetailView() {
           )}
         </motion.div>
 
-        {/* Chatbot-style Learn More Section */}
+        {/* Learn More Section - Always Expanded */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -268,68 +264,47 @@ export function ThemeDetailView() {
           className="mb-8"
         >
           <div className="rounded-xl border border-border overflow-hidden">
-            {/* Chat Header */}
-            <button
-              onClick={() => setIsChatExpanded(!isChatExpanded)}
-              className="w-full flex items-center gap-3 p-4 bg-card hover:bg-muted/50 transition-colors"
-            >
+            {/* Header */}
+            <div className="flex items-center gap-3 p-4 bg-card border-b border-border">
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
                 <MessageCircle className="w-4 h-4 text-primary" />
               </div>
-              <span className="flex-1 text-left font-medium text-foreground">
+              <span className="font-medium text-foreground">
                 Learn more about this theme
               </span>
-              {isChatExpanded ? (
-                <ChevronUp className="w-5 h-5 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="w-5 h-5 text-muted-foreground" />
-              )}
-            </button>
+            </div>
             
-            {/* Expanded Content */}
-            <AnimatePresence>
-              {isChatExpanded && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
-                >
-                  <div className="p-4 pt-0 space-y-4">
-                    {/* AI Response Bubble */}
-                    <div className="flex gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                        <MessageCircle className="w-4 h-4 text-primary" />
-                      </div>
-                      <div className="flex-1 p-3 rounded-lg bg-muted/50">
-                        <p className="text-foreground/80 leading-relaxed text-sm">
-                          {logicExplanation}
-                        </p>
-                        
-                        {/* Recent catalyst */}
-                        <div className="mt-3 p-3 rounded-lg bg-background border border-border">
-                          <p className="text-xs text-muted-foreground mb-1">
-                            {story.act1.recentCatalyst.date}
-                          </p>
-                          <p className="text-sm font-medium text-foreground">
-                            {story.act1.recentCatalyst.event}
-                          </p>
-                          <p className="text-xs text-primary mt-1">
-                            {story.act1.recentCatalyst.impact}
-                          </p>
-                        </div>
-                        
-                        {/* Why it matters */}
-                        <p className="text-foreground/80 leading-relaxed text-sm mt-3">
-                          {story.act1.whyItMatters}
-                        </p>
-                      </div>
-                    </div>
+            {/* Content - Always visible */}
+            <div className="p-4 space-y-4">
+              <div className="flex gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <MessageCircle className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1 p-3 rounded-lg bg-muted/50">
+                  <p className="text-foreground/80 leading-relaxed text-sm">
+                    {logicExplanation}
+                  </p>
+                  
+                  {/* Recent catalyst */}
+                  <div className="mt-3 p-3 rounded-lg bg-background border border-border">
+                    <p className="text-xs text-muted-foreground mb-1">
+                      {story.act1.recentCatalyst.date}
+                    </p>
+                    <p className="text-sm font-medium text-foreground">
+                      {story.act1.recentCatalyst.event}
+                    </p>
+                    <p className="text-xs text-primary mt-1">
+                      {story.act1.recentCatalyst.impact}
+                    </p>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  
+                  {/* Why it matters */}
+                  <p className="text-foreground/80 leading-relaxed text-sm mt-3">
+                    {story.act1.whyItMatters}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </motion.div>
       </div>

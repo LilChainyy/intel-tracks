@@ -25,9 +25,10 @@ interface AIAdvisorChatProps {
   onOpenChange: (open: boolean) => void;
   ticker: string;
   companyName: string;
+  embedded?: boolean;
 }
 
-export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdvisorChatProps) {
+export function AIAdvisorChat({ open, onOpenChange, ticker, companyName, embedded = false }: AIAdvisorChatProps) {
   const isMobile = useIsMobile();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -54,7 +55,7 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
   }, [messages]);
 
   useEffect(() => {
-    if (open) {
+    if (open || embedded) {
       setMessages([]);
       setProgress(INITIAL_PROGRESS);
       setSavedThesis(null);
@@ -76,7 +77,7 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
 
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [open, companyName, ticker]);
+  }, [open, embedded, companyName, ticker]);
 
   const sendMessage = async (content: string) => {
     if (!content.trim() || isLoading) return;
@@ -299,6 +300,174 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
     }
   };
 
+  // Shared chat content
+  const chatContent = (
+    <div className={`flex flex-col ${embedded ? 'h-[500px]' : 'h-full'}`}>
+      {/* Header */}
+      <div className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-b border-border p-3 md:p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-foreground text-sm md:text-base">AI Advisor</h2>
+              <p className="text-[10px] md:text-xs text-muted-foreground">{ticker} · {companyName}</p>
+            </div>
+          </div>
+          {!embedded && (
+            <div className="flex items-center gap-1 md:gap-2">
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleToggleSummary}
+                  className="text-muted-foreground hover:text-foreground gap-1 px-2"
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  <span className="text-xs">{Math.round(overallProgress)}%</span>
+                </Button>
+              )}
+              {!isMobile && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleToggleSummary}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  {showSummary ? (
+                    <PanelRightClose className="w-5 h-5" />
+                  ) : (
+                    <PanelRightOpen className="w-5 h-5" />
+                  )}
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onOpenChange(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <ScrollArea className="h-full [&>[data-radix-scroll-area-viewport]]:max-h-full">
+          <div className="p-3 md:p-4 space-y-3 md:space-y-4 max-w-3xl mx-auto">
+            <AnimatePresence mode="popLayout">
+              {messages.map((message) => (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  {message.role === 'assistant' ? (
+                    <div className="flex gap-2 md:gap-3 max-w-[90%] md:max-w-[85%]">
+                      <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" />
+                      </div>
+                      <div className="bg-secondary rounded-2xl rounded-tl-sm px-3 py-2 md:px-4 md:py-3">
+                        <p className="text-sm text-foreground whitespace-pre-wrap">
+                          {message.content || (
+                            <span className="flex items-center gap-2 text-muted-foreground">
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Thinking...
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-2">
+                          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-foreground text-background rounded-2xl rounded-tr-sm px-3 py-2 md:px-4 md:py-3 max-w-[90%] md:max-w-[85%]">
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      <p className="text-[10px] opacity-70 mt-2">
+                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            <div ref={chatEndRef} />
+          </div>
+        </ScrollArea>
+      </div>
+
+      {/* Suggested Questions */}
+      {suggestedQuestions.length > 0 && !isLoading && (
+        <div className="flex-shrink-0 px-3 md:px-4 pb-2">
+          <ScrollArea className="w-full">
+            <div className="flex gap-2 pb-2">
+              {suggestedQuestions.map((q, idx) => (
+                <Button
+                  key={idx}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSuggestedQuestion(q)}
+                  className="whitespace-nowrap flex-shrink-0 text-xs md:text-sm"
+                >
+                  {q.text}
+                </Button>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
+      )}
+
+      {/* Input */}
+      <div className="flex-shrink-0 p-3 md:p-4 border-t border-border bg-background">
+        <div className="flex gap-2 max-w-3xl mx-auto">
+          <Input
+            ref={inputRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Ask about this company..."
+            className="flex-1"
+            disabled={isLoading}
+          />
+          <Button
+            onClick={() => sendMessage(input)}
+            disabled={!input.trim() || isLoading}
+            size="icon"
+          >
+            <Send className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // If embedded, render inline
+  if (embedded) {
+    return (
+      <div className="card-surface rounded-xl border border-border overflow-hidden">
+        {chatContent}
+        
+        {/* Thesis Builder Dialog */}
+        <ThesisBuilder
+          open={showThesisBuilder}
+          onOpenChange={setShowThesisBuilder}
+          companyName={companyName}
+          ticker={ticker}
+          progress={progress}
+          onSaveThesis={handleSaveThesis}
+        />
+      </div>
+    );
+  }
+
+  // Dialog mode
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -306,146 +475,7 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
           <div className="flex flex-1 min-h-0 h-full">
             {/* Main Chat Area */}
             <div className={`flex flex-col h-full ${showSummary && !isMobile ? 'md:w-[70%]' : 'w-full'} transition-all duration-300`}>
-              {/* Header */}
-              <div className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-b border-border p-3 md:p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 md:gap-3">
-                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-primary" />
-                    </div>
-                    <div>
-                      <h2 className="font-semibold text-foreground text-sm md:text-base">AI Advisor</h2>
-                      <p className="text-[10px] md:text-xs text-muted-foreground">{ticker} · {companyName}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 md:gap-2">
-                    {isMobile && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleToggleSummary}
-                        className="text-muted-foreground hover:text-foreground gap-1 px-2"
-                      >
-                        <BarChart3 className="w-4 h-4" />
-                        <span className="text-xs">{Math.round(overallProgress)}%</span>
-                      </Button>
-                    )}
-                    {!isMobile && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleToggleSummary}
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        {showSummary ? (
-                          <PanelRightClose className="w-5 h-5" />
-                        ) : (
-                          <PanelRightOpen className="w-5 h-5" />
-                        )}
-                      </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onOpenChange(false)}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <X className="w-5 h-5" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Messages */}
-              <div className="flex-1 min-h-0 overflow-y-auto">
-                <ScrollArea className="h-full [&>[data-radix-scroll-area-viewport]]:max-h-full">
-                  <div className="p-3 md:p-4 space-y-3 md:space-y-4 max-w-3xl mx-auto">
-                    <AnimatePresence mode="popLayout">
-                      {messages.map((message) => (
-                        <motion.div
-                          key={message.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0 }}
-                          className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                        >
-                          {message.role === 'assistant' ? (
-                            <div className="flex gap-2 md:gap-3 max-w-[90%] md:max-w-[85%]">
-                              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" />
-                              </div>
-                              <div className="bg-secondary rounded-2xl rounded-tl-sm px-3 py-2 md:px-4 md:py-3">
-                                <p className="text-sm text-foreground whitespace-pre-wrap">
-                                  {message.content || (
-                                    <span className="flex items-center gap-2 text-muted-foreground">
-                                      <Loader2 className="w-4 h-4 animate-spin" />
-                                      Thinking...
-                                    </span>
-                                  )}
-                                </p>
-                                <p className="text-[10px] text-muted-foreground mt-2">
-                                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </p>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="bg-foreground text-background rounded-2xl rounded-tr-sm px-3 py-2 md:px-4 md:py-3 max-w-[90%] md:max-w-[85%]">
-                              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                              <p className="text-[10px] opacity-70 mt-2">
-                                {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </p>
-                            </div>
-                          )}
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                    <div ref={chatEndRef} />
-                  </div>
-                </ScrollArea>
-              </div>
-
-              {/* Suggested Questions */}
-              {suggestedQuestions.length > 0 && !isLoading && (
-                <div className="flex-shrink-0 px-3 md:px-4 pb-2">
-                  <ScrollArea className="w-full">
-                    <div className="flex gap-2 pb-2">
-                      {suggestedQuestions.map((q, idx) => (
-                        <Button
-                          key={idx}
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleSuggestedQuestion(q)}
-                          className="whitespace-nowrap flex-shrink-0 text-xs md:text-sm"
-                        >
-                          {q.text}
-                        </Button>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </div>
-              )}
-
-              {/* Input */}
-              <div className="flex-shrink-0 p-3 md:p-4 border-t border-border bg-background">
-                <div className="flex gap-2 max-w-3xl mx-auto">
-                  <Input
-                    ref={inputRef}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Ask about this company..."
-                    className="flex-1"
-                    disabled={isLoading}
-                  />
-                  <Button
-                    onClick={() => sendMessage(input)}
-                    disabled={!input.trim() || isLoading}
-                    size="icon"
-                  >
-                    <Send className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
+              {chatContent}
             </div>
 
             {/* Summary Panel - Desktop */}
