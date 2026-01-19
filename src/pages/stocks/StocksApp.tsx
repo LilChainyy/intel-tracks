@@ -43,8 +43,8 @@ function StocksContent() {
     }
   };
 
-  // Always show TopNav except during quiz for focused experience
-  const showTopNav = currentScreen !== 'quiz';
+  // Show TopNav on all screens
+  const showTopNav = true;
 
   return (
     <div className="min-h-screen bg-background">
