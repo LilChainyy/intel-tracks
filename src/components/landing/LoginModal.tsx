@@ -36,11 +36,9 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
     const newErrors: typeof errors = {};
 
     if (!email.trim()) {
-      newErrors.email = 'Username is required';
-    } else if (email.length > 10) {
-      newErrors.email = 'Username must be 10 characters or less';
-    } else if (!/^[a-zA-Z0-9]+$/.test(email)) {
-      newErrors.email = 'Only letters and numbers allowed';
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Please enter a valid email';
     }
 
     if (!password) {
@@ -56,8 +54,6 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
-  const usernameToEmail = (username: string) => `${username.toLowerCase().trim()}@adamsmyth.app`;
 
   const validateReferralCode = async (code: string): Promise<boolean> => {
     const { data, error } = await supabase
@@ -101,7 +97,7 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
         }
 
         const { error } = await supabase.auth.signInWithPassword({
-          email: usernameToEmail(email),
+          email: email.trim(),
           password,
         });
 
@@ -131,13 +127,10 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
         }
 
         const { error } = await supabase.auth.signUp({
-          email: usernameToEmail(email),
+          email: email.trim(),
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/home`,
-            data: {
-              display_name: email.trim(),
-            },
           },
         });
 
@@ -202,15 +195,14 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-slate-700">Username</Label>
+            <Label htmlFor="email" className="text-slate-700">Email</Label>
             <Input
               id="email"
-              type="text"
-              placeholder="johnsmith"
+              type="email"
+              placeholder="you@example.com"
               value={email}
-              maxLength={10}
               onChange={(e) => {
-                setEmail(e.target.value.replace(/[^a-zA-Z0-9]/g, ''));
+                setEmail(e.target.value);
                 if (errors.email) setErrors({ ...errors, email: undefined });
               }}
               className={`bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 ${errors.email ? 'border-red-500' : ''}`}
