@@ -72,18 +72,8 @@ export default function LandingPage() {
 
   const incrementReferralCodeUse = async (code: string) => {
     const normalizedCode = code.toUpperCase().trim();
-    const { data } = await supabase
-      .from('referral_codes')
-      .select('current_uses')
-      .eq('code', normalizedCode)
-      .single();
-    
-    if (data) {
-      await supabase
-        .from('referral_codes')
-        .update({ current_uses: data.current_uses + 1 })
-        .eq('code', normalizedCode);
-    }
+    // Use the security definer function to increment usage
+    await supabase.rpc('increment_referral_code_use' as never, { code_text: normalizedCode } as never);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
