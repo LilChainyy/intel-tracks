@@ -495,7 +495,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_referral_code_use: {
+        Args: { code_text: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

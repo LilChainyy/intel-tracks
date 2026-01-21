@@ -71,7 +71,19 @@ export default function LandingPage() {
   };
 
   const incrementReferralCodeUse = async (code: string) => {
-    await supabase.rpc('increment_referral_code_use', { code_text: code.toUpperCase().trim() });
+    const normalizedCode = code.toUpperCase().trim();
+    const { data } = await supabase
+      .from('referral_codes')
+      .select('current_uses')
+      .eq('code', normalizedCode)
+      .single();
+    
+    if (data) {
+      await supabase
+        .from('referral_codes')
+        .update({ current_uses: data.current_uses + 1 })
+        .eq('code', normalizedCode);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
