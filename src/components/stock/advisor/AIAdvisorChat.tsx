@@ -334,33 +334,35 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName, embedde
               <p className="text-[10px] md:text-xs text-muted-foreground">{ticker} · {companyName}</p>
             </div>
           </div>
-          {!embedded && (
-            <div className="flex items-center gap-1 md:gap-2">
-              {isMobile && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleToggleSummary}
-                  className="text-muted-foreground hover:text-foreground gap-1 px-2"
-                >
-                  <BarChart3 className="w-4 h-4" />
-                  <span className="text-xs">{Math.round(overallProgress)}%</span>
-                </Button>
-              )}
-              {!isMobile && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleToggleSummary}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  {showSummary ? (
-                    <PanelRightClose className="w-5 h-5" />
-                  ) : (
-                    <PanelRightOpen className="w-5 h-5" />
-                  )}
-                </Button>
-              )}
+          <div className="flex items-center gap-1 md:gap-2">
+            {/* Progress indicator - always show */}
+            {isMobile ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleToggleSummary}
+                className="text-muted-foreground hover:text-foreground gap-1 px-2"
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span className="text-xs">{Math.round(overallProgress)}%</span>
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleToggleSummary}
+                className="text-muted-foreground hover:text-foreground gap-1.5 px-2"
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span className="text-xs font-medium">{Math.round(overallProgress)}% Research</span>
+                {showSummary ? (
+                  <PanelRightClose className="w-4 h-4 ml-1" />
+                ) : (
+                  <PanelRightOpen className="w-4 h-4 ml-1" />
+                )}
+              </Button>
+            )}
+            {!embedded && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -369,8 +371,8 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName, embedde
               >
                 <X className="w-5 h-5" />
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
@@ -467,11 +469,57 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName, embedde
     </div>
   );
 
-  // If embedded, render inline
+  // If embedded, render inline with full thinking framework
   if (embedded) {
     return (
-      <div className="card-surface rounded-xl border border-border overflow-hidden">
-        {chatContent}
+      <>
+        <div className="card-surface rounded-xl border border-border overflow-hidden">
+          <div className="flex">
+            {/* Main Chat Area */}
+            <div className={`flex-1 ${showSummary && !isMobile ? 'md:max-w-[65%]' : 'w-full'} transition-all duration-300`}>
+              {chatContent}
+            </div>
+
+            {/* Summary Panel - Desktop Embedded */}
+            {showSummary && !isMobile && (
+              <motion.div
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: '35%', opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                className="hidden md:block border-l border-border min-w-[260px] max-w-[320px]"
+              >
+                <SummaryPanel
+                  progress={progress}
+                  onAskAbout={handleAskAbout}
+                  onBuildThesis={() => setShowThesisBuilder(true)}
+                  companyName={companyName}
+                />
+              </motion.div>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile Summary Sheet */}
+        <Sheet open={showMobileSummary} onOpenChange={setShowMobileSummary}>
+          <SheetContent side="bottom" className="h-[80vh] p-0">
+            <SheetHeader className="p-4 border-b border-border">
+              <SheetTitle>Research Progress</SheetTitle>
+            </SheetHeader>
+            <SummaryPanel
+              progress={progress}
+              onAskAbout={(topic) => {
+                handleAskAbout(topic);
+                setShowMobileSummary(false);
+              }}
+              onBuildThesis={() => {
+                setShowThesisBuilder(true);
+                setShowMobileSummary(false);
+              }}
+              companyName={companyName}
+              onClose={() => setShowMobileSummary(false)}
+            />
+          </SheetContent>
+        </Sheet>
         
         {/* Thesis Builder Dialog */}
         <ThesisBuilder
@@ -482,7 +530,7 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName, embedde
           progress={progress}
           onSaveThesis={handleSaveThesis}
         />
-      </div>
+      </>
     );
   }
 
