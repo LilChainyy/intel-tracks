@@ -36,9 +36,11 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
     const newErrors: typeof errors = {};
 
     if (!email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'Please enter a valid email';
+      newErrors.email = 'Username is required';
+    } else if (email.length > 10) {
+      newErrors.email = 'Username must be 10 characters or less';
+    } else if (!/^[a-zA-Z0-9]+$/.test(email)) {
+      newErrors.email = 'Only letters and numbers allowed';
     }
 
     if (!password) {
@@ -54,6 +56,8 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
+  const usernameToEmail = (username: string) => `${username.toLowerCase().trim()}@adamsmyth.app`;
 
   const validateReferralCode = async (code: string): Promise<boolean> => {
     const { data, error } = await supabase
@@ -97,7 +101,7 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
         }
 
         const { error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
+          email: usernameToEmail(email),
           password,
         });
 
@@ -127,10 +131,13 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
         }
 
         const { error } = await supabase.auth.signUp({
-          email: email.trim(),
+          email: usernameToEmail(email),
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/home`,
+            data: {
+              display_name: email.trim(),
+            },
           },
         });
 
@@ -198,11 +205,12 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
             <Label htmlFor="email" className="text-slate-700">Username</Label>
             <Input
               id="email"
-              type="email"
-              placeholder="you@example.com"
+              type="text"
+              placeholder="johnsmith"
               value={email}
+              maxLength={10}
               onChange={(e) => {
-                setEmail(e.target.value);
+                setEmail(e.target.value.replace(/[^a-zA-Z0-9]/g, ''));
                 if (errors.email) setErrors({ ...errors, email: undefined });
               }}
               className={`bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 ${errors.email ? 'border-red-500' : ''}`}
