@@ -47,7 +47,7 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
       newErrors.password = 'Password must be at least 6 characters';
     }
 
-    if (!isLogin && !referralCode.trim()) {
+    if (!referralCode.trim()) {
       newErrors.referralCode = 'Referral code is required';
     }
 
@@ -84,6 +84,18 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
 
     try {
       if (isLogin) {
+        const isValidCode = await validateReferralCode(referralCode);
+
+        if (!isValidCode) {
+          setErrors({ referralCode: 'Invalid or expired referral code' });
+          toast({
+            title: 'Invalid referral code',
+            description: 'Please enter a valid referral code.',
+            variant: 'destructive',
+          });
+          return;
+        }
+
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
           password,
@@ -183,7 +195,7 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-slate-700">Email</Label>
+            <Label htmlFor="email" className="text-slate-700">Username</Label>
             <Input
               id="email"
               type="email"
@@ -229,33 +241,24 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
             )}
           </div>
 
-          <AnimatePresence>
-            {!isLogin && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="space-y-2"
-              >
-                <Label htmlFor="referralCode" className="text-slate-700">Referral Code</Label>
-                <Input
-                  id="referralCode"
-                  type="text"
-                  placeholder="Enter your code"
-                  value={referralCode}
-                  onChange={(e) => {
-                    setReferralCode(e.target.value.toUpperCase());
-                    if (errors.referralCode) setErrors({ ...errors, referralCode: undefined });
-                  }}
-                  className={`bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 uppercase ${errors.referralCode ? 'border-red-500' : ''}`}
-                  disabled={isLoading}
-                />
-                {errors.referralCode && (
-                  <p className="text-sm text-red-500">{errors.referralCode}</p>
-                )}
-              </motion.div>
+          <div className="space-y-2">
+            <Label htmlFor="referralCode" className="text-slate-700">Referral Code</Label>
+            <Input
+              id="referralCode"
+              type="text"
+              placeholder="Enter your code"
+              value={referralCode}
+              onChange={(e) => {
+                setReferralCode(e.target.value.toUpperCase());
+                if (errors.referralCode) setErrors({ ...errors, referralCode: undefined });
+              }}
+              className={`bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 uppercase ${errors.referralCode ? 'border-red-500' : ''}`}
+              disabled={isLoading}
+            />
+            {errors.referralCode && (
+              <p className="text-sm text-red-500">{errors.referralCode}</p>
             )}
-          </AnimatePresence>
+          </div>
 
           <Button
             type="submit"
