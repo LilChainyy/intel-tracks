@@ -34,7 +34,7 @@ export function ThemeSelector() {
         <span className="text-sm">Back</span>
       </motion.button>
       {/* Header */}
-      <div className="px-6 md:px-8 lg:px-12 pt-12 md:pt-8 pb-6 max-w-6xl mx-auto">
+      <div className="px-6 md:px-8 lg:px-12 pt-20 md:pt-16 pb-6 max-w-6xl mx-auto">
         <motion.h1
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
