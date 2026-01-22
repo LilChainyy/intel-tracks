@@ -138,15 +138,15 @@ export function ThemeDetailView() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Back Button */}
+      {/* Back Button - Fixed below TopNav */}
       <motion.button
         initial={{ opacity: 0, x: -10 }}
         animate={{ opacity: 1, x: 0 }}
         onClick={handleBack}
-        className="fixed top-4 left-4 z-20 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors p-2 rounded-lg hover:bg-muted"
+        className="fixed top-16 md:top-20 left-4 md:left-6 z-20 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors p-2 rounded-lg hover:bg-muted bg-background/80 backdrop-blur-sm"
       >
         <ArrowLeft className="w-5 h-5" />
-        <span className="hidden md:inline">Back</span>
+        <span className="text-sm">Back</span>
       </motion.button>
 
       {/* Main Content */}
