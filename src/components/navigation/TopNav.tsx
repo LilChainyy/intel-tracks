@@ -20,7 +20,7 @@ export function TopNav() {
         <div className="flex items-center justify-between h-14 md:h-16">
           {/* Logo */}
           <Link 
-            to="/" 
+            to="/home" 
             className="text-lg md:text-xl font-bold text-foreground hover:text-primary transition-colors"
           >
             Adamsmyth
