@@ -59,17 +59,20 @@ export function StockDetail() {
 
   return (
     <div className="min-h-screen pb-24 md:pb-8 px-6 md:px-8 lg:px-12">
+      {/* Back Button - Fixed below TopNav */}
+      <motion.button
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        onClick={handleBack}
+        className="fixed top-16 md:top-20 left-4 md:left-6 z-20 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors p-2 rounded-lg hover:bg-muted bg-background/80 backdrop-blur-sm"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span className="text-sm">Back</span>
+      </motion.button>
+
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="pt-6 md:pt-8 pb-6">
-          <button
-            onClick={handleBack}
-            className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors mb-6"
-          >
-            <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
-            <span className="text-sm md:text-base">Back</span>
-          </button>
-
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
