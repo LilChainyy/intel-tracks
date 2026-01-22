@@ -1,12 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { TrendingUp, Target, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import LandingHeader from '@/components/landing/LandingHeader';
 import LoginModal from '@/components/landing/LoginModal';
+import { useAuth } from '@/context/AuthContext';
 
 export default function LandingPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { user, isLoading } = useAuth();
+  const navigate = useNavigate();
 
+  // Redirect authenticated users to home
+  useEffect(() => {
+    if (!isLoading && user) {
+      navigate('/home', { replace: true });
+    }
+  }, [user, isLoading, navigate]);
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <LandingHeader onLoginClick={() => setIsModalOpen(true)} />
