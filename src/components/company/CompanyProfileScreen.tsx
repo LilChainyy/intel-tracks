@@ -6,7 +6,7 @@ import { playlists } from '@/data/playlists';
 import { catalysts, getCatalystsForCompany } from '@/data/catalysts';
 import { supabase } from '@/integrations/supabase/client';
 import { StockPriceChart } from '@/components/stock/StockPriceChart';
-
+import { AIAdvisorChat } from '@/components/stock/advisor/AIAdvisorChat';
 export function CompanyProfileScreen() {
   const { 
     selectedStock, 
@@ -248,6 +248,23 @@ export function CompanyProfileScreen() {
                 </button>
               ))}
             </div>
+          </motion.div>
+        )}
+
+        {/* AI Advisor - Thinking Framework */}
+        {!stock.isPrivate && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <AIAdvisorChat
+              open={true}
+              onOpenChange={() => {}}
+              ticker={stock.ticker}
+              companyName={stock.name}
+              embedded={true}
+            />
           </motion.div>
         )}
       </div>
