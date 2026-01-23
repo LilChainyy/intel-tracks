@@ -114,10 +114,10 @@ export function ProfileScreen() {
             {achievements.map((achievement) => (
               <div 
                 key={achievement.id}
-                className={`flex items-center gap-3 p-4 ${achievement.unlocked ? 'bg-green-50' : ''}`}
+                className={`flex items-center gap-3 p-4 ${achievement.unlocked ? 'bg-primary/5' : ''}`}
               >
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl ${
-                  achievement.unlocked ? 'bg-green-100' : 'bg-secondary'
+                  achievement.unlocked ? 'bg-primary/10' : 'bg-secondary'
                 }`}>
                   {achievement.unlocked ? achievement.icon : <Lock className="w-4 h-4 text-muted-foreground" />}
                 </div>
@@ -128,7 +128,7 @@ export function ProfileScreen() {
                   <p className="text-xs text-muted-foreground">{achievement.description}</p>
                 </div>
                 {achievement.unlocked && (
-                  <Check className="w-5 h-5 text-green-600" />
+                  <Check className="w-5 h-5 text-primary" />
                 )}
               </div>
             ))}

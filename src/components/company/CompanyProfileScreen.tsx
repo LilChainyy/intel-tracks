@@ -138,7 +138,7 @@ export function CompanyProfileScreen() {
                 <span className="font-semibold">${currentPrice.toFixed(2)}</span>
               )}
               {ytdChange !== null && (
-                <div className={`flex items-center gap-1 ${ytdChange >= 0 ? 'text-green-600' : 'text-destructive'}`}>
+                <div className={`flex items-center gap-1 ${ytdChange >= 0 ? 'text-primary' : 'text-destructive'}`}>
                   {ytdChange >= 0 ? (
                     <TrendingUp className="w-4 h-4" />
                   ) : (
