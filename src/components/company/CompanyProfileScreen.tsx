@@ -198,11 +198,28 @@ export function CompanyProfileScreen() {
           </motion.div>
         )}
 
+        {/* AI Advisor - Thinking Framework */}
+        {!stock.isPrivate && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <AIAdvisorChat
+              open={true}
+              onOpenChange={() => {}}
+              ticker={stock.ticker}
+              companyName={stock.name}
+              embedded={true}
+            />
+          </motion.div>
+        )}
+
         {/* Explore Industry Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.4 }}
           className="bg-gradient-to-br from-primary/5 to-purple-500/5 rounded-xl border border-primary/10 p-4"
         >
           <h2 className="text-lg font-semibold text-foreground mb-2">Explore the Industry</h2>
@@ -222,7 +239,7 @@ export function CompanyProfileScreen() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.5 }}
             className="bg-card rounded-xl border border-border p-4"
           >
             <h2 className="text-lg font-semibold text-foreground mb-3">Similar Companies</h2>
@@ -248,23 +265,6 @@ export function CompanyProfileScreen() {
                 </button>
               ))}
             </div>
-          </motion.div>
-        )}
-
-        {/* AI Advisor - Thinking Framework */}
-        {!stock.isPrivate && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <AIAdvisorChat
-              open={true}
-              onOpenChange={() => {}}
-              ticker={stock.ticker}
-              companyName={stock.name}
-              embedded={true}
-            />
           </motion.div>
         )}
       </div>
