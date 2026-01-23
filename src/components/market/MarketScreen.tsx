@@ -1,176 +1,111 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, TrendingUp, Newspaper, Calendar } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { playlists } from '@/data/playlists';
+import { catalysts, getCatalystsByCategory } from '@/data/catalysts';
 
-interface NewsItem {
-  id: string;
-  headline: string;
-  type: 'catalyst' | 'news';
-  date: string;
-  ticker?: string;
-}
-
-// Mock data for catalysts and news
-const marketUpdates: NewsItem[] = [
-  {
-    id: '1',
-    headline: 'Fed meeting scheduled for next week - rate decision expected',
-    type: 'catalyst',
-    date: 'Jan 28',
-  },
-  {
-    id: '2',
-    headline: 'NVDA reports Q4 earnings after market close Thursday',
-    type: 'catalyst',
-    date: 'Jan 23',
-    ticker: 'NVDA',
-  },
-  {
-    id: '3',
-    headline: 'AAPL announces new AI features for iPhone lineup',
-    type: 'news',
-    date: 'Today',
-    ticker: 'AAPL',
-  },
-  {
-    id: '4',
-    headline: 'CPI data release expected to show cooling inflation',
-    type: 'catalyst',
-    date: 'Jan 25',
-  },
-  {
-    id: '5',
-    headline: 'TSLA deliveries beat analyst expectations in Q4',
-    type: 'news',
-    date: 'Yesterday',
-    ticker: 'TSLA',
-  },
-  {
-    id: '6',
-    headline: 'Jobs report shows stronger than expected hiring',
-    type: 'news',
-    date: 'Today',
-  },
-];
+const categories = ['All', 'Earnings', 'FDA', 'Mergers', 'Economic', 'Production', 'Partnership'];
 
 export function MarketScreen() {
-  const { setCurrentScreen, setSelectedStock } = useApp();
-  
-  const catalysts = marketUpdates.filter(item => item.type === 'catalyst');
-  const news = marketUpdates.filter(item => item.type === 'news');
+  const { setCurrentScreen, setSelectedCatalyst } = useApp();
+  const [activeCategory, setActiveCategory] = useState('All');
 
-  const handleBack = () => {
-    setCurrentScreen('game-map');
+  const filteredCatalysts = getCatalystsByCategory(activeCategory);
+
+  const handleCatalystClick = (catalyst: typeof catalysts[0]) => {
+    setSelectedCatalyst(catalyst);
+    setCurrentScreen('catalyst-detail');
   };
-
-  const handleTickerClick = (ticker: string) => {
-    // Find the playlist that contains this stock
-    for (const playlist of playlists) {
-      const stock = playlist.stocks.find(s => s.ticker === ticker);
-      if (stock) {
-        setSelectedStock({ ticker, playlist });
-        setCurrentScreen('stock');
-        return;
-      }
-    }
-  };
-
-  const renderNewsItem = (item: NewsItem, index: number) => (
-    <motion.div
-      key={item.id}
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 0.1 + index * 0.05 }}
-      className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border hover:border-primary/30 transition-colors"
-    >
-      <span className="text-xs text-muted-foreground whitespace-nowrap pt-0.5">
-        {item.date}
-      </span>
-      <p className="text-sm text-foreground flex-1">
-        {item.headline}
-      </p>
-      {item.ticker && (
-        <button
-          onClick={() => handleTickerClick(item.ticker!)}
-          className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded hover:bg-primary/20 transition-colors"
-        >
-          {item.ticker}
-        </button>
-      )}
-    </motion.div>
-  );
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Back Button */}
-      <motion.button
-        initial={{ opacity: 0, x: -10 }}
-        animate={{ opacity: 1, x: 0 }}
-        onClick={handleBack}
-        className="fixed top-20 left-4 z-20 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors p-2 rounded-lg hover:bg-muted"
-      >
-        <ArrowLeft className="w-5 h-5" />
-        <span className="hidden md:inline">Back to Map</span>
-      </motion.button>
-
-      {/* Main Content */}
-      <div className="max-w-2xl mx-auto px-4 md:px-6 pt-24 pb-32">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
+    <div className="min-h-screen pb-24">
+      {/* Header */}
+      <div className="px-6 pt-12 pb-4">
+        <motion.h1
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="text-2xl font-bold text-foreground mb-4"
         >
-          <div className="flex items-center gap-3 mb-2">
-            <TrendingUp className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-              Market Pulse
-            </h1>
-          </div>
-          <p className="text-muted-foreground">
-            Stay ahead with upcoming catalysts and breaking news
-          </p>
-        </motion.div>
-
-        {/* Upcoming Catalysts */}
+          Market Catalysts
+        </motion.h1>
+        
+        {/* Filter Chips */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mb-8"
+          className="flex gap-2 overflow-x-auto pb-2 -mx-6 px-6"
         >
-          <div className="flex items-center gap-2 mb-4">
-            <Calendar className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-foreground">Upcoming Catalysts</h2>
-          </div>
-          
-          <div className="space-y-2">
-            {catalysts.map((item, index) => renderNewsItem(item, index))}
-          </div>
+          {categories.map((category) => (
+            <button
+              key={category}
+              onClick={() => setActiveCategory(category)}
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                activeCategory === category
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
         </motion.div>
+      </div>
 
-        {/* Breaking News */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mb-8"
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <Newspaper className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-foreground">Breaking News</h2>
+      {/* Catalyst Cards */}
+      <div className="px-6 space-y-3">
+        {filteredCatalysts.map((catalyst, index) => (
+          <motion.button
+            key={catalyst.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 + index * 0.05 }}
+            onClick={() => handleCatalystClick(catalyst)}
+            className="w-full text-left p-4 bg-card rounded-xl border border-border hover:bg-secondary/50 transition-colors"
+          >
+            <div className="flex items-start gap-3">
+              {/* Icon */}
+              <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+                {catalyst.icon}
+              </div>
+              
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <h3 className="font-semibold text-foreground">{catalyst.title}</h3>
+                  <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
+                    catalyst.impact === 'High' 
+                      ? 'bg-destructive/10 text-destructive' 
+                      : catalyst.impact === 'Medium'
+                      ? 'bg-yellow-100 text-yellow-700'
+                      : 'bg-secondary text-muted-foreground'
+                  }`}>
+                    {catalyst.impact}
+                  </span>
+                </div>
+                
+                <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{catalyst.description}</p>
+                
+                <div className="flex items-center gap-3">
+                  <span className="text-xs bg-secondary px-2 py-0.5 rounded">{catalyst.category}</span>
+                  <span className="text-xs text-muted-foreground">{catalyst.time}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {catalyst.companies.length} {catalyst.companies.length === 1 ? 'company' : 'companies'} affected
+                  </span>
+                </div>
+              </div>
+            </div>
+          </motion.button>
+        ))}
+
+        {filteredCatalysts.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No catalysts in this category</p>
           </div>
-          
-          <div className="space-y-2">
-            {news.map((item, index) => renderNewsItem(item, index))}
-          </div>
-        </motion.div>
+        )}
       </div>
     </div>
   );
 }
 
-// Export the market updates for use in StockDetail
-export { marketUpdates };
+// Export for legacy compatibility
+export { catalysts as marketUpdates };

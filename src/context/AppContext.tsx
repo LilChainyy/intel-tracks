@@ -1,7 +1,41 @@
 import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import { Playlist, Stock } from '@/types/playlist';
 
-type Screen = 'game-map' | 'quiz' | 'playlist' | 'stock' | 'profile' | 'following' | 'store' | 'phase2-select' | 'phase2-story' | 'market';
+// Navigation types
+export type ActiveTab = 'home' | 'theme' | 'market' | 'watchlist' | 'profile';
+
+// Screen types - includes both new and legacy screen names for compatibility
+export type Screen = 
+  | 'home' 
+  | 'theme-list' 
+  | 'company-list' 
+  | 'company-profile' 
+  | 'market' 
+  | 'catalyst-detail' 
+  | 'watchlist' 
+  | 'profile'
+  | 'quiz'
+  | 'store'
+  // Legacy screen names for backward compatibility
+  | 'game-map'
+  | 'phase2-select'
+  | 'phase2-story'
+  | 'playlist'
+  | 'stock'
+  | 'following';
+
+// Data types
+export interface Catalyst {
+  id: string;
+  title: string;
+  description: string;
+  category: 'Earnings' | 'FDA' | 'Mergers' | 'Economic' | 'Production' | 'Partnership';
+  time: string;
+  icon: string;
+  companies: string[]; // ticker symbols
+  themeId: string;
+  impact: 'High' | 'Medium' | 'Low';
+}
 
 export interface SavedStock {
   ticker: string;
@@ -12,20 +46,47 @@ export interface SavedStock {
 }
 
 interface AppContextType {
+  // Navigation
+  activeTab: ActiveTab;
+  setActiveTab: (tab: ActiveTab) => void;
   currentScreen: Screen;
   setCurrentScreen: (screen: Screen) => void;
+  navigationHistory: { tab: ActiveTab; screen: Screen }[];
+  navigateBack: () => void;
+  
+  // Selected entities
   selectedPlaylist: Playlist | null;
   setSelectedPlaylist: (playlist: Playlist | null) => void;
   selectedStock: { ticker: string; playlist: Playlist } | null;
   setSelectedStock: (stock: { ticker: string; playlist: Playlist } | null) => void;
+  selectedCatalyst: Catalyst | null;
+  setSelectedCatalyst: (catalyst: Catalyst | null) => void;
+  
+  // Quiz
   quizCompleted: boolean;
   setQuizCompleted: (completed: boolean) => void;
+  
+  // Watchlist - separate for themes and companies
+  watchlistThemes: string[];
+  toggleWatchlistTheme: (themeId: string) => void;
+  isThemeWatchlisted: (themeId: string) => boolean;
+  watchlistCompanies: SavedStock[];
+  toggleWatchlistCompany: (stock: SavedStock) => void;
+  isCompanyWatchlisted: (ticker: string) => boolean;
+  
+  // Legacy compatibility
   savedPlaylists: string[];
   toggleSavePlaylist: (playlistId: string) => void;
   savedStocks: SavedStock[];
   toggleSaveStock: (stock: SavedStock) => void;
   isStockSaved: (ticker: string) => boolean;
-  // Phase 2 state
+  
+  // Progress tracking
+  completedCompanies: string[];
+  markCompanyCompleted: (ticker: string) => void;
+  isCompanyCompleted: (ticker: string) => boolean;
+  
+  // Phase 2 legacy support
   phase2ViewedThemes: string[];
   currentThemeStoryId: string | null;
   addViewedTheme: (themeId: string) => void;
@@ -35,63 +96,184 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('game-map');
+  // Navigation state
+  const [activeTab, setActiveTabState] = useState<ActiveTab>('home');
+  const [currentScreen, setCurrentScreenState] = useState<Screen>('home');
+  const [navigationHistory, setNavigationHistory] = useState<{ tab: ActiveTab; screen: Screen }[]>([]);
+  
+  // Selected entities
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
   const [selectedStock, setSelectedStock] = useState<{ ticker: string; playlist: Playlist } | null>(null);
+  const [selectedCatalyst, setSelectedCatalyst] = useState<Catalyst | null>(null);
+  
+  // Quiz
   const [quizCompleted, setQuizCompleted] = useState(false);
-  const [savedPlaylists, setSavedPlaylists] = useState<string[]>([]);
-  const [savedStocks, setSavedStocks] = useState<SavedStock[]>([]);
-  // Phase 2 state
+  
+  // Watchlist
+  const [watchlistThemes, setWatchlistThemes] = useState<string[]>([]);
+  const [watchlistCompanies, setWatchlistCompanies] = useState<SavedStock[]>([]);
+  
+  // Progress tracking
+  const [completedCompanies, setCompletedCompanies] = useState<string[]>([]);
+  
+  // Phase 2 legacy support
   const [phase2ViewedThemes, setPhase2ViewedThemes] = useState<string[]>([]);
   const [currentThemeStoryId, setCurrentThemeStoryId] = useState<string | null>(null);
 
+  // Simple setCurrentScreen - no history tracking for now
+  const setCurrentScreen = useCallback((screen: Screen) => {
+    setCurrentScreenState(screen);
+  }, []);
+
+  const navigateBack = useCallback(() => {
+    if (navigationHistory.length > 0) {
+      const prev = navigationHistory[navigationHistory.length - 1];
+      setNavigationHistory(history => history.slice(0, -1));
+      setCurrentScreenState(prev.screen);
+      setActiveTabState(prev.tab);
+    } else {
+      // Default back behavior based on current tab
+      switch (activeTab) {
+        case 'home':
+          setCurrentScreenState('home');
+          break;
+        case 'theme':
+          setCurrentScreenState('theme-list');
+          break;
+        case 'market':
+          setCurrentScreenState('market');
+          break;
+        case 'watchlist':
+          setCurrentScreenState('watchlist');
+          break;
+        case 'profile':
+          setCurrentScreenState('profile');
+          break;
+      }
+    }
+  }, [navigationHistory, activeTab]);
+
+  // Tab switching helper
+  const setActiveTab = useCallback((tab: ActiveTab) => {
+    setActiveTabState(tab);
+    setNavigationHistory([]);
+    switch (tab) {
+      case 'home':
+        setCurrentScreenState('home');
+        break;
+      case 'theme':
+        setCurrentScreenState('theme-list');
+        break;
+      case 'market':
+        setCurrentScreenState('market');
+        break;
+      case 'watchlist':
+        setCurrentScreenState('watchlist');
+        break;
+      case 'profile':
+        setCurrentScreenState('profile');
+        break;
+    }
+  }, []);
+
+  // Watchlist functions
+  const toggleWatchlistTheme = useCallback((themeId: string) => {
+    setWatchlistThemes(prev =>
+      prev.includes(themeId)
+        ? prev.filter(id => id !== themeId)
+        : [...prev, themeId]
+    );
+  }, []);
+
+  const isThemeWatchlisted = useCallback((themeId: string) => {
+    return watchlistThemes.includes(themeId);
+  }, [watchlistThemes]);
+
+  const toggleWatchlistCompany = useCallback((stock: SavedStock) => {
+    setWatchlistCompanies(prev =>
+      prev.some(s => s.ticker === stock.ticker)
+        ? prev.filter(s => s.ticker !== stock.ticker)
+        : [...prev, stock]
+    );
+  }, []);
+
+  const isCompanyWatchlisted = useCallback((ticker: string) => {
+    return watchlistCompanies.some(s => s.ticker === ticker);
+  }, [watchlistCompanies]);
+
+  // Progress functions
+  const markCompanyCompleted = useCallback((ticker: string) => {
+    setCompletedCompanies(prev => 
+      prev.includes(ticker) ? prev : [...prev, ticker]
+    );
+  }, []);
+
+  const isCompanyCompleted = useCallback((ticker: string) => {
+    return completedCompanies.includes(ticker);
+  }, [completedCompanies]);
+  
+  // Phase 2 legacy function
   const addViewedTheme = useCallback((themeId: string) => {
     setPhase2ViewedThemes(prev => 
       prev.includes(themeId) ? prev : [...prev, themeId]
     );
   }, []);
 
-  const toggleSavePlaylist = (playlistId: string) => {
-    setSavedPlaylists(prev =>
-      prev.includes(playlistId)
-        ? prev.filter(id => id !== playlistId)
-        : [...prev, playlistId]
-    );
-  };
-
-  const toggleSaveStock = (stock: SavedStock) => {
-    setSavedStocks(prev =>
-      prev.some(s => s.ticker === stock.ticker)
-        ? prev.filter(s => s.ticker !== stock.ticker)
-        : [...prev, stock]
-    );
-  };
-
-  const isStockSaved = (ticker: string) => {
-    return savedStocks.some(s => s.ticker === ticker);
-  };
+  // Legacy compatibility aliases
+  const savedPlaylists = watchlistThemes;
+  const toggleSavePlaylist = toggleWatchlistTheme;
+  const savedStocks = watchlistCompanies;
+  const toggleSaveStock = toggleWatchlistCompany;
+  const isStockSaved = isCompanyWatchlisted;
 
   return (
     <AppContext.Provider
       value={{
+        // Navigation
+        activeTab,
+        setActiveTab,
         currentScreen,
         setCurrentScreen,
+        navigationHistory,
+        navigateBack,
+        
+        // Selected entities
         selectedPlaylist,
         setSelectedPlaylist,
         selectedStock,
         setSelectedStock,
+        selectedCatalyst,
+        setSelectedCatalyst,
+        
+        // Quiz
         quizCompleted,
         setQuizCompleted,
+        
+        // Watchlist
+        watchlistThemes,
+        toggleWatchlistTheme,
+        isThemeWatchlisted,
+        watchlistCompanies,
+        toggleWatchlistCompany,
+        isCompanyWatchlisted,
+        
+        // Legacy
         savedPlaylists,
         toggleSavePlaylist,
         savedStocks,
         toggleSaveStock,
         isStockSaved,
-        // Phase 2
+        
+        // Progress
+        completedCompanies,
+        markCompanyCompleted,
+        isCompanyCompleted,
+        
+        // Phase 2 legacy
         phase2ViewedThemes,
         currentThemeStoryId,
         addViewedTheme,
-        setCurrentThemeStoryId
+        setCurrentThemeStoryId,
       }}
     >
       {children}

@@ -1,58 +1,57 @@
 import { InvestorQuizProvider } from '@/context/InvestorQuizContext';
 import { AppProvider, useApp } from '@/context/AppContext';
 import { InvestorQuizFlow } from '@/components/quiz/InvestorQuizFlow';
-import { PlaylistDetail } from '@/components/playlist/PlaylistDetail';
-import { StockDetail } from '@/components/stock/StockDetail';
-import { ProfileScreen } from '@/components/profile/ProfileScreen';
-import { FollowingScreen } from '@/components/following/FollowingScreen';
-import { StoreScreen } from '@/components/store/StoreScreen';
 import { FloatingAdvisor } from '@/components/advisor/FloatingAdvisor';
-import { ThemeSelector } from '@/components/phase2/ThemeSelector';
-import { ThemeDetailView } from '@/components/phase2/ThemeDetailView';
 import { TopNav } from '@/components/navigation/TopNav';
-import { GameMap } from '@/components/game-map/GameMap';
+import { BottomNav } from '@/components/navigation/BottomNav';
+import { HomeScreen } from '@/components/home/HomeScreen';
+import { ThemeListScreen } from '@/components/theme/ThemeListScreen';
+import { CompanyListScreen } from '@/components/company/CompanyListScreen';
+import { CompanyProfileScreen } from '@/components/company/CompanyProfileScreen';
 import { MarketScreen } from '@/components/market/MarketScreen';
+import { CatalystDetailScreen } from '@/components/market/CatalystDetailScreen';
+import { WatchlistScreen } from '@/components/watchlist/WatchlistScreen';
+import { ProfileScreen } from '@/components/profile/ProfileScreen';
+import { StoreScreen } from '@/components/store/StoreScreen';
 
 function StocksContent() {
   const { currentScreen } = useApp();
 
   const renderScreen = () => {
     switch (currentScreen) {
-      case 'game-map':
-        return <GameMap />;
-      case 'quiz':
-        return <InvestorQuizFlow />;
-      case 'phase2-select':
-        return <ThemeSelector />;
-      case 'phase2-story':
-        return <ThemeDetailView />;
-      case 'playlist':
-        return <PlaylistDetail />;
-      case 'stock':
-        return <StockDetail />;
-      case 'profile':
-        return <ProfileScreen />;
-      case 'following':
-        return <FollowingScreen />;
-      case 'store':
-        return <StoreScreen />;
+      case 'home':
+        return <HomeScreen />;
+      case 'theme-list':
+        return <ThemeListScreen />;
+      case 'company-list':
+        return <CompanyListScreen />;
+      case 'company-profile':
+        return <CompanyProfileScreen />;
       case 'market':
         return <MarketScreen />;
+      case 'catalyst-detail':
+        return <CatalystDetailScreen />;
+      case 'watchlist':
+        return <WatchlistScreen />;
+      case 'profile':
+        return <ProfileScreen />;
+      case 'quiz':
+        return <InvestorQuizFlow />;
+      case 'store':
+        return <StoreScreen />;
       default:
-        return <GameMap />;
+        return <HomeScreen />;
     }
   };
 
-  // Show TopNav on all screens
-  const showTopNav = true;
-
   return (
     <div className="min-h-screen bg-background">
-      {showTopNav && <TopNav />}
-      <main className="relative">
+      <TopNav />
+      <main className="relative pt-14">
         {renderScreen()}
-        {showTopNav && <FloatingAdvisor />}
+        <FloatingAdvisor />
       </main>
+      <BottomNav />
     </div>
   );
 }
