@@ -1,10 +1,16 @@
 import { motion } from 'framer-motion';
-import { ChevronRight, Flame, Bookmark, Settings, HelpCircle, Bell, Trophy, Lock, Check } from 'lucide-react';
+import { ChevronRight, Flame, Settings, HelpCircle, Bell, Lock, Check } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { useInvestorQuiz } from '@/context/InvestorQuizContext';
 import { Progress } from '@/components/ui/progress';
 
 export function ProfileScreen() {
   const { setCurrentScreen, savedStocks, completedCompanies } = useApp();
+  const { state: quizState, resetQuiz } = useInvestorQuiz();
+
+  // Get archetype directly from quiz state
+  const userArchetype = quizState.archetype;
+  const archetypeId = userArchetype?.id || null;
 
   // Mock progress data
   const progressData = {
@@ -22,12 +28,27 @@ export function ProfileScreen() {
 
   // Achievements
   const achievements = [
-    { id: 1, name: 'First Steps', description: 'Learn your first company', unlocked: true, icon: '🎯' },
-    { id: 2, name: 'Week Warrior', description: '7 day streak', unlocked: true, icon: '🔥' },
+    { id: 1, name: 'First Steps', description: 'Learn your first company', unlocked: completedCompanies.length >= 1, icon: '🎯' },
+    { id: 2, name: 'Week Warrior', description: '7 day streak', unlocked: progressData.currentStreak >= 7, icon: '🔥' },
     { id: 3, name: 'Theme Master', description: 'Complete a full theme', unlocked: false, icon: '📚' },
     { id: 4, name: 'Market Watcher', description: 'Check 10 catalysts', unlocked: false, icon: '👀' },
-    { id: 5, name: 'Watchlist Pro', description: 'Save 5 companies', unlocked: false, icon: '⭐' },
+    { id: 5, name: 'Watchlist Pro', description: 'Save 5 companies', unlocked: savedStocks.length >= 5, icon: '⭐' },
   ];
+
+  const getArchetypeIcon = (archId: string | null) => {
+    switch (archId) {
+      case 'bargain_hunter': return '🔍';
+      case 'collector': return '💎';
+      case 'safe_player': return '🛡️';
+      case 'visionary': return '🚀';
+      default: return '🧭';
+    }
+  };
+
+  const handleRetakeQuiz = () => {
+    resetQuiz();
+    setCurrentScreen('quiz');
+  };
 
   return (
     <div className="min-h-screen pb-24 px-6">
@@ -87,17 +108,59 @@ export function ProfileScreen() {
         >
           <h3 className="text-sm font-semibold text-muted-foreground mb-3">YOUR INVESTING STYLE</h3>
           <div className="bg-card rounded-xl border border-border p-5">
-            <div className="flex items-center gap-4 mb-3">
-              <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center text-2xl">
-                🧭
+            {userArchetype ? (
+              <>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center text-2xl">
+                    {getArchetypeIcon(archetypeId)}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-foreground">{userArchetype.name}</p>
+                    <p className="text-sm text-muted-foreground">{userArchetype.tagline}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {userArchetype.description}
+                </p>
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="bg-secondary/30 rounded-lg p-3">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Strengths</p>
+                    <ul className="space-y-1">
+                      {userArchetype.strengths.slice(0, 2).map((strength, i) => (
+                        <li key={i} className="text-xs text-foreground flex items-center gap-1">
+                          <span className="text-primary">✓</span> {strength}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="bg-secondary/30 rounded-lg p-3">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Watch Out</p>
+                    <ul className="space-y-1">
+                      {userArchetype.pitfalls.slice(0, 2).map((pitfall, i) => (
+                        <li key={i} className="text-xs text-foreground flex items-center gap-1">
+                          <span className="text-destructive">!</span> {pitfall}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-4">
+                <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center text-2xl mx-auto mb-3">
+                  🧭
+                </div>
+                <p className="font-semibold text-foreground mb-1">Discover Your Style</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Take our quiz to find out what type of investor you are
+                </p>
               </div>
-              <div>
-                <p className="font-semibold text-foreground">The Explorer</p>
-                <p className="text-sm text-muted-foreground">Curious & Research-Driven</p>
-              </div>
-            </div>
-            <button className="w-full py-2 bg-secondary text-foreground rounded-lg text-sm font-medium hover:bg-secondary/80 transition-colors">
-              Retake Quiz
+            )}
+            <button 
+              onClick={handleRetakeQuiz}
+              className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              {userArchetype ? 'Retake Quiz' : 'Take the Quiz'}
             </button>
           </div>
         </motion.div>

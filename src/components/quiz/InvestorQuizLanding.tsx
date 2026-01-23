@@ -9,7 +9,7 @@ export function InvestorQuizLanding() {
   const { setCurrentScreen } = useApp();
 
   const handleBack = () => {
-    setCurrentScreen('game-map');
+    setCurrentScreen('profile');
   };
 
   return (
