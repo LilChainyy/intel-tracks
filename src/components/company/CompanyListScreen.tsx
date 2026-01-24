@@ -12,7 +12,9 @@ export function CompanyListScreen() {
     navigateBack,
     isCompanyWatchlisted,
     toggleWatchlistCompany,
-    isCompanyCompleted
+    isCompanyCompleted,
+    isThemeWatchlisted,
+    toggleWatchlistTheme
   } = useApp();
   
   const [ytdData, setYtdData] = useState<Record<string, number | null>>({});
@@ -75,6 +77,15 @@ export function CompanyListScreen() {
     });
   };
 
+  const isThemeSaved = selectedPlaylist ? isThemeWatchlisted(selectedPlaylist.id) : false;
+
+  const handleThemeStarClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (selectedPlaylist) {
+      toggleWatchlistTheme(selectedPlaylist.id);
+    }
+  };
+
   return (
     <div className="min-h-screen pb-24">
       {/* Header */}
@@ -86,10 +97,21 @@ export function CompanyListScreen() {
           >
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-xl font-bold text-foreground">{selectedPlaylist.title}</h1>
             <p className="text-sm text-muted-foreground">{selectedPlaylist.stocks.length} companies</p>
           </div>
+          {/* Theme Star Button */}
+          <button
+            onClick={handleThemeStarClick}
+            className={`p-2 rounded-full transition-colors ${
+              isThemeSaved 
+                ? 'bg-yellow-100 text-yellow-600' 
+                : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+            }`}
+          >
+            <Star className={`w-5 h-5 ${isThemeSaved ? 'fill-current' : ''}`} />
+          </button>
         </div>
         
         {/* Theme Thesis Summary */}
