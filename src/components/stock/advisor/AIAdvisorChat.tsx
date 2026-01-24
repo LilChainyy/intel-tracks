@@ -75,7 +75,10 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName, embedde
       ];
       setSuggestedQuestions(initialQuestions);
 
-      setTimeout(() => inputRef.current?.focus(), 100);
+      // Only auto-focus if not embedded (to prevent scroll-to-bottom on page load)
+      if (!embedded) {
+        setTimeout(() => inputRef.current?.focus(), 100);
+      }
     }
   }, [open, embedded, companyName, ticker]);
 
