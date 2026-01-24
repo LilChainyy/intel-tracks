@@ -61,6 +61,7 @@ export function CompanyListScreen() {
   const handleCompanyClick = (ticker: string) => {
     setSelectedStock({ ticker, playlist: selectedPlaylist });
     setCurrentScreen('company-profile');
+    window.scrollTo(0, 0);
   };
 
   const handleStarClick = (e: React.MouseEvent, stock: typeof selectedPlaylist.stocks[0]) => {
@@ -137,6 +138,7 @@ export function CompanyListScreen() {
               {/* Content */}
               <div className="flex-1 text-left min-w-0">
                 <div className="flex items-center gap-2">
+                  {stock.emoji && <span className="text-base">{stock.emoji}</span>}
                   <span className="font-bold text-foreground">{stock.ticker}</span>
                   {isCompleted && (
                     <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Learned</span>

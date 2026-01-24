@@ -26,6 +26,7 @@ export function WatchlistScreen() {
       setSelectedPlaylist(playlist);
       setSelectedStock({ ticker: stock.ticker, playlist });
       setCurrentScreen('company-profile');
+      window.scrollTo(0, 0);
     }
   };
 
