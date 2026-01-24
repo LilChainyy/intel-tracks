@@ -114,20 +114,13 @@ export function CompanyListScreen() {
             >
               {/* Logo */}
               <div className="relative">
-                {stock.logoUrl ? (
-                  <img 
-                    src={stock.logoUrl} 
-                    alt={stock.name} 
-                    className="w-12 h-12 rounded-xl object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                ) : (
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-secondary rounded-xl flex items-center justify-center border border-border">
+                  {stock.emoji ? (
+                    <span className="text-2xl">{stock.emoji}</span>
+                  ) : (
                     <span className="text-lg font-bold text-primary">{stock.ticker[0]}</span>
-                  </div>
-                )}
+                  )}
+                </div>
                 {isCompleted && (
                   <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
                     <Check className="w-3 h-3 text-primary-foreground" />
@@ -138,7 +131,6 @@ export function CompanyListScreen() {
               {/* Content */}
               <div className="flex-1 text-left min-w-0">
                 <div className="flex items-center gap-2">
-                  {stock.emoji && <span className="text-base">{stock.emoji}</span>}
                   <span className="font-bold text-foreground">{stock.ticker}</span>
                   {isCompleted && (
                     <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Learned</span>
