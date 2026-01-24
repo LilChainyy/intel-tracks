@@ -198,20 +198,12 @@ export function CatalystDetailScreen() {
                   onClick={() => handleCompanyClick(company)}
                   className="w-full flex items-center gap-3 p-3 bg-secondary/50 rounded-lg hover:bg-secondary transition-colors"
                 >
-                  {company.logoUrl ? (
-                    <img 
-                      src={company.logoUrl} 
-                      alt={company.name} 
-                      className="w-10 h-10 rounded-lg object-cover"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-xl">
-                      {company.emoji || company.ticker[0]}
-                    </div>
-                  )}
-                  <div className="flex-1 text-left">
-                    <p className="font-medium text-foreground">{company.name}</p>
-                    <p className="text-xs text-muted-foreground">{company.description}</p>
+                  <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center text-xl">
+                    {company.emoji || '📈'}
+                  </div>
+                  <div className="flex-1 text-left min-w-0">
+                    <p className="font-medium text-foreground truncate">{company.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{company.description}</p>
                   </div>
                   <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 </button>
