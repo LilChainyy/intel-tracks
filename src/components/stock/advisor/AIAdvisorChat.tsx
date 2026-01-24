@@ -41,6 +41,9 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName, embedde
   const [savedThesis, setSavedThesis] = useState<ThesisChoice | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  // Prevent embedded mode from forcing the *page* to scroll on mount/company change.
+  // We only autoscroll after the user starts interacting with the chat.
+  const hasInteractedRef = useRef(false);
 
   useEffect(() => {
     setShowSummary(!isMobile);
@@ -51,11 +54,17 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName, embedde
   };
 
   useEffect(() => {
+    // In embedded mode, avoid scrollIntoView until user interacts.
+    // scrollIntoView can scroll the document to the chat section, which is not desired on profile load.
+    if (embedded && !hasInteractedRef.current) return;
     scrollToBottom();
   }, [messages]);
 
   useEffect(() => {
     if (open || embedded) {
+      // Reset interaction state when opening / switching company
+      hasInteractedRef.current = false;
+
       setMessages([]);
       setProgress(INITIAL_PROGRESS);
       setSavedThesis(null);
@@ -244,10 +253,12 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName, embedde
   };
 
   const handleSuggestedQuestion = (question: SuggestedQuestion) => {
+    hasInteractedRef.current = true;
     sendMessage(question.text);
   };
 
   const handleAskAbout = (topic: string) => {
+    hasInteractedRef.current = true;
     const topicQuestions: Record<string, string> = {
       company_fundamental: `What does ${companyName} do and how does it make money?`,
       financial_health: `Is ${companyName} profitable and financially healthy?`,
@@ -288,6 +299,7 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName, embedde
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
+      hasInteractedRef.current = true;
       sendMessage(input);
     }
   };
