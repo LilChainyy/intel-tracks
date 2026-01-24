@@ -247,17 +247,13 @@ export function CompanyProfileScreen() {
                   onClick={() => handleSimilarCompanyClick(similar)}
                   className="flex-shrink-0 flex flex-col items-center gap-2 p-3 bg-secondary/50 rounded-xl hover:bg-secondary transition-colors"
                 >
-                  {similar.logoUrl ? (
-                    <img 
-                      src={similar.logoUrl} 
-                      alt={similar.name} 
-                      className="w-12 h-12 rounded-xl object-cover"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-secondary rounded-xl flex items-center justify-center border border-border">
+                    {similar.emoji ? (
+                      <span className="text-2xl">{similar.emoji}</span>
+                    ) : (
                       <span className="text-lg font-bold text-primary">{similar.ticker[0]}</span>
-                    </div>
-                  )}
+                    )}
+                  </div>
                   <span className="text-xs font-medium text-foreground">{similar.ticker}</span>
                 </button>
               ))}
