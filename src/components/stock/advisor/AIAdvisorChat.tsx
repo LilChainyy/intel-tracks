@@ -421,9 +421,9 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName, embedde
 
       {/* Suggested Questions */}
       {suggestedQuestions.length > 0 && !isLoading && (
-        <div className="flex-shrink-0 px-3 md:px-4 pb-2">
-          <ScrollArea className="w-full">
-            <div className="flex gap-2 pb-2">
+        <div className="flex-shrink-0 px-3 md:px-4 pb-2 overflow-hidden">
+          <div className="overflow-x-auto scrollbar-hide">
+            <div className="flex gap-2 pb-2" style={{ minWidth: 'min-content' }}>
               {suggestedQuestions.map((q, idx) => (
                 <Button
                   key={idx}
@@ -436,7 +436,7 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName, embedde
                 </Button>
               ))}
             </div>
-          </ScrollArea>
+          </div>
         </div>
       )}
 
