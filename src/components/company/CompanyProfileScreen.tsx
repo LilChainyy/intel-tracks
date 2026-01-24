@@ -89,6 +89,7 @@ export function CompanyProfileScreen() {
   const handleSimilarCompanyClick = (similarStock: typeof stock) => {
     if (selectedPlaylist) {
       setSelectedStock({ ticker: similarStock.ticker, playlist: selectedPlaylist });
+      window.scrollTo(0, 0);
     }
   };
 
@@ -119,14 +120,24 @@ export function CompanyProfileScreen() {
         {/* Company Info */}
         <div className="flex items-center gap-4">
           {stock.logoUrl ? (
-            <img 
-              src={stock.logoUrl} 
-              alt={stock.name} 
-              className="w-16 h-16 rounded-xl object-cover"
-            />
+            <div className="relative">
+              <img 
+                src={stock.logoUrl} 
+                alt={stock.name} 
+                className="w-16 h-16 rounded-xl object-cover"
+              />
+              {stock.emoji && (
+                <span className="absolute -bottom-1 -right-1 text-lg">{stock.emoji}</span>
+              )}
+            </div>
           ) : (
-            <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center">
-              <span className="text-2xl font-bold text-primary">{stock.ticker[0]}</span>
+            <div className="relative">
+              <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center">
+                <span className="text-2xl font-bold text-primary">{stock.ticker[0]}</span>
+              </div>
+              {stock.emoji && (
+                <span className="absolute -bottom-1 -right-1 text-lg">{stock.emoji}</span>
+              )}
             </div>
           )}
           

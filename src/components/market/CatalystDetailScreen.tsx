@@ -44,6 +44,7 @@ export function CatalystDetailScreen() {
         setSelectedPlaylist(playlist);
         setSelectedStock({ ticker, playlist });
         setCurrentScreen('company-profile');
+        window.scrollTo(0, 0);
       }
     }
   };

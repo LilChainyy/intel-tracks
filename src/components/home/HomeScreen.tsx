@@ -46,6 +46,7 @@ export function HomeScreen() {
       setSelectedPlaylist(continueTheme);
       setSelectedStock({ ticker: continueCompany.ticker, playlist: continueTheme });
       setCurrentScreen('company-profile');
+      window.scrollTo(0, 0);
     }
   };
 
