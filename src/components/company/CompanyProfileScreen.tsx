@@ -26,6 +26,15 @@ export function CompanyProfileScreen() {
   const stock = selectedPlaylist?.stocks.find(s => s.ticker === selectedStock?.ticker);
   const companyCatalysts = selectedStock ? getCatalystsForCompany(selectedStock.ticker) : [];
 
+  // Scroll to top when component mounts or stock changes
+  useEffect(() => {
+    // Use setTimeout to ensure scroll happens after render
+    const timer = setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [selectedStock?.ticker]);
+
   useEffect(() => {
     async function fetchStockData() {
       if (!selectedStock?.ticker) return;
