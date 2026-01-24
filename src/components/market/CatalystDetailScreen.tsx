@@ -3,6 +3,17 @@ import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { useApp, Catalyst } from '@/context/AppContext';
 import { playlists } from '@/data/playlists';
 
+// Map of ticker symbols to company info for catalysts that reference companies not in playlists
+const tickerInfoMap: Record<string, { name: string; description: string; emoji: string }> = {
+  AAPL: { name: 'Apple', description: 'Consumer electronics & software', emoji: '🍎' },
+  MSFT: { name: 'Microsoft', description: 'Cloud & enterprise software', emoji: '🖥️' },
+  GOOGL: { name: 'Google', description: 'Search & AI technology', emoji: '🔍' },
+  TSLA: { name: 'Tesla', description: 'Electric vehicles & energy', emoji: '⚡' },
+  NVDA: { name: 'NVIDIA', description: 'AI chips & graphics', emoji: '💚' },
+  META: { name: 'Meta', description: 'Social media & VR', emoji: '👤' },
+  AMZN: { name: 'Amazon', description: 'E-commerce & cloud computing', emoji: '📦' },
+};
+
 export function CatalystDetailScreen() {
   const { 
     selectedCatalyst, 
@@ -23,29 +34,74 @@ export function CatalystDetailScreen() {
   // Find related theme
   const relatedTheme = playlists.find(p => p.id === selectedCatalyst.themeId);
   
-  // Find affected companies with their details
+  // Find affected companies with their details - check playlists first, then fallback to tickerInfoMap
   const affectedCompanies = selectedCatalyst.companies
     .map(ticker => {
+      // First try to find in playlists
       for (const playlist of playlists) {
         const stock = playlist.stocks.find(s => s.ticker === ticker);
         if (stock) {
-          return { ...stock, playlistId: playlist.id, playlistTitle: playlist.title };
+          return { 
+            ...stock, 
+            playlistId: playlist.id, 
+            playlistTitle: playlist.title,
+            canNavigate: true 
+          };
         }
       }
-      return null;
+      // Fallback to tickerInfoMap for common tickers
+      if (tickerInfoMap[ticker]) {
+        return {
+          ticker,
+          name: tickerInfoMap[ticker].name,
+          description: tickerInfoMap[ticker].description,
+          emoji: tickerInfoMap[ticker].emoji,
+          logoUrl: undefined,
+          playlistId: selectedCatalyst.themeId,
+          playlistTitle: relatedTheme?.title || 'Related Theme',
+          canNavigate: !!relatedTheme,
+        };
+      }
+      // If not found anywhere, still show basic info
+      return {
+        ticker,
+        name: ticker,
+        description: 'Company in this catalyst',
+        emoji: '📈',
+        logoUrl: undefined,
+        playlistId: selectedCatalyst.themeId,
+        playlistTitle: relatedTheme?.title || 'Related Theme',
+        canNavigate: false,
+      };
     })
     .filter(Boolean);
 
-  const handleCompanyClick = (ticker: string) => {
-    const company = affectedCompanies.find(c => c?.ticker === ticker);
-    if (company) {
-      const playlist = playlists.find(p => p.id === company.playlistId);
-      if (playlist) {
-        setSelectedPlaylist(playlist);
-        setSelectedStock({ ticker, playlist });
-        setCurrentScreen('company-profile');
-        window.scrollTo(0, 0);
+  const handleCompanyClick = (company: typeof affectedCompanies[0]) => {
+    if (!company) return;
+    
+    // Find the playlist that contains this stock
+    let targetPlaylist = null;
+    let targetStock = null;
+    
+    for (const playlist of playlists) {
+      const stock = playlist.stocks.find(s => s.ticker === company.ticker);
+      if (stock) {
+        targetPlaylist = playlist;
+        targetStock = stock;
+        break;
       }
+    }
+    
+    if (targetPlaylist && targetStock) {
+      setSelectedPlaylist(targetPlaylist);
+      setSelectedStock({ ticker: company.ticker, playlist: targetPlaylist });
+      setCurrentScreen('company-profile');
+      window.scrollTo(0, 0);
+    } else if (relatedTheme) {
+      // If company not found in any playlist, navigate to the related theme
+      setSelectedPlaylist(relatedTheme);
+      setCurrentScreen('company-list');
+      window.scrollTo(0, 0);
     }
   };
 
@@ -53,6 +109,7 @@ export function CatalystDetailScreen() {
     if (relatedTheme) {
       setSelectedPlaylist(relatedTheme);
       setCurrentScreen('company-list');
+      window.scrollTo(0, 0);
     }
   };
 
@@ -138,7 +195,7 @@ export function CatalystDetailScreen() {
               {affectedCompanies.map((company) => company && (
                 <button
                   key={company.ticker}
-                  onClick={() => handleCompanyClick(company.ticker)}
+                  onClick={() => handleCompanyClick(company)}
                   className="w-full flex items-center gap-3 p-3 bg-secondary/50 rounded-lg hover:bg-secondary transition-colors"
                 >
                   {company.logoUrl ? (
@@ -148,13 +205,13 @@ export function CatalystDetailScreen() {
                       className="w-10 h-10 rounded-lg object-cover"
                     />
                   ) : (
-                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <span className="font-bold text-primary">{company.ticker[0]}</span>
+                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-xl">
+                      {company.emoji || company.ticker[0]}
                     </div>
                   )}
                   <div className="flex-1 text-left">
                     <p className="font-medium text-foreground">{company.name}</p>
-                    <p className="text-xs text-muted-foreground">{company.ticker}</p>
+                    <p className="text-xs text-muted-foreground">{company.description}</p>
                   </div>
                   <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 </button>
@@ -171,21 +228,26 @@ export function CatalystDetailScreen() {
             transition={{ delay: 0.3 }}
             className="bg-gradient-to-br from-primary/5 to-purple-500/5 rounded-xl border border-primary/10 p-4"
           >
-            <h2 className="text-lg font-semibold text-foreground mb-2">Explore Related Industry</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-2">Explore {relatedTheme.title}</h2>
+            <p className="text-sm text-muted-foreground mb-3">
+              Industry affected by this catalyst
+            </p>
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-xl">
                 ⚡
               </div>
               <div>
-                <p className="font-medium text-foreground">{relatedTheme.title}</p>
-                <p className="text-xs text-muted-foreground">{relatedTheme.stocks.length} companies in this theme</p>
+                <p className="text-sm text-muted-foreground">
+                  This event impacts the broader {relatedTheme.title} sector. Want to learn more about companies in this industry?
+                </p>
               </div>
             </div>
             <button 
               onClick={handleExploreTheme}
-              className="w-full bg-primary text-primary-foreground py-2.5 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+              className="flex items-center gap-2 text-primary font-medium hover:underline"
             >
               Browse {relatedTheme.title} Companies
+              <ChevronRight className="w-4 h-4" />
             </button>
           </motion.div>
         )}
