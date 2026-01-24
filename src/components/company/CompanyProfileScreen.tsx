@@ -119,27 +119,13 @@ export function CompanyProfileScreen() {
         
         {/* Company Info */}
         <div className="flex items-center gap-4">
-          {stock.logoUrl ? (
-            <div className="relative">
-              <img 
-                src={stock.logoUrl} 
-                alt={stock.name} 
-                className="w-16 h-16 rounded-xl object-cover"
-              />
-              {stock.emoji && (
-                <span className="absolute -bottom-1 -right-1 text-lg">{stock.emoji}</span>
-              )}
-            </div>
-          ) : (
-            <div className="relative">
-              <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center">
-                <span className="text-2xl font-bold text-primary">{stock.ticker[0]}</span>
-              </div>
-              {stock.emoji && (
-                <span className="absolute -bottom-1 -right-1 text-lg">{stock.emoji}</span>
-              )}
-            </div>
-          )}
+          <div className="w-16 h-16 bg-secondary rounded-xl flex items-center justify-center border border-border">
+            {stock.emoji ? (
+              <span className="text-4xl">{stock.emoji}</span>
+            ) : (
+              <span className="text-2xl font-bold text-primary">{stock.ticker[0]}</span>
+            )}
+          </div>
           
           <div className="flex-1">
             <h1 className="text-xl font-bold text-foreground">{stock.name}</h1>
