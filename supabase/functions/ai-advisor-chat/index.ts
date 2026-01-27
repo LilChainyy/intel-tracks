@@ -1,10 +1,27 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// @ts-ignore - Deno types are available at runtime
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+// @ts-ignore - Deno types are available at runtime
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+
+// @ts-ignore - Deno global is available at runtime
+declare const Deno: {
+  env: {
+    get(key: string): string | undefined
+  }
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Helper function to create error responses
+function createErrorResponse(error: string, status: number): Response {
+  return new Response(
+    JSON.stringify({ error }),
+    { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -12,114 +29,243 @@ serve(async (req) => {
   }
 
   try {
-    // Authenticate user
+    // Optional authentication (for testing in Supabase dashboard)
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    let userId: string | null = null;
+
+    if (authHeader?.startsWith('Bearer ')) {
+      try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')
+        const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')
+        
+        if (!supabaseUrl || !supabaseAnonKey) {
+          console.warn('Supabase URL or anon key not configured');
+        } else {
+          const supabase = createClient(
+            supabaseUrl,
+            supabaseAnonKey,
+            { global: { headers: { Authorization: authHeader } } }
+          );
+
+          const token = authHeader.replace('Bearer ', '');
+          const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+          
+          if (!claimsError && claimsData?.claims) {
+            userId = claimsData.claims.sub;
+            console.log(`Authenticated user: ${userId}`);
+          } else {
+            console.warn('Auth error (continuing without auth):', claimsError);
+          }
+        }
+      } catch (authErr) {
+        console.warn('Auth check failed (continuing without auth):', authErr);
+      }
+    } else {
+      console.log('No auth header provided (testing mode)');
     }
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
-      console.error('Auth error:', claimsError);
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Parse request body with error handling
+    let requestBody: any = {}
+    try {
+      requestBody = await req.json()
+    } catch (parseError) {
+      // If no body or invalid JSON, use default
+      requestBody = {
+        messages: [
+          {
+            role: 'user',
+            content: 'Hello, can you explain what a stock is?'
+          }
+        ]
+      }
     }
 
-    const userId = claimsData.claims.sub;
-    console.log(`Authenticated user: ${userId}`);
-
-    const { messages } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    // Extract messages with fallback
+    const messages = requestBody?.messages || []
     
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    if (!Array.isArray(messages) || messages.length === 0) {
+      // Use default if no valid messages
+      requestBody.messages = [
+        {
+          role: 'user',
+          content: 'Hello, can you explain what a stock is?'
+        }
+      ]
+    }
+    
+    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY")
+    
+    if (!ANTHROPIC_API_KEY) {
+      return createErrorResponse("ANTHROPIC_API_KEY is not configured", 500);
     }
 
-    const systemPrompt = `You explain stocks to teenagers who are just learning to invest. Your responses MUST be casual and simple.
+    const systemPrompt = `You explain stocks to 15-year-olds. Keep it SHORT and SIMPLE.
 
-STRICT RULES - FOLLOW EXACTLY:
-1. Write like you're texting a friend (use "you", "your", contractions)
-2. Max 3 sentences per paragraph
-3. Replace ALL jargon immediately:
+CRITICAL RULES:
+1. MAXIMUM 2-3 sentences TOTAL per response (cut to 1/3 of normal length)
+2. One paragraph only - no multiple paragraphs
+3. Get straight to the point - no fluff
+4. Write like texting a friend (use "you", contractions, simple words)
+5. Replace ALL jargon:
    - "fundamentals" → "how the business is doing"
    - "volatility" → "price swings"
-   - "bearish" → "expecting prices to drop"
+   - "bearish" → "prices dropping"
    - "capital" → "money"
    - "equity" → "stock"
-   - "commercial scale" → "in real businesses"
-   - "headwinds" → "problems"
    - "margins" → "profit per sale"
-4. Use everyday comparisons and examples
-5. If explaining something complex, use "basically" or "in simple terms"
+   - "headwinds" → "problems"
 
-BAD (too formal): "The company faces significant headwinds due to macroeconomic pressures"
-GOOD: "The company is struggling because the overall economy sucks right now"
+EXAMPLES:
+BAD (too long): "A stock is basically a piece of a company that you can buy. When you own stock, you own a small part of that company. If the company does well, your stock price goes up and you make money."
+GOOD (crisp): "A stock is a piece of a company. Buy it, and if the company does well, you make money."
 
-BAD: "Investors are concerned about deteriorating margins"
-GOOD: "People are worried the company is making less profit on each sale"
+BAD: "The company is struggling because the overall economy is having issues right now, which means people aren't spending as much money."
+GOOD: "The company's struggling because the economy sucks and people aren't spending."
 
-BAD: "The technology hasn't been proven on a commercial scale"
-GOOD: "The tech is brand new and hasn't been tested in real businesses yet"
+Tone: Like a smart friend giving quick advice. Be direct, casual, and super brief.`;
 
-Tone: helpful friend at a coffee shop, NOT a Bloomberg analyst. Keep it SUPER casual.`;
+    // Convert messages to Claude format (Claude uses 'user' and 'assistant' roles, system is separate)
+    const claudeMessages = requestBody.messages
+      .filter((msg: any) => msg && msg.role !== 'system' && msg.content)
+      .map((msg: any) => ({
+        role: msg.role === 'assistant' ? 'assistant' : 'user',
+        content: typeof msg.content === 'string' ? msg.content : String(msg.content || ''),
+      }));
+    
+    if (claudeMessages.length === 0) {
+      return createErrorResponse('No valid messages found. Each message must have "role" and "content" fields.', 400);
+    }
+    
+    console.log(`Processing ${claudeMessages.length} messages`);
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ],
-        stream: true,
-      }),
+    console.log('Calling Claude API with:', {
+      model: "claude-3-haiku-20240307",
+      messageCount: claudeMessages.length,
+      hasApiKey: !!ANTHROPIC_API_KEY,
+      apiKeyPrefix: ANTHROPIC_API_KEY ? ANTHROPIC_API_KEY.substring(0, 10) + '...' : 'missing'
     });
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limits exceeded, please try again later." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Payment required, please add funds." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      return new Response(
-        JSON.stringify({ error: "AI gateway error" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    let response: Response;
+    try {
+      response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "x-api-key": ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "claude-3-haiku-20240307",
+          system: systemPrompt,
+          messages: claudeMessages,
+          max_tokens: 150,
+          stream: true,
+        }),
+      });
+    } catch (fetchError) {
+      console.error("Failed to call Claude API:", fetchError);
+      return createErrorResponse(`Failed to connect to Claude API: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`, 500);
     }
 
-    return new Response(response.body, {
+    if (!response.ok) {
+      let errorDetails = '';
+      try {
+        const errorText = await response.text();
+        errorDetails = errorText;
+        console.error("Claude API error:", response.status, errorText);
+      } catch (e) {
+        console.error("Claude API error (could not read body):", response.status);
+      }
+      
+      if (response.status === 401) {
+        return createErrorResponse("Invalid Anthropic API key. Please check your ANTHROPIC_API_KEY secret.", 500);
+      }
+      if (response.status === 429) {
+        return createErrorResponse("Rate limits exceeded, please try again later.", 429);
+      }
+      if (response.status === 400) {
+        return createErrorResponse(`Claude API request error: ${errorDetails || 'Invalid request format'}`, 400);
+      }
+      
+      return createErrorResponse(`Claude API error (${response.status}): ${errorDetails || 'Unknown error'}`, 500);
+    }
+
+    // Convert Claude SSE format to OpenAI-compatible format for frontend
+    const reader = response.body?.getReader();
+    const decoder = new TextDecoder();
+    const encoder = new TextEncoder();
+    
+    const stream = new ReadableStream({
+      async start(controller) {
+        if (!reader) {
+          controller.close();
+          return;
+        }
+        
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n');
+            
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  if (data.type === 'content_block_delta' && data.delta?.text) {
+                    // Convert to OpenAI SSE format
+                    const openAIFormat = {
+                      id: 'chatcmpl',
+                      object: 'chat.completion.chunk',
+                      created: Math.floor(Date.now() / 1000),
+                      model: 'claude-3-haiku',
+                      choices: [{
+                        index: 0,
+                        delta: { content: data.delta.text },
+                        finish_reason: null,
+                      }],
+                    };
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify(openAIFormat)}\n\n`));
+                  } else if (data.type === 'message_stop') {
+                    // Send final chunk
+                    const finalChunk = {
+                      id: 'chatcmpl',
+                      object: 'chat.completion.chunk',
+                      created: Math.floor(Date.now() / 1000),
+                      model: 'claude-3-haiku',
+                      choices: [{
+                        index: 0,
+                        delta: {},
+                        finish_reason: 'stop',
+                      }],
+                    };
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify(finalChunk)}\n\n`));
+                    controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+                  }
+                } catch (e) {
+                  // Skip invalid JSON lines
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Stream error:', error);
+        } finally {
+          controller.close();
+        }
+      },
+    });
+
+    return new Response(stream, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (error) {
     console.error("Chat error:", error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    console.error("Error stack:", error instanceof Error ? error.stack : 'No stack trace');
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorDetails = error instanceof Error && error.stack ? `\n\nStack: ${error.stack.substring(0, 500)}` : '';
+    return createErrorResponse(`Internal server error: ${errorMessage}${errorDetails}`, 500);
   }
 });

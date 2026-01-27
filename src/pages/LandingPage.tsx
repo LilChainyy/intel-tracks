@@ -1,26 +1,18 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp, Target, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import LandingHeader from '@/components/landing/LandingHeader';
-import LoginModal from '@/components/landing/LoginModal';
-import { useAuth } from '@/context/AuthContext';
 
 export default function LandingPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const { user, isLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect authenticated users to home
-  useEffect(() => {
-    if (!isLoading && user) {
-      navigate('/home', { replace: true });
-    }
-  }, [user, isLoading, navigate]);
+  const handleLoginClick = () => {
+    // Direct navigation to app - no authentication required
+    navigate('/home');
+  };
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      <LandingHeader onLoginClick={() => setIsModalOpen(true)} />
-      <LoginModal open={isModalOpen} onOpenChange={setIsModalOpen} />
+      <LandingHeader onLoginClick={handleLoginClick} />
 
       {/* Hero Section */}
       <section className="pt-32 pb-24 px-6">
@@ -34,7 +26,7 @@ export default function LandingPage() {
           <Button
             size="lg"
             className="bg-slate-900 text-white hover:bg-slate-800 px-8 py-6 text-lg"
-            onClick={() => setIsModalOpen(true)}
+            onClick={handleLoginClick}
           >
             Get Early Access
           </Button>
@@ -99,7 +91,7 @@ export default function LandingPage() {
             variant="outline"
             size="lg"
             className="border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white px-8"
-            onClick={() => setIsModalOpen(true)}
+            onClick={handleLoginClick}
           >
             Join Now
           </Button>

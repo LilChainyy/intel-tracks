@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, DollarSign, TrendingUp, Gem, ChevronRight, CheckCircle2, ArrowLeft, Target, BookOpen, Send } from 'lucide-react';
+import { X, Sparkles, DollarSign, TrendingUp, Gem, ChevronRight, CheckCircle2, ArrowLeft, Target, BookOpen, Send, BarChart3 } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -34,6 +34,14 @@ interface ExploredQuestion {
   analysis: AnalysisResult;
 }
 
+interface ResearchQuestion {
+  id: string;
+  text: string;
+  category: 'understanding' | 'risks' | 'valuation';
+  clicked: boolean;
+  apiQuestionType?: 'profitability' | 'growth' | 'valuation'; // Maps to API question types
+}
+
 interface ChatMessage {
   id: string;
   type: 'ai' | 'user' | 'options' | 'analysis' | 'loading';
@@ -51,6 +59,28 @@ interface ChatMessage {
 
 type ChatScreen = 'chat' | 'summary' | 'theoryBuilder' | 'timeline';
 
+// 15 Research Questions - 5 per category
+const RESEARCH_QUESTIONS: ResearchQuestion[] = [
+  // Understanding (5 questions)
+  { id: 'u1', text: 'What does this company do?', category: 'understanding', clicked: false, apiQuestionType: 'profitability' },
+  { id: 'u2', text: 'How does it make money?', category: 'understanding', clicked: false, apiQuestionType: 'profitability' },
+  { id: 'u3', text: 'Who are its main customers?', category: 'understanding', clicked: false, apiQuestionType: 'profitability' },
+  { id: 'u4', text: "What's its competitive advantage?", category: 'understanding', clicked: false, apiQuestionType: 'growth' },
+  { id: 'u5', text: "How's the industry doing?", category: 'understanding', clicked: false, apiQuestionType: 'growth' },
+  // Risks (5 questions)
+  { id: 'r1', text: 'What are the biggest risks?', category: 'risks', clicked: false, apiQuestionType: 'profitability' },
+  { id: 'r2', text: 'Could competition hurt them?', category: 'risks', clicked: false, apiQuestionType: 'growth' },
+  { id: 'r3', text: 'Any regulatory concerns?', category: 'risks', clicked: false, apiQuestionType: 'profitability' },
+  { id: 'r4', text: 'What if the economy slows?', category: 'risks', clicked: false, apiQuestionType: 'growth' },
+  { id: 'r5', text: 'Is management trustworthy?', category: 'risks', clicked: false, apiQuestionType: 'valuation' },
+  // Valuation (5 questions)
+  { id: 'v1', text: 'Is the price fair?', category: 'valuation', clicked: false, apiQuestionType: 'valuation' },
+  { id: 'v2', text: 'How does it compare to competitors?', category: 'valuation', clicked: false, apiQuestionType: 'valuation' },
+  { id: 'v3', text: "What's the growth potential?", category: 'valuation', clicked: false, apiQuestionType: 'growth' },
+  { id: 'v4', text: 'Are there better alternatives?', category: 'valuation', clicked: false, apiQuestionType: 'valuation' },
+  { id: 'v5', text: "What's a fair price target?", category: 'valuation', clicked: false, apiQuestionType: 'valuation' },
+];
+
 export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdvisorChatProps) {
   const [screen, setScreen] = useState<ChatScreen>('chat');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -59,6 +89,8 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
   const [xpEarned, setXpEarned] = useState(0);
   const [selectedTheory, setSelectedTheory] = useState<string | null>(null);
   const [savedTheory, setSavedTheory] = useState<string | null>(null);
+  const [researchQuestions, setResearchQuestions] = useState<ResearchQuestion[]>(RESEARCH_QUESTIONS);
+  const [showCompletion, setShowCompletion] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -77,26 +109,29 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
       setXpEarned(0);
       setSelectedTheory(null);
       setSavedTheory(null);
+      setResearchQuestions(RESEARCH_QUESTIONS.map(q => ({ ...q, clicked: false })));
+      setShowCompletion(false);
       
-      // Initialize with welcome message and options
+      // Initialize with welcome message
       setMessages([
         {
           id: '1',
           type: 'ai',
-          content: `🤔 Let's understand ${companyName} together.\n\nWhat would you like to explore first?`
-        },
-        {
-          id: '2',
-          type: 'options',
-          options: [
-            { type: 'profitability', label: '💰 Is it making money?', icon: '💰', explored: false },
-            { type: 'growth', label: '🚀 Is it growing?', icon: '🚀', explored: false },
-            { type: 'valuation', label: '💎 Is it expensive?', icon: '💎', explored: false }
-          ]
+          content: `🤔 Let's understand ${companyName} together.\n\nClick on any question below to get started!`
         }
       ]);
     }
   }, [open, companyName]);
+
+  // Calculate progress for each category
+  const calculateCategoryProgress = (category: 'understanding' | 'risks' | 'valuation'): number => {
+    const clickedInCategory = researchQuestions.filter(q => q.category === category && q.clicked).length;
+    return (clickedInCategory / 5) * 100; // 5 questions per category
+  };
+
+  // Check if all questions are completed
+  const allQuestionsCompleted = researchQuestions.every(q => q.clicked);
+  const remainingCount = researchQuestions.filter(q => !q.clicked).length;
 
   const getQuestionLabel = (type: 'profitability' | 'growth' | 'valuation') => {
     switch (type) {
@@ -106,12 +141,32 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
     }
   };
 
-  const handleAskQuestion = async (question: 'profitability' | 'growth' | 'valuation') => {
+  const handleResearchQuestion = async (questionId: string) => {
+    const question = researchQuestions.find(q => q.id === questionId);
+    if (!question || question.clicked || loading) return;
+
+    // Mark question as clicked
+    setResearchQuestions(prev => prev.map(q => 
+      q.id === questionId ? { ...q, clicked: true } : q
+    ));
+
+    // Check if all questions are now completed
+    const newClickedCount = researchQuestions.filter(q => q.clicked || q.id === questionId).length;
+    if (newClickedCount === RESEARCH_QUESTIONS.length) {
+      setTimeout(() => setShowCompletion(true), 1000);
+    }
+
+    // Use the API question type if available, otherwise default to valuation
+    const apiQuestionType = question.apiQuestionType || 'valuation';
+    await handleAskQuestion(apiQuestionType, question.text);
+  };
+
+  const handleAskQuestion = async (question: 'profitability' | 'growth' | 'valuation', customText?: string) => {
     // Add user message
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       type: 'user',
-      content: getQuestionLabel(question)
+      content: customText || getQuestionLabel(question)
     };
     
     // Add loading message
@@ -124,17 +179,39 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('stock-analysis', {
-        body: { ticker, companyName, question, followUp: false }
+      // Use direct fetch with anon key for Supabase Edge Functions
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/stock-analysis`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${anonKey}`,
+        },
+        body: JSON.stringify({
+          ticker,
+          companyName,
+          question,
+          followUp: false
+        }),
       });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
 
       if (data?.analysis) {
-        // Remove loading message and add analysis
+        // Remove loading message and add analysis, preserving options
         setMessages(prev => {
           const filtered = prev.filter(m => m.type !== 'loading');
-          return [
+          const optionsMessage = prev.find(m => m.type === 'options');
+          
+          // Add analysis
+          const updated = [
             ...filtered,
             {
               id: (Date.now() + 2).toString(),
@@ -144,6 +221,19 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
               showFollowUp: true
             }
           ];
+          
+          // Re-add options at the end if they exist, with updated explored state
+          if (optionsMessage && optionsMessage.options) {
+            const updatedOptions = optionsMessage.options.map(opt => 
+              opt.type === question ? { ...opt, explored: true } : opt
+            );
+            updated.push({
+              ...optionsMessage,
+              options: updatedOptions
+            });
+          }
+          
+          return updated;
         });
 
         setExploredQuestions(prev => {
@@ -152,13 +242,20 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
           return [...prev, { type: question, analysis: data.analysis }];
         });
         setXpEarned(prev => prev + 25);
-
-        // Update options to show explored state
-        updateOptionsExplored(question);
       }
     } catch (error) {
       console.error('Error fetching analysis:', error);
-      setMessages(prev => prev.filter(m => m.type !== 'loading'));
+      setMessages(prev => {
+        const filtered = prev.filter(m => m.type !== 'loading');
+        return [
+          ...filtered,
+          {
+            id: (Date.now() + 3).toString(),
+            type: 'ai',
+            content: 'Sorry, I encountered an error. Please try again.'
+          }
+        ];
+      });
     } finally {
       setLoading(false);
     }
@@ -189,11 +286,30 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('stock-analysis', {
-        body: { ticker, companyName, question, followUp: true }
+      // Use direct fetch with anon key for Supabase Edge Functions
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/stock-analysis`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${anonKey}`,
+        },
+        body: JSON.stringify({
+          ticker,
+          companyName,
+          question,
+          followUp: true
+        }),
       });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
 
       if (data?.analysis) {
         setMessages(prev => {
@@ -213,7 +329,17 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
       }
     } catch (error) {
       console.error('Error fetching follow-up:', error);
-      setMessages(prev => prev.filter(m => m.type !== 'loading'));
+      setMessages(prev => {
+        const filtered = prev.filter(m => m.type !== 'loading');
+        return [
+          ...filtered,
+          {
+            id: (Date.now() + 3).toString(),
+            type: 'ai',
+            content: 'Sorry, I encountered an error. Please try again.'
+          }
+        ];
+      });
     } finally {
       setLoading(false);
     }
@@ -244,9 +370,9 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
       id: (Date.now() + 1).toString(),
       type: 'options',
       options: [
-        { type: 'profitability', label: '💰 Is it making money?', icon: '💰', explored: exploredQuestions.some(q => q.type === 'profitability') },
-        { type: 'growth', label: '🚀 Is it growing?', icon: '🚀', explored: exploredQuestions.some(q => q.type === 'growth') },
-        { type: 'valuation', label: '💎 Is it expensive?', icon: '💎', explored: exploredQuestions.some(q => q.type === 'valuation') }
+        { type: 'profitability', label: 'Is it making money?', icon: '', explored: exploredQuestions.some(q => q.type === 'profitability') },
+        { type: 'growth', label: 'Is it growing?', icon: '', explored: exploredQuestions.some(q => q.type === 'growth') },
+        { type: 'valuation', label: 'Is it expensive?', icon: '', explored: exploredQuestions.some(q => q.type === 'valuation') }
       ]
     };
 
@@ -303,11 +429,12 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          <AnimatePresence mode="popLayout">
-            {screen === 'chat' && (
-              <>
-                {messages.map((message) => (
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <AnimatePresence mode="popLayout">
+              {screen === 'chat' && (
+                <>
+                  {messages.map((message) => (
                   <motion.div
                     key={message.id}
                     initial={{ opacity: 0, y: 10 }}
@@ -449,17 +576,187 @@ export function AIAdvisorChat({ open, onOpenChange, ticker, companyName }: AIAdv
                     )}
                   </motion.div>
                 ))}
-                <div ref={chatEndRef} />
-              </>
-            )}
+                
+                {/* Completion Celebration */}
+                {showCompletion && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    onClick={() => setShowCompletion(false)}
+                  >
+                    <motion.div
+                      initial={{ y: 20 }}
+                      animate={{ y: 0 }}
+                      className="bg-card border border-border rounded-2xl p-8 max-w-md text-center shadow-lg"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <motion.div
+                        animate={{ rotate: [0, 10, -10, 10, 0] }}
+                        transition={{ duration: 0.5 }}
+                        className="text-6xl mb-4"
+                      >
+                        🎉
+                      </motion.div>
+                      <h3 className="text-2xl font-bold text-foreground mb-2">Research Complete!</h3>
+                      <p className="text-muted-foreground mb-6">
+                        You've explored all aspects of {companyName}. You're ready to make an informed decision!
+                      </p>
+                      <Button onClick={() => setShowCompletion(false)} className="w-full">
+                        Continue
+                      </Button>
+                    </motion.div>
+                  </motion.div>
+                )}
+                
+                  <div ref={chatEndRef} />
+                </>
+              )}
+            </AnimatePresence>
+          </div>
 
-            {screen === 'summary' && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="space-y-4"
-              >
+          {/* Research Questions Section - Always at Bottom */}
+          {screen === 'chat' && researchQuestions.length > 0 && (
+            <div className="flex-shrink-0 p-4 pt-0 border-t border-border bg-background">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-foreground">Research Questions</h3>
+                <span className="text-xs text-muted-foreground">
+                  {remainingCount} remaining
+                </span>
+              </div>
+              
+              {/* Grouped by Category */}
+              <div className="space-y-4 max-h-[400px] overflow-y-auto">
+                {/* Understanding Category */}
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <BarChart3 className="w-4 h-4 text-blue-500" />
+                    <span className="text-xs font-medium text-foreground">Understanding</span>
+                    <span className="text-xs text-muted-foreground">
+                      ({researchQuestions.filter(q => q.category === 'understanding' && q.clicked).length}/5)
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    <AnimatePresence>
+                      {researchQuestions
+                        .filter(q => q.category === 'understanding')
+                        .map((question) => (
+                          <motion.button
+                            key={question.id}
+                            initial={{ opacity: 1, scale: 1 }}
+                            animate={{ 
+                              opacity: question.clicked ? 0 : 1,
+                              scale: question.clicked ? 0.95 : 1,
+                              height: question.clicked ? 0 : 'auto'
+                            }}
+                            exit={{ opacity: 0, scale: 0.95, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                            onClick={() => handleResearchQuestion(question.id)}
+                            disabled={question.clicked || loading}
+                            className={`text-left p-3 rounded-xl text-sm transition-all ${
+                              question.clicked
+                                ? 'opacity-0 pointer-events-none'
+                                : 'bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20'
+                            } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          >
+                            <span className="text-foreground">{question.text}</span>
+                          </motion.button>
+                        ))}
+                    </AnimatePresence>
+                  </div>
+                </div>
+
+                {/* Risks Category */}
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Target className="w-4 h-4 text-amber-500" />
+                    <span className="text-xs font-medium text-foreground">Risks</span>
+                    <span className="text-xs text-muted-foreground">
+                      ({researchQuestions.filter(q => q.category === 'risks' && q.clicked).length}/5)
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    <AnimatePresence>
+                      {researchQuestions
+                        .filter(q => q.category === 'risks')
+                        .map((question) => (
+                          <motion.button
+                            key={question.id}
+                            initial={{ opacity: 1, scale: 1 }}
+                            animate={{ 
+                              opacity: question.clicked ? 0 : 1,
+                              scale: question.clicked ? 0.95 : 1,
+                              height: question.clicked ? 0 : 'auto'
+                            }}
+                            exit={{ opacity: 0, scale: 0.95, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                            onClick={() => handleResearchQuestion(question.id)}
+                            disabled={question.clicked || loading}
+                            className={`text-left p-3 rounded-xl text-sm transition-all ${
+                              question.clicked
+                                ? 'opacity-0 pointer-events-none'
+                                : 'bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20'
+                            } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          >
+                            <span className="text-foreground">{question.text}</span>
+                          </motion.button>
+                        ))}
+                    </AnimatePresence>
+                  </div>
+                </div>
+
+                {/* Valuation Category */}
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <DollarSign className="w-4 h-4 text-green-500" />
+                    <span className="text-xs font-medium text-foreground">Valuation</span>
+                    <span className="text-xs text-muted-foreground">
+                      ({researchQuestions.filter(q => q.category === 'valuation' && q.clicked).length}/5)
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    <AnimatePresence>
+                      {researchQuestions
+                        .filter(q => q.category === 'valuation')
+                        .map((question) => (
+                          <motion.button
+                            key={question.id}
+                            initial={{ opacity: 1, scale: 1 }}
+                            animate={{ 
+                              opacity: question.clicked ? 0 : 1,
+                              scale: question.clicked ? 0.95 : 1,
+                              height: question.clicked ? 0 : 'auto'
+                            }}
+                            exit={{ opacity: 0, scale: 0.95, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                            onClick={() => handleResearchQuestion(question.id)}
+                            disabled={question.clicked || loading}
+                            className={`text-left p-3 rounded-xl text-sm transition-all ${
+                              question.clicked
+                                ? 'opacity-0 pointer-events-none'
+                                : 'bg-green-500/10 hover:bg-green-500/20 border border-green-500/20'
+                            } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          >
+                            <span className="text-foreground">{question.text}</span>
+                          </motion.button>
+                        ))}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Summary Screen */}
+        {screen === 'summary' && (
+          <div className="flex-1 overflow-y-auto p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="space-y-4"
+            >
                 <div className="flex items-center gap-2">
                   <button onClick={() => setScreen('chat')} className="p-2">
                     <ArrowLeft className="w-5 h-5" />

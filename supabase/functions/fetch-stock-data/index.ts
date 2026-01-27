@@ -1,4 +1,12 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// @ts-ignore - Deno types are available at runtime
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+
+// @ts-ignore - Deno global is available at runtime
+declare const Deno: {
+  env: {
+    get(key: string): string | undefined
+  }
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -30,35 +38,29 @@ async function fetchStockData(ticker: string, apiKey: string): Promise<StockQuot
     return cached.data;
   }
 
-  console.log(`Fetching data for ${ticker} from Alpha Vantage`);
+  console.log(`Fetching data for ${ticker} from Finnhub`);
   
   try {
-    // Fetch current quote from Alpha Vantage
-    const quoteUrl = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${apiKey}`;
+    // Fetch current quote from Finnhub
+    const quoteUrl = `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`;
     const quoteResponse = await fetch(quoteUrl);
-    const quoteData = await quoteResponse.json();
-
-    // Check for rate limiting or API errors
-    if (quoteData.Note) {
-      console.error(`Alpha Vantage rate limit for ${ticker}:`, quoteData.Note);
+    
+    if (!quoteResponse.ok) {
+      console.error(`Finnhub API error for ${ticker}: ${quoteResponse.status}`);
       return null;
     }
     
-    if (quoteData.Information) {
-      console.error(`Alpha Vantage API info for ${ticker}:`, quoteData.Information);
-      return null;
-    }
+    const quoteData = await quoteResponse.json();
 
-    const globalQuote = quoteData['Global Quote'];
-    if (!globalQuote || !globalQuote['05. price']) {
+    // Finnhub returns: { c: currentPrice, d: change, dp: changePercent, h: high, l: low, o: open, pc: previousClose, t: timestamp }
+    if (!quoteData.c || quoteData.c === 0) {
       console.error(`No data found for ${ticker}`, quoteData);
       return null;
     }
 
-    const currentPrice = parseFloat(globalQuote['05. price']);
-    // Use the change percent from Alpha Vantage (this is daily change)
-    const changePercentStr = globalQuote['10. change percent'] || '0%';
-    const changePercent = parseFloat(changePercentStr.replace('%', ''));
+    const currentPrice = quoteData.c;
+    // dp is change percent, d is change amount
+    const changePercent = quoteData.dp || 0;
     
     console.log(`${ticker}: price=$${currentPrice.toFixed(2)}, change=${changePercent.toFixed(2)}%`);
     
@@ -94,17 +96,28 @@ serve(async (req) => {
   }
 
   try {
-    const { tickers } = await req.json();
+    let requestBody: any = {}
+    try {
+      requestBody = await req.json()
+    } catch (parseError) {
+      // If no body, use defaults for testing
+      requestBody = { tickers: ['AAPL', 'MSFT'] }
+    }
+
+    const { tickers } = requestBody
     
-    if (!tickers || !Array.isArray(tickers) || tickers.length === 0) {
+    // Use defaults for testing if tickers are missing
+    const tickerList = tickers || ['AAPL', 'MSFT']
+    
+    if (!Array.isArray(tickerList) || tickerList.length === 0) {
       return new Response(
-        JSON.stringify({ error: 'Please provide an array of ticker symbols' }),
+        JSON.stringify({ error: 'Please provide an array of ticker symbols. Example: {"tickers": ["AAPL", "MSFT"]}' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     // Validate all tickers before processing
-    const invalidTickers = tickers.filter(t => !isValidTicker(t));
+    const invalidTickers = tickerList.filter(t => !isValidTicker(t));
     if (invalidTickers.length > 0) {
       return new Response(
         JSON.stringify({ error: `Invalid ticker symbols: ${invalidTickers.join(', ')}. Must be 1-10 alphanumeric characters.` }),
@@ -112,33 +125,33 @@ serve(async (req) => {
       );
     }
 
-    const apiKey = Deno.env.get('ALPHA_VANTAGE_API_KEY');
+    const apiKey = Deno.env.get('FINNHUB_API_KEY');
     if (!apiKey) {
-      console.error('ALPHA_VANTAGE_API_KEY is not configured');
+      console.error('FINNHUB_API_KEY is not configured');
       return new Response(
         JSON.stringify({ error: 'API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Processing request for ${tickers.length} tickers`);
+    console.log(`Processing request for ${tickerList.length} tickers`);
 
-    // Fetch data for all tickers with delay to respect rate limits (5 requests/minute)
+    // Fetch data for all tickers (Finnhub allows 60 calls/minute, so we can be faster)
     const results: Record<string, StockQuote | null> = {};
     
-    for (let i = 0; i < tickers.length; i++) {
-      const ticker = tickers[i];
+    for (let i = 0; i < tickerList.length; i++) {
+      const ticker = tickerList[i];
       const safeTicker = encodeURIComponent(ticker.toUpperCase().trim());
       results[ticker] = await fetchStockData(safeTicker, apiKey);
       
-      // Add 12-second delay between requests (5 requests per minute limit)
-      if (i < tickers.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 12000));
+      // Add 1-second delay between requests (60 requests per minute limit = 1 per second)
+      if (i < tickerList.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
 
     const successCount = Object.values(results).filter(r => r !== null).length;
-    console.log(`Successfully fetched ${successCount}/${tickers.length} stocks`);
+    console.log(`Successfully fetched ${successCount}/${tickerList.length} stocks`);
 
     return new Response(
       JSON.stringify({ 

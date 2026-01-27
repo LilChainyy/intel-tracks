@@ -1,51 +1,40 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// @ts-ignore - Deno types are available at runtime
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+
+// @ts-ignore - Deno global is available at runtime
+declare const Deno: {
+  env: {
+    get(key: string): string | undefined
+  }
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SYSTEM_PROMPT_EN = `You are a friendly investment advisor helping beginners understand companies.
+const SYSTEM_PROMPT = `You're explaining companies to a 15-year-old. Keep it SHORT and SIMPLE.
 
-RESPONSE RULES (CRITICAL):
-- Maximum 4-5 sentences per response
-- NO markdown formatting: no **, no ***, no ###, no bullet points
-- Write like you're texting a friend - natural, conversational
-- Structure your response in 2-3 short paragraphs max
-- Keep professional terms but explain them simply inline
+CRITICAL RULES:
+- MAXIMUM 2-3 sentences TOTAL (cut to 1/3 normal length)
+- One paragraph only - no multiple paragraphs
+- Get straight to the point - no fluff
+- Write like texting a friend (use "you", contractions)
+- NO markdown: no **, no bullets, no formatting
+- Replace jargon immediately:
+  - "fundamentals" → "how the business is doing"
+  - "volatility" → "price swings"
+  - "margins" → "profit per sale"
+  - "capital" → "money"
 
-YOUR STYLE:
-- Warm and encouraging, like chatting with a knowledgeable friend
-- Give direct answers first, then brief explanation
-- One idea per sentence, simple words
+EXAMPLES:
+BAD (too long): "Apple makes iPhones and computers. They make money by selling these products to millions of people around the world. The company is in the technology industry and competes with companies like Samsung and Google."
+GOOD (crisp): "Apple makes iPhones and computers. They sell millions of them and make tons of money."
 
-TOPICS YOU COVER:
-1. Understanding: What the company does, how it makes money, its industry
-2. Risks: What could go wrong, threats to the business
-3. Valuation: Is the stock price fair, how it compares to peers
+BAD: "The company faces risks from competition and economic downturns that could affect their sales."
+GOOD: "Competition and a bad economy could hurt their sales."
 
-If asked about other topics, gently redirect to these investing basics.`;
-
-const SYSTEM_PROMPT_ZH = `你是一位友好的投资顾问，帮助初学者了解公司。
-
-回答规则（重要）：
-- 每次回答最多4-5句话
-- 不要使用任何markdown格式：不要**，不要***，不要###，不要项目符号
-- 像和朋友聊天一样自然对话
-- 回答分2-3个短段落
-- 保留专业术语但用简单语言解释
-
-你的风格：
-- 温暖鼓励，像和一个懂行的朋友聊天
-- 先给直接答案，再简短解释
-- 一句话一个观点，用简单的词
-
-你涵盖的主题：
-1. 理解：公司做什么，如何赚钱，所在行业
-2. 风险：什么可能出错，业务威胁
-3. 估值：股价是否合理，与同行比较
-
-如果被问到其他话题，温和地引导回这些投资基础。`;
+TOPICS: What they do, risks, and if the price is fair. Be direct and super brief.`;
 
 // Validate ticker symbol format: 1-10 alphanumeric chars, may include hyphen and dot
 function isValidTicker(ticker: string): boolean {
@@ -54,82 +43,172 @@ function isValidTicker(ticker: string): boolean {
   return tickerRegex.test(ticker.trim());
 }
 
+// Helper function to create error responses
+function createErrorResponse(error: string, status: number): Response {
+  return new Response(
+    JSON.stringify({ error }),
+    { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { messages, ticker, companyName, language = 'en' } = await req.json();
-    
-    if (!ticker || !isValidTicker(ticker)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid ticker symbol. Must be 1-10 alphanumeric characters.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    let requestBody: any = {}
+    try {
+      requestBody = await req.json()
+    } catch (parseError) {
+      // If no body, use defaults for testing
+      requestBody = {
+        messages: [{ role: 'user', content: 'Tell me about Apple' }],
+        ticker: 'AAPL',
+        companyName: 'Apple Inc'
+      }
     }
 
-    const safeTicker = encodeURIComponent(ticker.toUpperCase().trim());
+    const { messages, ticker, companyName } = requestBody
     
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    // Use defaults for testing if ticker is missing
+    const testTicker = ticker || 'AAPL'
+    const testCompanyName = companyName || 'Apple Inc'
+    
+    if (!isValidTicker(testTicker)) {
+      return createErrorResponse(`Invalid ticker symbol: "${testTicker}". Must be 1-10 alphanumeric characters (e.g., AAPL, MSFT, TSLA).`, 400);
+    }
+
+    const safeTicker = encodeURIComponent(testTicker.toUpperCase().trim());
+    
+    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY")
+    if (!ANTHROPIC_API_KEY) {
+      throw new Error("ANTHROPIC_API_KEY is not configured");
+    }
+
+    // Extract messages with fallback
+    const messageList = messages || []
+    if (!Array.isArray(messageList) || messageList.length === 0) {
+      requestBody.messages = [{ role: 'user', content: `Tell me about ${testCompanyName}` }]
     }
 
     // Fetch real stock data
     const stockData = await fetchStockData(safeTicker);
     
-    const systemPrompt = language === 'zh' ? SYSTEM_PROMPT_ZH : SYSTEM_PROMPT_EN;
     const contextPrompt = stockData 
-      ? `\n\nCurrent data for ${companyName} (${ticker}):\n${formatStockData(stockData)}`
-      : `\n\nNo real-time data available for ${companyName}. Provide general educational information.`;
+      ? `\n\nCurrent data for ${testCompanyName} (${testTicker}):\n${formatStockData(stockData)}`
+      : `\n\nNo real-time data available for ${testCompanyName}. Provide general educational information.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // Convert messages to Claude format
+    const claudeMessages = requestBody.messages
+      .filter((msg: any) => msg && msg.role !== 'system' && msg.content)
+      .map((msg: any) => ({
+        role: msg.role === 'assistant' ? 'assistant' : 'user',
+        content: typeof msg.content === 'string' ? msg.content : String(msg.content || ''),
+      }));
+    
+    if (claudeMessages.length === 0) {
+      return createErrorResponse('No valid messages found. Each message must have "role" and "content" fields.', 400);
+    }
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt + contextPrompt },
-          ...messages,
-        ],
+        model: "claude-3-haiku-20240307",
+        system: SYSTEM_PROMPT + contextPrompt,
+        messages: claudeMessages,
+        max_tokens: 150,
         stream: true,
       }),
     });
 
     if (!response.ok) {
       if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limits exceeded, please try again later." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Payment required, please add funds." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return createErrorResponse("Rate limits exceeded, please try again later.", 429);
       }
       const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      return new Response(
-        JSON.stringify({ error: "AI gateway error" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      console.error("Claude API error:", response.status, errorText);
+      return createErrorResponse("AI API error", 500);
     }
 
-    return new Response(response.body, {
+    // Convert Claude SSE format to OpenAI-compatible format for frontend
+    const reader = response.body?.getReader();
+    const decoder = new TextDecoder();
+    const encoder = new TextEncoder();
+    
+    const stream = new ReadableStream({
+      async start(controller) {
+        if (!reader) {
+          controller.close();
+          return;
+        }
+        
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n');
+            
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  if (data.type === 'content_block_delta' && data.delta?.text) {
+                    const openAIFormat = {
+                      id: 'chatcmpl',
+                      object: 'chat.completion.chunk',
+                      created: Math.floor(Date.now() / 1000),
+                      model: 'claude-3-haiku',
+                      choices: [{
+                        index: 0,
+                        delta: { content: data.delta.text },
+                        finish_reason: null,
+                      }],
+                    };
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify(openAIFormat)}\n\n`));
+                  } else if (data.type === 'message_stop') {
+                    const finalChunk = {
+                      id: 'chatcmpl',
+                      object: 'chat.completion.chunk',
+                      created: Math.floor(Date.now() / 1000),
+                      model: 'claude-3-haiku',
+                      choices: [{
+                        index: 0,
+                        delta: {},
+                        finish_reason: 'stop',
+                      }],
+                    };
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify(finalChunk)}\n\n`));
+                    controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+                  }
+                } catch (e) {
+                  // Skip invalid JSON lines
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Stream error:', error);
+        } finally {
+          controller.close();
+        }
+      },
+    });
+
+    return new Response(stream, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (error) {
     console.error("Chat error:", error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return createErrorResponse(errorMessage, 500);
   }
 });
 

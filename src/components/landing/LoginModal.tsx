@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 interface LoginModalProps {
   open: boolean;
@@ -26,25 +26,17 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
 
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [referralCode, setReferralCode] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; referralCode?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; referralCode?: string }>({});
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
 
     if (!email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       newErrors.email = 'Please enter a valid email';
-    }
-
-    if (!password) {
-      newErrors.password = 'Password is required';
-    } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
     }
 
     if (!referralCode.trim()) {
@@ -75,6 +67,13 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
     await supabase.rpc('increment_referral_code_use' as never, { code_text: normalizedCode } as never);
   };
 
+  // Generate a consistent password from referral code (acts as password)
+  const getPasswordFromReferralCode = (code: string): string => {
+    // Use referral code as password (since it's required anyway)
+    // In production, you might want to hash this differently
+    return `ref_${code.toUpperCase().trim()}_pass`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -83,30 +82,49 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
     setIsLoading(true);
 
     try {
+      const normalizedEmail = email.trim().toLowerCase();
+      const normalizedReferralCode = referralCode.toUpperCase().trim();
+      
+      // Debug: log current mode
+      console.log('Form mode:', isLogin ? 'LOGIN' : 'SIGNUP');
+      
+      // Validate referral code first
+      const isValidCode = await validateReferralCode(normalizedReferralCode);
+      if (!isValidCode) {
+        setErrors({ referralCode: 'Invalid or expired referral code' });
+        toast({
+          title: 'Invalid referral code',
+          description: 'Please enter a valid referral code.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const password = getPasswordFromReferralCode(normalizedReferralCode);
+
       if (isLogin) {
-        const isValidCode = await validateReferralCode(referralCode);
-
-        if (!isValidCode) {
-          setErrors({ referralCode: 'Invalid or expired referral code' });
-          toast({
-            title: 'Invalid referral code',
-            description: 'Please enter a valid referral code.',
-            variant: 'destructive',
-          });
-          return;
-        }
-
+        // Login: email + referral code
         const { error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
+          email: normalizedEmail,
           password,
         });
 
         if (error) {
-          toast({
-            title: 'Sign in failed',
-            description: error.message,
-            variant: 'destructive',
-          });
+          // If user doesn't exist, suggest signup
+          if (error.message.includes('Invalid login credentials') || error.message.includes('Email not confirmed')) {
+            toast({
+              title: 'Account not found',
+              description: 'Email not found. Please sign up first.',
+              variant: 'destructive',
+            });
+            setIsLogin(false);
+          } else {
+            toast({
+              title: 'Sign in failed',
+              description: 'Invalid email or referral code.',
+              variant: 'destructive',
+            });
+          }
           return;
         }
 
@@ -114,49 +132,93 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
         onOpenChange(false);
         navigate('/home');
       } else {
-        const isValidCode = await validateReferralCode(referralCode);
-
-        if (!isValidCode) {
-          setErrors({ referralCode: 'Invalid or expired referral code' });
-          toast({
-            title: 'Invalid referral code',
-            description: 'Please enter a valid referral code to sign up.',
-            variant: 'destructive',
-          });
-          return;
-        }
-
-        const { error } = await supabase.auth.signUp({
-          email: email.trim(),
+        // SIGNUP: email + referral code
+        console.log('=== SIGNUP MODE ===');
+        console.log('Attempting signup with:', { email: normalizedEmail, hasReferralCode: !!normalizedReferralCode });
+        
+        const { data, error } = await supabase.auth.signUp({
+          email: normalizedEmail,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/home`,
+            data: {
+              referral_code_used: normalizedReferralCode,
+            },
           },
         });
 
+        console.log('Signup response:', { 
+          hasUser: !!data?.user, 
+          hasSession: !!data?.session,
+          error: error?.message 
+        });
+
         if (error) {
-          if (error.message.includes('already registered')) {
+          console.error('Signup error details:', {
+            message: error.message,
+            status: error.status,
+            name: error.name
+          });
+          
+          // Handle specific error cases
+          const errorMsg = error.message.toLowerCase();
+          
+          if (errorMsg.includes('already registered') || 
+              errorMsg.includes('user already registered') || 
+              errorMsg.includes('already been registered') ||
+              errorMsg.includes('email address is already registered')) {
             toast({
-              title: 'Account exists',
-              description: 'This email is already registered. Try signing in instead.',
+              title: 'Account already exists',
+              description: 'This email is already registered. Please sign in instead.',
               variant: 'destructive',
             });
             setIsLogin(true);
-          } else {
-            toast({
-              title: 'Sign up failed',
-              description: error.message,
-              variant: 'destructive',
-            });
+            setIsLoading(false);
+            return;
           }
+          
+          // Show the actual error message
+          toast({
+            title: 'Sign up failed',
+            description: error.message || 'Unable to create account. Please check your email and referral code.',
+            variant: 'destructive',
+          });
+          setIsLoading(false);
           return;
         }
 
-        await incrementReferralCodeUse(referralCode);
+        // Signup succeeded - increment referral code usage
+        incrementReferralCodeUse(normalizedReferralCode).catch(err => {
+          console.error('Failed to increment referral code:', err);
+          // Don't block signup if this fails
+        });
 
-        toast({ title: 'Account created successfully!' });
-        onOpenChange(false);
-        navigate('/home');
+        // Check if user was created and signed in
+        if (data?.user) {
+          console.log('User created successfully:', data.user.id);
+          
+          // If we have a session, user is signed in
+          if (data.session) {
+            toast({ title: 'Account created successfully!' });
+            onOpenChange(false);
+            navigate('/home');
+          } else {
+            // Email confirmation might be required
+            toast({
+              title: 'Account created!',
+              description: 'Please check your email to confirm your account, or sign in if email confirmation is disabled.',
+            });
+            // Optionally switch to login mode
+            setIsLogin(true);
+          }
+        } else {
+          // No user created - this shouldn't happen without an error
+          toast({
+            title: 'Sign up incomplete',
+            description: 'Account creation may have failed. Please try again.',
+            variant: 'destructive',
+          });
+        }
       }
     } catch (err) {
       toast({
@@ -171,7 +233,6 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
 
   const resetForm = () => {
     setEmail('');
-    setPassword('');
     setReferralCode('');
     setErrors({});
   };
@@ -214,39 +275,11 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-slate-700">Password</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  if (errors.password) setErrors({ ...errors, password: undefined });
-                }}
-                className={`bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 pr-10 ${errors.password ? 'border-red-500' : ''}`}
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-            {errors.password && (
-              <p className="text-sm text-red-500">{errors.password}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
             <Label htmlFor="referralCode" className="text-slate-700">Referral Code</Label>
             <Input
               id="referralCode"
               type="text"
-              placeholder="Enter your code"
+              placeholder="Enter your referral code"
               value={referralCode}
               onChange={(e) => {
                 setReferralCode(e.target.value.toUpperCase());

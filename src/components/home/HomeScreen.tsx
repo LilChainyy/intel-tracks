@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion';
 import { Bell, ChevronRight, Sparkles, Flame, BookOpen, Eye } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { Catalyst } from '@/context/AppContext';
 import { playlists } from '@/data/playlists';
-import { catalysts } from '@/data/catalysts';
+import { useCatalysts } from '@/hooks/useCatalysts';
 import { Progress } from '@/components/ui/progress';
 
 export function HomeScreen() {
@@ -14,6 +15,8 @@ export function HomeScreen() {
     completedCompanies,
     watchlistCompanies 
   } = useApp();
+
+  const { catalysts, isLoading } = useCatalysts();
 
   // Stats
   const companiesLearned = completedCompanies.length;
@@ -35,7 +38,7 @@ export function HomeScreen() {
     setCurrentScreen('company-list');
   };
 
-  const handleCatalystClick = (catalyst: typeof catalysts[0]) => {
+  const handleCatalystClick = (catalyst: Catalyst) => {
     setSelectedCatalyst(catalyst);
     setCurrentScreen('catalyst-detail');
     setActiveTab('market');
@@ -181,9 +184,6 @@ export function HomeScreen() {
                 onClick={() => handleCatalystClick(catalyst)}
                 className="w-full flex items-start gap-3 p-4 bg-card rounded-xl border border-border hover:bg-secondary/50 transition-colors text-left"
               >
-                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-xl">
-                  {catalyst.icon}
-                </div>
                 <div className="flex-1">
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="font-medium text-foreground text-sm">{catalyst.title}</h3>

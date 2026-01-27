@@ -28,22 +28,14 @@ export function ProfileScreen() {
 
   // Achievements
   const achievements = [
-    { id: 1, name: 'First Steps', description: 'Learn your first company', unlocked: completedCompanies.length >= 1, icon: '🎯' },
-    { id: 2, name: 'Week Warrior', description: '7 day streak', unlocked: progressData.currentStreak >= 7, icon: '🔥' },
-    { id: 3, name: 'Theme Master', description: 'Complete a full theme', unlocked: false, icon: '📚' },
-    { id: 4, name: 'Market Watcher', description: 'Check 10 catalysts', unlocked: false, icon: '👀' },
-    { id: 5, name: 'Watchlist Pro', description: 'Save 5 companies', unlocked: savedStocks.length >= 5, icon: '⭐' },
+    { id: 1, name: 'First Steps', description: 'Learn your first company', unlocked: completedCompanies.length >= 1, icon: '' },
+    { id: 2, name: 'Week Warrior', description: '7 day streak', unlocked: progressData.currentStreak >= 7, icon: '' },
+    { id: 3, name: 'Theme Master', description: 'Complete a full theme', unlocked: false, icon: '' },
+    { id: 4, name: 'Market Watcher', description: 'Check 10 catalysts', unlocked: false, icon: '' },
+    { id: 5, name: 'Watchlist Pro', description: 'Save 5 companies', unlocked: savedStocks.length >= 5, icon: '' },
   ];
 
-  const getArchetypeIcon = (archId: string | null) => {
-    switch (archId) {
-      case 'bargain_hunter': return '🔍';
-      case 'collector': return '💎';
-      case 'safe_player': return '🛡️';
-      case 'visionary': return '🚀';
-      default: return '🧭';
-    }
-  };
+  // Icons removed
 
   const handleRetakeQuiz = () => {
     resetQuiz();
@@ -111,9 +103,6 @@ export function ProfileScreen() {
             {userArchetype ? (
               <>
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center text-2xl">
-                    {getArchetypeIcon(archetypeId)}
-                  </div>
                   <div className="flex-1">
                     <p className="font-semibold text-foreground">{userArchetype.name}</p>
                     <p className="text-sm text-muted-foreground">{userArchetype.tagline}</p>
@@ -182,7 +171,7 @@ export function ProfileScreen() {
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl ${
                   achievement.unlocked ? 'bg-primary/10' : 'bg-secondary'
                 }`}>
-                  {achievement.unlocked ? achievement.icon : <Lock className="w-4 h-4 text-muted-foreground" />}
+                  {!achievement.unlocked && <Lock className="w-4 h-4 text-muted-foreground" />}
                 </div>
                 <div className="flex-1">
                   <p className={`font-medium ${achievement.unlocked ? 'text-foreground' : 'text-muted-foreground'}`}>

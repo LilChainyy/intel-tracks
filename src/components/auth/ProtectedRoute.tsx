@@ -1,25 +1,9 @@
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
-import { Loader2 } from 'lucide-react';
-
+// Authentication removed - all routes are now public
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/" replace />;
-  }
-
+  // No authentication check - just render children
   return <>{children}</>;
 }

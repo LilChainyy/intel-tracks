@@ -1,5 +1,14 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// @ts-ignore - Deno types are available at runtime
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+// @ts-ignore - Deno types are available at runtime
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+
+// @ts-ignore - Deno global is available at runtime
+declare const Deno: {
+  env: {
+    get(key: string): string | undefined
+  }
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,61 +31,84 @@ function isValidTicker(ticker: string): boolean {
 
 const validQuestions = ['profitability', 'growth', 'valuation'];
 
+// Helper function to create error responses
+function createErrorResponse(error: string, status: number, details?: any): Response {
+  console.error(`Error Response: Status ${status}, Error: ${error}, Details:`, details);
+  return new Response(
+    JSON.stringify({ error, details }),
+    { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Authenticate user
+    // Optional authentication (for testing in Supabase dashboard)
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    let userId: string | null = null;
+
+    if (authHeader?.startsWith('Bearer ')) {
+      try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL');
+        const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
+
+        if (!supabaseUrl || !supabaseAnonKey) {
+          console.warn('Supabase URL or anon key not configured');
+        } else {
+          const supabase = createClient(
+            supabaseUrl,
+            supabaseAnonKey,
+            { global: { headers: { Authorization: authHeader } } }
+          );
+
+          const token = authHeader.replace('Bearer ', '');
+          const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+
+          if (!claimsError && claimsData?.claims) {
+            userId = claimsData.claims.sub;
+            console.log(`Authenticated user: ${userId}`);
+          } else {
+            console.warn('Auth error (continuing without auth):', claimsError);
+          }
+        }
+      } catch (authErr) {
+        console.warn('Auth check failed (continuing without auth):', authErr);
+      }
+    } else {
+      console.log('No auth header provided (testing mode)');
     }
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
-      console.error('Auth error:', claimsError);
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    let requestBody: StockAnalysisRequest;
+    try {
+      requestBody = await req.json();
+      console.log('Parsed request body:', JSON.stringify(requestBody).substring(0, 500));
+    } catch (parseError) {
+      console.warn('Could not parse request body as JSON, assuming empty object:', parseError);
+      requestBody = { ticker: 'AAPL', companyName: 'Apple Inc', question: 'profitability' }; // Default for testing
     }
 
-    const userId = claimsData.claims.sub;
-    console.log(`Authenticated user: ${userId}`);
+    let { ticker, companyName, question, followUp } = requestBody;
 
-    const { ticker, companyName, question, followUp } = await req.json() as StockAnalysisRequest;
-    
+    // Default values for testing in Supabase dashboard
     if (!ticker || !isValidTicker(ticker)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid ticker symbol. Must be 1-10 alphanumeric characters.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      console.log('Invalid or missing ticker, using default for testing.');
+      ticker = 'AAPL';
+      companyName = companyName || 'Apple Inc';
     }
-
-    if (!validQuestions.includes(question)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid question type. Must be profitability, growth, or valuation.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (!question || !validQuestions.includes(question)) {
+      console.log('Invalid or missing question type, using default for testing.');
+      question = 'profitability';
     }
 
     const safeTicker = encodeURIComponent(ticker.toUpperCase().trim());
     
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
+    if (!ANTHROPIC_API_KEY) {
+      console.error('ANTHROPIC_API_KEY is not configured in environment variables.');
+      return createErrorResponse("ANTHROPIC_API_KEY is not configured", 500);
     }
 
     // Fetch real stock data from Yahoo Finance
@@ -86,29 +118,36 @@ serve(async (req) => {
     const systemPrompt = buildSystemPrompt(question, followUp);
     const userPrompt = buildUserPrompt(ticker, companyName, question, stockData, followUp);
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
+    console.log('Calling Claude API with:', {
+      model: "claude-3-haiku-20240307",
+      hasApiKey: !!ANTHROPIC_API_KEY,
+      apiKeyPrefix: ANTHROPIC_API_KEY ? ANTHROPIC_API_KEY.substring(0, 10) + '...' : 'missing'
+    });
+
+    let response: Response;
+    try {
+      response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "x-api-key": ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "claude-3-haiku-20240307",
+          system: systemPrompt,
+          messages: [
+            { role: "user", content: userPrompt },
+          ],
+          tools: [
+            {
               name: "analyze_stock",
               description: "Return structured stock analysis data",
-              parameters: {
+              input_schema: {
                 type: "object",
                 properties: {
                   headline: { type: "string", description: "One-line summary answer" },
-                  simpleAnswer: { type: "string", description: "Simple yes/no explanation for beginners" },
+                  simpleAnswer: { type: "string", description: "MAXIMUM 2-3 sentences. Simple yes/no explanation for 15-year-olds. Be super brief and direct." },
                   details: {
                     type: "array",
                     items: {
@@ -149,35 +188,38 @@ serve(async (req) => {
                 required: ["headline", "simpleAnswer", "details", "metrics", "summaryTag"]
               }
             }
-          }
-        ],
-        tool_choice: { type: "function", function: { name: "analyze_stock" } }
-      }),
-    });
+          ],
+          tool_choice: { type: "tool", name: "analyze_stock" },
+          max_tokens: 200,
+        }),
+      });
+    } catch (fetchError) {
+      console.error('Fetch to Anthropic API failed:', fetchError);
+      return createErrorResponse(`Failed to connect to AI API: ${fetchError instanceof Error ? fetchError.message : 'Unknown fetch error'}`, 500, fetchError);
+    }
 
     if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limits exceeded, please try again later." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required, please add funds." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
       const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      throw new Error("AI gateway error");
+      console.error("Claude API error:", response.status, errorText);
+
+      if (response.status === 401) {
+        return createErrorResponse("Invalid Anthropic API key. Please check your ANTHROPIC_API_KEY secret.", 500, errorText);
+      } else if (response.status === 429) {
+        return createErrorResponse("Rate limits exceeded for Claude API, please try again later.", 429, errorText);
+      } else if (response.status === 404) {
+        return createErrorResponse(`Claude API model not found: ${errorText}. Please check the model name.`, 500, errorText);
+      } else if (response.status === 400) {
+        return createErrorResponse(`Bad request to Claude API: ${errorText}. Check message format.`, 400, errorText);
+      }
+      return createErrorResponse(`AI API error (${response.status}): ${errorText}`, 500, errorText);
     }
 
     const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    // Claude returns tool_use blocks in content array
+    const toolUse = data.content?.find((block: any) => block.type === 'tool_use' && block.name === 'analyze_stock');
     
-    if (toolCall?.function?.arguments) {
-      const analysis = JSON.parse(toolCall.function.arguments);
+    if (toolUse?.input) {
+      const analysis = toolUse.input;
       return new Response(JSON.stringify({ 
         analysis,
         rawData: stockData 
@@ -186,15 +228,13 @@ serve(async (req) => {
       });
     }
 
-    throw new Error("No structured response received");
+    return createErrorResponse("No structured response received from AI. Check AI prompt or model output.", 500, data);
   } catch (error) {
     console.error("Stock analysis error:", error);
-    return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : "Unknown error" 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("Error stack:", error instanceof Error ? error.stack : 'No stack trace');
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorDetails = error instanceof Error && error.stack ? `\n\nStack: ${error.stack.substring(0, 500)}` : '';
+    return createErrorResponse(`Internal server error: ${errorMessage}${errorDetails}`, 500);
   }
 });
 
@@ -269,13 +309,17 @@ async function fetchStockData(safeTicker: string) {
 }
 
 function buildSystemPrompt(question: string, followUp?: boolean): string {
-  const base = `You are a friendly financial educator helping beginners understand stocks. 
-Use simple language, avoid jargon, and explain concepts with relatable analogies.
-Always be accurate with the data provided but make it accessible.
-Format numbers in a human-readable way (e.g., "$97 billion" not "$97,000,000,000").`;
+  const base = `You're explaining stocks to a 15-year-old. Keep it SHORT and SIMPLE.
+
+CRITICAL RULES:
+- MAXIMUM 2-3 sentences for simpleAnswer (cut to 1/3 normal length)
+- Use simple words - no jargon
+- Write like texting a friend
+- Format numbers simply (e.g., "$97 billion" not "$97,000,000,000")
+- Be direct - no fluff`;
 
   if (followUp) {
-    return base + `\n\nThis is a follow-up question. Provide deeper insight with analogies and competitor comparisons.`;
+    return base + `\n\nThis is a follow-up. Still keep it brief but add one quick analogy or comparison.`;
   }
   
   return base;
@@ -305,36 +349,33 @@ Real data for ${ticker} (${companyName}):
 
 Question: Is ${companyName} making money?
 
-Analyze the profitability of this company. Focus on:
-1. Whether the company is profitable (net income positive)
-2. Profit margins compared to industry average
-3. Revenue scale and sustainability
+Keep your simpleAnswer to MAXIMUM 2-3 sentences. Be direct:
+- Are they profitable? (yes/no + one reason)
+- How's their profit margin? (compare briefly)
 
-${followUp ? 'Provide detailed breakdown with 3 numbered reasons and real metrics.' : 'Give a simple, beginner-friendly answer first.'}`;
+${followUp ? 'Add 2-3 brief details with metrics. Keep it short.' : 'Super brief answer - 2-3 sentences max.'}`;
 
     case 'growth':
       return `${dataContext}
 
 Question: Is ${companyName} growing?
 
-Analyze the growth trajectory of this company. Focus on:
-1. Revenue growth rate year-over-year
-2. Earnings growth trends
-3. Comparison to industry growth rates
+Keep your simpleAnswer to MAXIMUM 2-3 sentences. Be direct:
+- How fast are they growing? (one number)
+- Is that good or bad? (brief comparison)
 
-${followUp ? 'Use an analogy (like oak tree vs sapling) to explain what this growth rate means. Include competitor comparisons with real numbers.' : 'Give a simple, beginner-friendly answer about growth.'}`;
+${followUp ? 'Add one quick analogy and 2-3 brief details. Keep it short.' : 'Super brief answer - 2-3 sentences max.'}`;
 
     case 'valuation':
       return `${dataContext}
 
 Question: Is ${companyName} expensive?
 
-Analyze the valuation of this company. Focus on:
-1. P/E ratio compared to industry and S&P 500 average (~25)
-2. Price to book value
-3. What this means for potential investors
+Keep your simpleAnswer to MAXIMUM 2-3 sentences. Be direct:
+- What's the P/E ratio? (one number)
+- Is that expensive? (yes/no + one reason)
 
-Explain in plain language what "expensive" means for a stock.`;
+Explain what "expensive" means in simple terms. Super brief - 2-3 sentences max.`;
 
     default:
       return `Analyze ${companyName} (${ticker}) based on the available data.`;

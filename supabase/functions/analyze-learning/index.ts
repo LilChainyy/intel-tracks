@@ -1,4 +1,12 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// @ts-ignore - Deno types are available at runtime
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+
+// @ts-ignore - Deno global is available at runtime
+declare const Deno: {
+  env: {
+    get(key: string): string | undefined
+  }
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,9 +21,9 @@ serve(async (req) => {
   try {
     const { userQuestion, aiResponse, ticker, companyName, currentProgress } = await req.json();
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
+    if (!ANTHROPIC_API_KEY) {
+      throw new Error("ANTHROPIC_API_KEY is not configured");
     }
 
     // Analyze the conversation to extract learning progress
@@ -53,26 +61,30 @@ Return JSON only (no markdown):
 
     // Make parallel calls for analysis and question generation
     const [analysisResponse, questionsResponse] = await Promise.all([
-      fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "x-api-key": ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
+          model: "claude-3-haiku-20240307",
           messages: [{ role: "user", content: analysisPrompt }],
+          max_tokens: 1024,
         }),
       }),
-      fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "x-api-key": ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
+          model: "claude-3-haiku-20240307",
           messages: [{ role: "user", content: questionPrompt }],
+          max_tokens: 1024,
         }),
       }),
     ]);
@@ -82,7 +94,9 @@ Return JSON only (no markdown):
 
     if (analysisResponse.ok) {
       const analysisData = await analysisResponse.json();
-      const content = analysisData.choices?.[0]?.message?.content;
+      // Claude returns content in content array with text blocks
+      const textBlock = analysisData.content?.find((block: any) => block.type === 'text');
+      const content = textBlock?.text;
       if (content) {
         try {
           const cleaned = content.replace(/```json\n?|\n?```/g, "").trim();
@@ -98,7 +112,8 @@ Return JSON only (no markdown):
 
     if (questionsResponse.ok) {
       const questionsData = await questionsResponse.json();
-      const content = questionsData.choices?.[0]?.message?.content;
+      const textBlock = questionsData.content?.find((block: any) => block.type === 'text');
+      const content = textBlock?.text;
       if (content) {
         try {
           const cleaned = content.replace(/```json\n?|\n?```/g, "").trim();

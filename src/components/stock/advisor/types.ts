@@ -72,8 +72,11 @@ export const calculateSubsectionProgress = (subsection: SubsectionProgress): num
 
 export const calculateSectionProgress = (section: { [key: string]: SubsectionProgress }): number => {
   const subsections = Object.values(section);
-  const total = subsections.reduce((sum, sub) => sum + calculateSubsectionProgress(sub), 0);
-  return total / subsections.length;
+  // Count total questions asked across all subsections
+  const totalQuestions = subsections.reduce((sum, sub) => sum + sub.questionsAsked, 0);
+  // Each category has 5 questions total = 100%
+  // So progress = (totalQuestions / 5) * 100
+  return Math.min((totalQuestions / 5) * 100, 100);
 };
 
 export const calculateOverallProgress = (progress: LearningProgress): number => {

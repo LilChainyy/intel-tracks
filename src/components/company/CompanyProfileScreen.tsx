@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Star, TrendingUp, TrendingDown, ChevronRight } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { playlists } from '@/data/playlists';
-import { catalysts, getCatalystsForCompany } from '@/data/catalysts';
+import { useCatalysts } from '@/hooks/useCatalysts';
+import { getCatalystsForCompany } from '@/data/catalysts';
 import { supabase } from '@/integrations/supabase/client';
 import { StockPriceChart } from '@/components/stock/StockPriceChart';
 import { AIAdvisorChat } from '@/components/stock/advisor/AIAdvisorChat';
@@ -22,9 +23,10 @@ export function CompanyProfileScreen() {
   
   const [ytdChange, setYtdChange] = useState<number | null>(null);
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+  const { catalysts } = useCatalysts();
 
   const stock = selectedPlaylist?.stocks.find(s => s.ticker === selectedStock?.ticker);
-  const companyCatalysts = selectedStock ? getCatalystsForCompany(selectedStock.ticker) : [];
+  const companyCatalysts = selectedStock ? getCatalystsForCompany(selectedStock.ticker, catalysts) : [];
 
   // Scroll to top when component mounts or stock changes
   useEffect(() => {
@@ -194,7 +196,6 @@ export function CompanyProfileScreen() {
             <h2 className="text-lg font-semibold text-foreground mb-3">Today's Catalyst</h2>
             {companyCatalysts.slice(0, 1).map(catalyst => (
               <div key={catalyst.id} className="flex items-start gap-3">
-                <span className="text-xl">{catalyst.icon}</span>
                 <div>
                   <p className="text-sm font-medium text-foreground">{catalyst.title}</p>
                   <p className="text-xs text-muted-foreground mt-1">{catalyst.description}</p>

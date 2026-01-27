@@ -20,6 +20,6 @@ USING (true);
 
 -- Insert some initial referral codes for testing
 INSERT INTO public.referral_codes (code, is_active) VALUES
-  ('EARLY2024', true),
-  ('BETAUSER', true),
-  ('INVESTOR', true);
+  ('ALLTIME2026', true),
+  ('20Al1', true),
+  ('20Al21', true);

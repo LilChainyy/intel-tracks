@@ -11,12 +11,12 @@ interface RewardCard {
 }
 
 const rewards: RewardCard[] = [
-  { id: 'starbucks', icon: '☕', name: 'Starbucks', value: '$5', cost: 1000 },
-  { id: 'amazon', icon: '📦', name: 'Amazon', value: '$5', cost: 1000 },
-  { id: 'apple', icon: '🍎', name: 'Apple', value: '$10', cost: 2000 },
-  { id: 'netflix', icon: '🎬', name: 'Netflix', value: '$15', cost: 3000 },
-  { id: 'spotify', icon: '🎵', name: 'Spotify', value: '$10', cost: 2000 },
-  { id: 'uber', icon: '🚗', name: 'Uber', value: '$10', cost: 2000 },
+  { id: 'starbucks', icon: '', name: 'Starbucks', value: '$5', cost: 1000 },
+  { id: 'amazon', icon: '', name: 'Amazon', value: '$5', cost: 1000 },
+  { id: 'apple', icon: '', name: 'Apple', value: '$10', cost: 2000 },
+  { id: 'netflix', icon: '', name: 'Netflix', value: '$15', cost: 3000 },
+  { id: 'spotify', icon: '', name: 'Spotify', value: '$10', cost: 2000 },
+  { id: 'uber', icon: '', name: 'Uber', value: '$10', cost: 2000 },
 ];
 
 export function StoreScreen() {
@@ -104,7 +104,6 @@ export function StoreScreen() {
                 transition={{ delay: 0.25 + index * 0.05 }}
                 className="card-surface p-4 md:p-5 flex flex-col items-center text-center"
               >
-                <span className="text-4xl md:text-5xl mb-3">{reward.icon}</span>
                 <h3 className="font-semibold text-foreground text-sm md:text-base mb-1">{reward.name}</h3>
                 <p className="text-lg md:text-xl font-bold text-primary mb-1">{reward.value}</p>
                 <p className="text-xs md:text-sm text-muted-foreground mb-3">{reward.cost.toLocaleString()} 💰</p>

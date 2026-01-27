@@ -31,10 +31,7 @@ export function ThemeListScreen() {
     toggleWatchlistTheme(themeId);
   };
 
-  const getThemeIcon = (index: number) => {
-    const icons = ['⚡', '📺', '🛒', '💳', '🔧', '🏥'];
-    return icons[index % icons.length];
-  };
+  // Icons removed
 
   return (
     <div className="min-h-screen pb-24 px-6">
@@ -83,10 +80,6 @@ export function ThemeListScreen() {
                 onClick={() => handleThemeClick(theme)}
                 className="w-full flex items-center gap-4 p-4 bg-card rounded-xl border border-border hover:bg-secondary/50 transition-colors"
               >
-                {/* Icon */}
-                <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
-                  {getThemeIcon(index)}
-                </div>
                 
                 {/* Content */}
                 <div className="flex-1 text-left min-w-0">

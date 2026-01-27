@@ -1,4 +1,7 @@
+// @ts-ignore
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+declare const Deno: any; // Declare Deno global for TypeScript
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -75,26 +78,41 @@ function isValidTicker(ticker: string): boolean {
 
 const validRanges = ['1D', '1W', '1M', '3M', '1Y', 'YTD'];
 
+// Helper function to create error responses
+function createErrorResponse(error: string, status: number, details?: any): Response {
+  console.error(`Error Response: Status ${status}, Error: ${error}, Details:`, details);
+  return new Response(
+    JSON.stringify({ error, details }),
+    { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { ticker, range = 'YTD' } = await req.json();
-    
-    if (!ticker || !isValidTicker(ticker)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid ticker symbol. Must be 1-10 alphanumeric characters.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    let requestBody: any;
+    try {
+      requestBody = await req.json();
+      console.log('Parsed request body:', JSON.stringify(requestBody).substring(0, 500));
+    } catch (parseError) {
+      console.warn('Could not parse request body as JSON, assuming empty object:', parseError);
+      requestBody = {};
     }
 
-    if (!validRanges.includes(range)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid range parameter' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    let { ticker, range = 'YTD' } = requestBody;
+
+    // Default values for testing in Supabase dashboard
+    if (!ticker || !isValidTicker(ticker)) {
+      console.log('Invalid or missing ticker, using default for testing.');
+      ticker = 'AAPL';
+    }
+
+    if (!range || !validRanges.includes(range)) {
+      console.log('Invalid or missing range, using default for testing.');
+      range = 'YTD';
     }
 
     const safeTicker = encodeURIComponent(ticker.toUpperCase().trim());
@@ -114,10 +132,7 @@ serve(async (req) => {
     
     if (!response.ok) {
       console.error(`Yahoo Finance API error: ${response.status}`);
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch chart data' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createErrorResponse('Failed to fetch chart data from Yahoo Finance', 500, { status: response.status });
     }
     
     const data = await response.json();
@@ -125,10 +140,7 @@ serve(async (req) => {
     
     if (!result) {
       console.error(`No data for ${ticker}`);
-      return new Response(
-        JSON.stringify({ error: 'No data available' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createErrorResponse(`No chart data available for ticker: ${ticker}`, 404);
     }
     
     const meta = result.meta;
@@ -223,9 +235,9 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('Error in stock-chart function:', error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorDetails = error instanceof Error && error.stack ? `\n\nStack: ${error.stack.substring(0, 500)}` : '';
+    return createErrorResponse(`Internal server error: ${errorMessage}${errorDetails}`, 500);
   }
 });

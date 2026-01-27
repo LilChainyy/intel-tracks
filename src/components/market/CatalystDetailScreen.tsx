@@ -126,9 +126,6 @@ export function CatalystDetailScreen() {
         </button>
         
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center text-3xl">
-            {selectedCatalyst.icon}
-          </div>
           <div>
             <span className={`text-xs px-2 py-0.5 rounded-full ${
               selectedCatalyst.impact === 'High' 

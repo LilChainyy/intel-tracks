@@ -1,32 +1,72 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { RefreshCw } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { catalysts, getCatalystsByCategory } from '@/data/catalysts';
+import { Catalyst } from '@/context/AppContext';
+import { useCatalysts, refreshCatalysts } from '@/hooks/useCatalysts';
+import { getCatalystsByCategory } from '@/data/catalysts';
+import { Button } from '@/components/ui/button';
 
 const categories = ['All', 'Earnings', 'FDA', 'Mergers', 'Economic', 'Production', 'Partnership'];
 
 export function MarketScreen() {
   const { setCurrentScreen, setSelectedCatalyst } = useApp();
   const [activeCategory, setActiveCategory] = useState('All');
+  const { catalysts, isLoading } = useCatalysts();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const filteredCatalysts = getCatalystsByCategory(activeCategory);
+  const filteredCatalysts = getCatalystsByCategory(activeCategory, catalysts);
 
-  const handleCatalystClick = (catalyst: typeof catalysts[0]) => {
+  const handleCatalystClick = (catalyst: Catalyst) => {
     setSelectedCatalyst(catalyst);
     setCurrentScreen('catalyst-detail');
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const result = await refreshCatalysts();
+      if (result.success) {
+        // Wait a moment for database to update, then reload
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        const errorMsg = result.error || 'Unknown error';
+        alert(`Failed to refresh catalysts: ${errorMsg}\n\nCheck:\n1. Edge Function is deployed\n2. FINNHUB_API_KEY is set in Supabase Secrets\n3. You're using the correct Supabase project`);
+        console.error('Refresh failed:', result.error);
+      }
+    } catch (error) {
+      console.error('Error refreshing catalysts:', error);
+      alert(`Error refreshing catalysts: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   return (
     <div className="min-h-screen pb-24">
       {/* Header */}
       <div className="px-6 pt-12 pb-4">
-        <motion.h1
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold text-foreground mb-4"
-        >
-          Market Catalysts
-        </motion.h1>
+        <div className="flex items-center justify-between mb-4">
+          <motion.h1
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-2xl font-bold text-foreground"
+          >
+            Market Catalysts
+          </motion.h1>
+          <Button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          </Button>
+        </div>
         
         {/* Filter Chips */}
         <motion.div
@@ -53,7 +93,12 @@ export function MarketScreen() {
 
       {/* Catalyst Cards */}
       <div className="px-6 space-y-3">
-        {filteredCatalysts.map((catalyst, index) => (
+        {isLoading && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Loading catalysts...</p>
+          </div>
+        )}
+        {!isLoading && filteredCatalysts.map((catalyst, index) => (
           <motion.button
             key={catalyst.id}
             initial={{ opacity: 0, y: 20 }}
@@ -63,11 +108,6 @@ export function MarketScreen() {
             className="w-full text-left p-4 bg-card rounded-xl border border-border hover:bg-secondary/50 transition-colors"
           >
             <div className="flex items-start gap-3">
-              {/* Icon */}
-              <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
-                {catalyst.icon}
-              </div>
-              
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2 mb-1">
@@ -97,7 +137,7 @@ export function MarketScreen() {
           </motion.button>
         ))}
 
-        {filteredCatalysts.length === 0 && (
+        {!isLoading && filteredCatalysts.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">No catalysts in this category</p>
           </div>
@@ -107,5 +147,6 @@ export function MarketScreen() {
   );
 }
 
-// Export for legacy compatibility
-export { catalysts as marketUpdates };
+// Export for legacy compatibility (using fallback)
+import { catalysts as fallbackCatalysts } from '@/data/catalysts';
+export { fallbackCatalysts as marketUpdates };
