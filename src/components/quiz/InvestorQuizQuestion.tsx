@@ -1,30 +1,82 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useInvestorQuiz } from '@/context/InvestorQuizContext';
 import { InvestorQuizProgress } from './InvestorQuizProgress';
 import { EducationalReveal } from './EducationalReveal';
 import { cn } from '@/lib/utils';
+import { useState, useEffect } from 'react';
 
 export function InvestorQuizQuestion() {
-  const { 
-    state, 
-    currentQuestion, 
-    totalQuestions, 
+  const {
+    state,
+    currentQuestion,
+    totalQuestions,
     progress,
     selectAnswer,
+    selectMultipleAnswers,
     prevQuestion,
     continueAfterReveal
   } = useInvestorQuiz();
+
+  // Track selected options for multiple choice questions
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+
+  // Reset selections when question changes
+  useEffect(() => {
+    if (currentQuestion) {
+      const currentAnswer = state.answers[currentQuestion.id];
+      if (currentQuestion.multipleChoice && currentAnswer) {
+        // Restore previously selected options
+        const answerIds = Array.isArray(currentAnswer.answerId)
+          ? currentAnswer.answerId
+          : [currentAnswer.answerId];
+        setSelectedOptions(answerIds);
+      } else {
+        setSelectedOptions([]);
+      }
+    }
+  }, [currentQuestion?.id]);
 
   if (!currentQuestion) return null;
 
   const currentAnswer = state.answers[currentQuestion.id];
   const hasAnswered = !!currentAnswer;
+  const isMultipleChoice = currentQuestion.multipleChoice || false;
+
+  const handleOptionClick = (optionId: string) => {
+    if (hasAnswered) return;
+
+    if (isMultipleChoice) {
+      // Toggle selection for multiple choice
+      setSelectedOptions(prev =>
+        prev.includes(optionId)
+          ? prev.filter(id => id !== optionId)
+          : [...prev, optionId]
+      );
+    } else {
+      // Single choice - immediately select
+      selectAnswer(currentQuestion.id, optionId);
+    }
+  };
+
+  const handleContinue = () => {
+    if (isMultipleChoice && selectedOptions.length > 0) {
+      selectMultipleAnswers(currentQuestion.id, selectedOptions);
+    }
+  };
+
+  const isOptionSelected = (optionId: string) => {
+    if (isMultipleChoice) {
+      return selectedOptions.includes(optionId);
+    } else {
+      return currentAnswer?.answerId === optionId;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      <InvestorQuizProgress 
+    <div className="min-h-screen bg-background pb-32">
+      <InvestorQuizProgress
         currentStep={state.currentQuestionIndex + 1}
         totalSteps={totalQuestions}
         progress={progress}
@@ -62,35 +114,56 @@ export function InvestorQuizQuestion() {
               {/* Options */}
               <div className="space-y-3">
                 {currentQuestion.options.map((option, index) => {
-                  const isSelected = currentAnswer?.answerId === option.id;
-                  
+                  const isSelected = isOptionSelected(option.id);
+
                   return (
                     <motion.button
                       key={option.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.1 + index * 0.05 }}
-                      onClick={() => !hasAnswered && selectAnswer(currentQuestion.id, option.id)}
-                      disabled={hasAnswered && !isSelected}
+                      onClick={() => handleOptionClick(option.id)}
+                      disabled={hasAnswered && !isMultipleChoice}
                       className={cn(
                         "w-full p-4 text-left rounded-xl border-2 transition-all duration-200",
                         "hover:border-primary/50 hover:bg-secondary/50",
                         "focus:outline-none focus:ring-2 focus:ring-primary/20",
                         "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-border disabled:hover:bg-transparent",
-                        isSelected 
-                          ? "border-primary bg-primary/10 text-foreground" 
-                          : "border-border bg-background text-foreground"
+                        isSelected
+                          ? "border-primary bg-primary/10 text-foreground"
+                          : "border-border bg-background text-foreground",
+                        isMultipleChoice && "flex items-center gap-3"
                       )}
                     >
+                      {isMultipleChoice && (
+                        <div className={cn(
+                          "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0",
+                          isSelected ? "border-primary bg-primary" : "border-border"
+                        )}>
+                          {isSelected && <Check className="w-3.5 h-3.5 text-primary-foreground" />}
+                        </div>
+                      )}
                       <span className="text-base font-medium">{option.text}</span>
                     </motion.button>
                   );
                 })}
               </div>
 
+              {/* Continue button for multiple choice */}
+              {isMultipleChoice && !hasAnswered && (
+                <Button
+                  onClick={handleContinue}
+                  disabled={selectedOptions.length === 0}
+                  className="w-full"
+                  size="lg"
+                >
+                  Continue
+                </Button>
+              )}
+
               {/* Educational Reveal */}
               {currentQuestion.educationalReveal && (
-                <EducationalReveal 
+                <EducationalReveal
                   content={currentQuestion.educationalReveal}
                   isVisible={state.showReveal}
                   onContinue={continueAfterReveal}

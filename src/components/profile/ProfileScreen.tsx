@@ -8,9 +8,9 @@ export function ProfileScreen() {
   const { setCurrentScreen, savedStocks, completedCompanies } = useApp();
   const { state: quizState, resetQuiz } = useInvestorQuiz();
 
-  // Get archetype directly from quiz state
-  const userArchetype = quizState.archetype;
-  const archetypeId = userArchetype?.id || null;
+  // Get persona directly from quiz state
+  const userPersona = quizState.persona;
+  const personaId = userPersona?.type || null;
 
   // Mock progress data
   const progressData = {
@@ -100,22 +100,22 @@ export function ProfileScreen() {
         >
           <h3 className="text-sm font-semibold text-muted-foreground mb-3">YOUR INVESTING STYLE</h3>
           <div className="bg-card rounded-xl border border-border p-5">
-            {userArchetype ? (
+            {userPersona ? (
               <>
                 <div className="flex items-center gap-4 mb-4">
                   <div className="flex-1">
-                    <p className="font-semibold text-foreground">{userArchetype.name}</p>
-                    <p className="text-sm text-muted-foreground">{userArchetype.tagline}</p>
+                    <p className="font-semibold text-foreground">{userPersona.type}</p>
+                    <p className="text-sm text-muted-foreground">{userPersona.tagline}</p>
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">
-                  {userArchetype.description}
+                  {userPersona.description}
                 </p>
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <div className="bg-secondary/30 rounded-lg p-3">
                     <p className="text-xs font-medium text-muted-foreground mb-2">Strengths</p>
                     <ul className="space-y-1">
-                      {userArchetype.strengths.slice(0, 2).map((strength, i) => (
+                      {userPersona.strengths.slice(0, 2).map((strength, i) => (
                         <li key={i} className="text-xs text-foreground flex items-center gap-1">
                           <span className="text-primary">✓</span> {strength}
                         </li>
@@ -125,7 +125,7 @@ export function ProfileScreen() {
                   <div className="bg-secondary/30 rounded-lg p-3">
                     <p className="text-xs font-medium text-muted-foreground mb-2">Watch Out</p>
                     <ul className="space-y-1">
-                      {userArchetype.pitfalls.slice(0, 2).map((pitfall, i) => (
+                      {userPersona.pitfalls.slice(0, 2).map((pitfall, i) => (
                         <li key={i} className="text-xs text-foreground flex items-center gap-1">
                           <span className="text-destructive">!</span> {pitfall}
                         </li>
@@ -145,11 +145,11 @@ export function ProfileScreen() {
                 </p>
               </div>
             )}
-            <button 
+            <button
               onClick={handleRetakeQuiz}
               className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
             >
-              {userArchetype ? 'Retake Quiz' : 'Take the Quiz'}
+              {userPersona ? 'Retake Quiz' : 'Take the Quiz'}
             </button>
           </div>
         </motion.div>

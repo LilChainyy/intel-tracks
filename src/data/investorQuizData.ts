@@ -1,179 +1,250 @@
-import { InvestorQuestion, Archetype } from '@/types/investorQuiz';
+import { InvestorQuestion } from '@/types/investorQuiz';
 
 export const investorQuestions: InvestorQuestion[] = [
+  // RISK TOLERANCE (Q1-Q3)
   {
     id: 1,
-    question: "A stock you love drops 20% in price. You:",
+    question: "Your portfolio drops 30% in a month. What's your gut reaction?",
     options: [
-      { id: 'a', text: "Buy more. It's a bargain.", scores: { archetype: 'bargain_hunter' } },
-      { id: 'b', text: "Do nothing. I'm waiting 10 years anyway.", scores: { archetype: 'collector' } },
-      { id: 'c', text: "Sell. I don't want to lose another penny.", scores: { archetype: 'safe_player' } },
-      { id: 'd', text: "Check if the business is still \"cool.\" If yes, stay.", scores: { archetype: 'visionary' } }
-    ]
+      {
+        id: 'a',
+        text: "Panic sell. I can't handle this stress.",
+        scores: { risk: 'safe', riskValue: 10 }
+      },
+      {
+        id: 'b',
+        text: "Hold steady. I knew volatility was part of the deal.",
+        scores: { risk: 'balanced', riskValue: 45 }
+      },
+      {
+        id: 'c',
+        text: "Buy more. Discounts are opportunities.",
+        scores: { risk: 'growth', riskValue: 75 }
+      },
+      {
+        id: 'd',
+        text: "Double down. I'm betting on the comeback.",
+        scores: { risk: 'yolo', riskValue: 95 }
+      }
+    ],
+    educationalReveal: "Market corrections are normal. The S&P 500 has dropped 10%+ every 2 years on average. Successful investors use volatility as opportunity, not a reason to exit.",
+    showRevealFor: ['a']
   },
   {
     id: 2,
-    question: "How do you pick a company to buy?",
+    question: "What kind of returns do you expect from your investments?",
     options: [
-      { id: 'a', text: "I look for \"broken\" companies that can be fixed.", scores: { archetype: 'bargain_hunter' } },
-      { id: 'b', text: "I buy brands everyone knows and loves.", scores: { archetype: 'collector' } },
-      { id: 'c', text: "I don't pick. I buy a \"bundle\" of the whole market.", scores: { archetype: 'safe_player' } },
-      { id: 'd', text: "I look for \"world-changing\" tech.", scores: { archetype: 'visionary' } }
+      {
+        id: 'a',
+        text: "5-8% per year. I want steady, reliable growth.",
+        scores: { risk: 'safe', riskValue: 15 }
+      },
+      {
+        id: 'b',
+        text: "10-15% per year. Better than bonds, not crazy.",
+        scores: { risk: 'balanced', riskValue: 40 }
+      },
+      {
+        id: 'c',
+        text: "20-30% per year. I'll take the volatility for the upside.",
+        scores: { risk: 'growth', riskValue: 70 }
+      },
+      {
+        id: 'd',
+        text: "100%+ per year. Go big or go home.",
+        scores: { risk: 'yolo', riskValue: 100 }
+      }
     ]
   },
   {
     id: 3,
-    question: "What is your biggest fear?",
+    question: "If you lost 50% of your investment tomorrow, how would it affect your life?",
     options: [
-      { id: 'a', text: "Overpaying for something.", scores: { archetype: 'bargain_hunter' } },
-      { id: 'b', text: "Selling a great business too early.", scores: { archetype: 'collector' } },
-      { id: 'c', text: "A big market crash.", scores: { archetype: 'safe_player' } },
-      { id: 'd', text: "Missing out on the \"next big thing.\"", scores: { archetype: 'visionary' } }
-    ]
+      {
+        id: 'a',
+        text: "Catastrophic. I'd lose my house/retirement.",
+        scores: { risk: 'safe', riskValue: 5 }
+      },
+      {
+        id: 'b',
+        text: "Painful. It would set me back years.",
+        scores: { risk: 'balanced', riskValue: 35 }
+      },
+      {
+        id: 'c',
+        text: "Unpleasant, but I'd recover. I have other savings.",
+        scores: { risk: 'growth', riskValue: 65 }
+      },
+      {
+        id: 'd',
+        text: "No sweat. This is money I can afford to lose.",
+        scores: { risk: 'yolo', riskValue: 90 }
+      }
+    ],
+    educationalReveal: "Never invest money you can't afford to lose. Your risk tolerance should match your financial situation, not just your personality.",
+    showRevealFor: ['a', 'b']
   },
+
+  // TIME HORIZON (Q4-Q6)
   {
     id: 4,
-    question: "How many stocks do you want to own?",
+    question: "When do you need this money?",
     options: [
-      { id: 'a', text: "Just 5 or 10 that I've studied hard.", scores: { archetype: 'bargain_hunter' } },
-      { id: 'b', text: "20 to 30 solid, famous names.", scores: { archetype: 'collector' } },
-      { id: 'c', text: "Every stock in the world at once.", scores: { archetype: 'safe_player' } },
-      { id: 'd', text: "5 wild \"moonshots.\"", scores: { archetype: 'visionary' } }
+      {
+        id: 'a',
+        text: "Under 1 year. I'm actively trading or need it very soon.",
+        scores: { timeline: 'very_short', timelineValue: 10 }
+      },
+      {
+        id: 'b',
+        text: "1-5 years. Mid-term goals like a house down payment.",
+        scores: { timeline: 'short', timelineValue: 45 }
+      },
+      {
+        id: 'c',
+        text: "5-10 years. Building wealth over the next decade.",
+        scores: { timeline: 'medium', timelineValue: 75 }
+      },
+      {
+        id: 'd',
+        text: "10+ years. Long-term retirement or wealth building.",
+        scores: { timeline: 'long', timelineValue: 95 }
+      }
     ]
   },
   {
     id: 5,
-    question: "How long do you plan to hold a stock?",
+    question: "A stock you own is flat for 3 years while the market is up 40%. You:",
     options: [
-      { id: 'a', text: "Until the price goes back up to what it's worth.", scores: { archetype: 'bargain_hunter' } },
-      { id: 'b', text: "Basically forever.", scores: { archetype: 'collector' } },
-      { id: 'c', text: "For 30+ years until I retire.", scores: { archetype: 'safe_player' } },
-      { id: 'd', text: "Until the \"hype\" dies down.", scores: { archetype: 'visionary' } }
+      {
+        id: 'a',
+        text: "Sell immediately. I'm missing out on other opportunities.",
+        scores: { timeline: 'very_short', timelineValue: 15 }
+      },
+      {
+        id: 'b',
+        text: "Give it 6 more months, then reassess.",
+        scores: { timeline: 'short', timelineValue: 45 }
+      },
+      {
+        id: 'c',
+        text: "Hold if the fundamentals are intact. Price will follow.",
+        scores: { timeline: 'medium', timelineValue: 75 }
+      },
+      {
+        id: 'd',
+        text: "Buy more. The market hasn't realized the value yet.",
+        scores: { timeline: 'long', timelineValue: 90 }
+      }
     ]
   },
   {
     id: 6,
-    question: "What is your \"Superpower\"?",
+    question: "How often do you want to check your portfolio?",
     options: [
-      { id: 'a', text: "Finding \"deals\" in the trash bin.", scores: { archetype: 'bargain_hunter' } },
-      { id: 'b', text: "Having extreme patience.", scores: { archetype: 'collector' } },
-      { id: 'c', text: "Being very safe and steady.", scores: { archetype: 'safe_player' } },
-      { id: 'd', text: "Seeing the future before others.", scores: { archetype: 'visionary' } }
+      {
+        id: 'a',
+        text: "Daily or more. I want to catch every move.",
+        scores: { timeline: 'very_short', timelineValue: 5 }
+      },
+      {
+        id: 'b',
+        text: "Weekly. I like to stay informed but not obsess.",
+        scores: { timeline: 'short', timelineValue: 40 }
+      },
+      {
+        id: 'c',
+        text: "Monthly. Long-term trends matter more than daily noise.",
+        scores: { timeline: 'medium', timelineValue: 70 }
+      },
+      {
+        id: 'd',
+        text: "Quarterly or less. Set it and mostly forget it.",
+        scores: { timeline: 'long', timelineValue: 90 }
+      }
     ]
   },
+
+  // SECTOR/THEME PREFERENCES (Q7-Q9)
   {
     id: 7,
-    question: "Where do you get your info?",
+    question: "Which type of companies excite you most?\n(Select all that apply)",
+    multipleChoice: true,
     options: [
-      { id: 'a', text: "Reading boring math and spreadsheets.", scores: { archetype: 'bargain_hunter' } },
-      { id: 'b', text: "Looking at what people are actually buying at the mall.", scores: { archetype: 'collector' } },
-      { id: 'c', text: "Listening to what the safest experts say.", scores: { archetype: 'safe_player' } },
-      { id: 'd', text: "Reading about new inventions and ideas.", scores: { archetype: 'visionary' } }
+      {
+        id: 'a',
+        text: "Cutting-edge tech changing the world (AI, space, clean energy)",
+        scores: { sectors: ['tech', 'space', 'energy'] }
+      },
+      {
+        id: 'b',
+        text: "Brands I know and use every day (consumer goods, streaming, pets)",
+        scores: { sectors: ['consumer', 'entertainment', 'healthcare'] }
+      },
+      {
+        id: 'c',
+        text: "Critical infrastructure (defense, aerospace, industrial, finance)",
+        scores: { sectors: ['industrial', 'finance'] }
+      },
+      {
+        id: 'd',
+        text: "Safe, diversified index funds—I don't want to pick",
+        scores: { sectors: ['tech', 'consumer', 'finance', 'healthcare'] }
+      }
     ]
   },
   {
     id: 8,
-    question: "What does \"winning\" look like?",
+    question: "Which investment theme sounds most compelling to you?\n(Select all that apply)",
+    multipleChoice: true,
     options: [
-      { id: 'a', text: "Being smarter than the crowd.", scores: { archetype: 'bargain_hunter' } },
-      { id: 'b', text: "Owning the best businesses on earth.", scores: { archetype: 'collector' } },
-      { id: 'c', text: "Never having to worry about my money.", scores: { archetype: 'safe_player' } },
-      { id: 'd', text: "Betting on a winner that changes the world.", scores: { archetype: 'visionary' } }
+      {
+        id: 'a',
+        text: "Nuclear energy powering AI datacenters & clean tech revolution",
+        scores: { themePreference: 'nuclear', sectors: ['energy', 'tech'] }
+      },
+      {
+        id: 'b',
+        text: "Longevity & healthcare innovation (GLP-1 drugs, aging population)",
+        scores: { themePreference: 'longevity', sectors: ['healthcare', 'tech'] }
+      },
+      {
+        id: 'c',
+        text: "Space economy & defense spending (SpaceX, geopolitical tensions)",
+        scores: { themePreference: 'space_defense', sectors: ['space', 'industrial', 'tech'] }
+      },
+      {
+        id: 'd',
+        text: "Consumer trends (streaming wars, pet economy, retail winners)",
+        scores: { themePreference: 'consumer_trends', sectors: ['consumer', 'entertainment'] }
+      }
+    ]
+  },
+  {
+    id: 9,
+    question: "What kind of investment opportunities interest you?\n(Select all that apply)",
+    multipleChoice: true,
+    options: [
+      {
+        id: 'a',
+        text: "Boring dividend aristocrats that compound forever",
+        scores: { stylePreference: 'dividend_quality', themePreference: 'cashcow' }
+      },
+      {
+        id: 'b',
+        text: "Pre-IPO unicorns about to go public (Stripe, SpaceX, Databricks)",
+        scores: { stylePreference: 'high_risk_ipo', themePreference: 'ipo2026' }
+      },
+      {
+        id: 'c',
+        text: "High-growth megatrends with 5-10 year tailwinds",
+        scores: { stylePreference: 'growth_trends', themePreference: 'thematic' }
+      },
+      {
+        id: 'd',
+        text: "Just give me the S&P 500 and let me sleep at night",
+        scores: { stylePreference: 'index_passive', themePreference: 'indexchill' }
+      }
     ]
   }
 ];
-
-export const archetypes: Archetype[] = [
-  {
-    id: 'bargain_hunter',
-    name: 'The Bargain Hunter',
-    tagline: 'You hunt for "deals." You buy when others are scared.',
-    description: 'You have a keen eye for value and aren\'t afraid to go against the crowd. When others panic and sell, you see opportunity. You believe the best investments are found in places others overlook or dismiss.',
-    expectedPercentage: 25,
-    famousInvestors: [
-      { name: 'Ben Graham', description: 'The father of value investing who taught Warren Buffett' }
-    ],
-    fallback: 'value_investor',
-    strengths: [
-      'Finding undervalued opportunities',
-      'Staying calm during market panics',
-      'Deep analytical thinking',
-      'Contrarian mindset'
-    ],
-    pitfalls: [
-      'Value traps - cheap stocks that stay cheap',
-      'Being too early on a trade',
-      'Missing growth opportunities'
-    ]
-  },
-  {
-    id: 'collector',
-    name: 'The Collector',
-    tagline: 'You buy quality and hold. You win by being patient.',
-    description: 'You believe in buying wonderful companies at fair prices and holding them forever. Your patience is your superpower. You understand that time in the market beats timing the market.',
-    expectedPercentage: 30,
-    famousInvestors: [
-      { name: 'Warren Buffett', description: 'The Oracle of Omaha, one of the most successful investors ever' }
-    ],
-    fallback: 'quality_investor',
-    strengths: [
-      'Long-term thinking',
-      'Emotional discipline',
-      'Focus on business quality',
-      'Compound growth mindset'
-    ],
-    pitfalls: [
-      'Holding losers too long',
-      'Overpaying for "quality"',
-      'Missing when fundamentals change'
-    ]
-  },
-  {
-    id: 'safe_player',
-    name: 'The Safe Player',
-    tagline: 'You hate gambling. You win by being simple and steady.',
-    description: 'You prefer the tried-and-true approach. Index funds, diversification, and steady contributions are your strategy. You know you can\'t beat the market, so you\'d rather own it all.',
-    expectedPercentage: 30,
-    famousInvestors: [
-      { name: 'Jack Bogle', description: 'Founder of Vanguard and creator of the index fund' }
-    ],
-    fallback: 'passive_investor',
-    strengths: [
-      'Low stress investing',
-      'Consistent contributions',
-      'Minimal fees and taxes',
-      'Broad diversification'
-    ],
-    pitfalls: [
-      'Missing out on outsized returns',
-      'Inflation erosion of "safe" assets',
-      'May be too conservative for your age'
-    ]
-  },
-  {
-    id: 'visionary',
-    name: 'The Visionary',
-    tagline: 'You want the "Future." High risk, but huge potential.',
-    description: 'You\'re drawn to innovation and disruption. You want to invest in companies that will change the world, even if it means higher volatility. You see what others don\'t - yet.',
-    expectedPercentage: 15,
-    famousInvestors: [
-      { name: 'Cathie Wood', description: 'CEO of ARK Invest, known for disruptive innovation investing' }
-    ],
-    fallback: 'growth_investor',
-    strengths: [
-      'Early trend identification',
-      'Comfort with volatility',
-      'Forward-thinking mindset',
-      'High conviction bets'
-    ],
-    pitfalls: [
-      'Overpaying for hype',
-      'Ignoring fundamentals',
-      'Holding through major drawdowns'
-    ]
-  }
-];
-
-export const getArchetypeById = (id: string): Archetype | undefined => {
-  return archetypes.find(a => a.id === id);
-};
