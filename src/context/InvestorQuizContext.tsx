@@ -12,6 +12,7 @@ const initialState: InvestorQuizState = {
   calculatedScores: null,
   persona: null,
   isComplete: false,
+  hasSkipped: false,
   showReveal: false
 };
 
@@ -23,6 +24,7 @@ type QuizAction =
   | { type: 'NEXT_QUESTION' }
   | { type: 'PREV_QUESTION' }
   | { type: 'COMPLETE_QUIZ'; scores: QuizScores; persona: Persona }
+  | { type: 'SKIP_QUIZ' }
   | { type: 'RESET_QUIZ' }
   | { type: 'RESTORE_STATE'; state: InvestorQuizState };
 
@@ -83,7 +85,13 @@ function quizReducer(state: InvestorQuizState, action: QuizAction): InvestorQuiz
         persona: action.persona,
         showReveal: false
       };
-    
+
+    case 'SKIP_QUIZ':
+      return {
+        ...initialState,
+        hasSkipped: true
+      };
+
     case 'RESET_QUIZ':
       return initialState;
     
@@ -106,6 +114,7 @@ interface InvestorQuizContextType {
   nextQuestion: () => void;
   prevQuestion: () => void;
   completeQuiz: () => void;
+  skipQuiz: () => void;
   resetQuiz: () => void;
   continueAfterReveal: () => void;
 }
@@ -117,21 +126,29 @@ export function InvestorQuizProvider({ children }: { children: ReactNode }) {
 
   // Restore state from localStorage on mount
   useEffect(() => {
+    console.log('InvestorQuizContext - Attempting to restore state from localStorage');
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
+        console.log('InvestorQuizContext - Found saved state:', {
+          isComplete: parsed.isComplete,
+          hasScores: !!parsed.calculatedScores,
+          persona: parsed.persona?.type
+        });
 
         // Detect old format (has archetypeCounts) - force retake
         if (parsed.calculatedScores?.archetypeCounts) {
+          console.log('InvestorQuizContext - Old format detected, removing');
           localStorage.removeItem(STORAGE_KEY);
           return;
         }
 
-        // Only restore new format incomplete quizzes
-        if (!parsed.isComplete) {
-          dispatch({ type: 'RESTORE_STATE', state: parsed });
-        }
+        // Restore both complete and incomplete quizzes
+        dispatch({ type: 'RESTORE_STATE', state: parsed });
+        console.log('InvestorQuizContext - State restored');
+      } else {
+        console.log('InvestorQuizContext - No saved state found');
       }
     } catch (e) {
       console.error('Failed to restore quiz state:', e);
@@ -142,6 +159,12 @@ export function InvestorQuizProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      console.log('InvestorQuizContext - State saved:', {
+        isComplete: state.isComplete,
+        hasScores: !!state.calculatedScores,
+        persona: state.persona?.type,
+        currentStep: state.currentStep
+      });
     } catch (e) {
       console.error('Failed to save quiz state:', e);
     }
@@ -234,6 +257,10 @@ export function InvestorQuizProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'COMPLETE_QUIZ', scores, persona });
   };
 
+  const skipQuiz = () => {
+    dispatch({ type: 'SKIP_QUIZ' });
+  };
+
   const resetQuiz = () => {
     localStorage.removeItem(STORAGE_KEY);
     dispatch({ type: 'RESET_QUIZ' });
@@ -261,6 +288,7 @@ export function InvestorQuizProvider({ children }: { children: ReactNode }) {
         nextQuestion,
         prevQuestion,
         completeQuiz,
+        skipQuiz,
         resetQuiz,
         continueAfterReveal
       }}

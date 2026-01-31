@@ -2,19 +2,19 @@ import { motion } from 'framer-motion';
 import { Check, AlertTriangle, Share2, RotateCcw, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useInvestorQuiz } from '@/context/InvestorQuizContext';
-import { useApp } from '@/context/AppContext';
+import { useNavigate } from 'react-router-dom';
 
 export function InvestorQuizResults() {
   const { state, resetQuiz } = useInvestorQuiz();
-  const { setQuizCompleted, setCurrentScreen } = useApp();
+  const navigate = useNavigate();
 
   const { persona } = state;
 
   if (!persona) return null;
 
   const handleContinue = () => {
-    setQuizCompleted(true);
-    setCurrentScreen('home');
+    // Navigate to browse themes after completing quiz
+    navigate('/stocks?screen=theme-list&tab=theme');
   };
 
   const handleShare = async () => {
@@ -125,8 +125,11 @@ export function InvestorQuizResults() {
               <Share2 className="w-4 h-4" />
               Share
             </Button>
-            <Button 
-              onClick={resetQuiz}
+            <Button
+              onClick={() => {
+                resetQuiz();
+                navigate('/quiz-onboarding');
+              }}
               variant="outline"
               size="lg"
               className="flex-1 md:flex-none md:min-w-[140px] gap-2"

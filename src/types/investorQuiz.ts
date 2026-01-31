@@ -61,5 +61,6 @@ export interface InvestorQuizState {
   calculatedScores: QuizScores | null;
   persona: Persona | null;
   isComplete: boolean;
+  hasSkipped: boolean; // True if user skipped the quiz
   showReveal: boolean;
 }

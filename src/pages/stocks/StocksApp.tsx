@@ -1,5 +1,6 @@
-import { InvestorQuizProvider } from '@/context/InvestorQuizContext';
-import { AppProvider, useApp } from '@/context/AppContext';
+import { useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { AppProvider, useApp, type Screen, type ActiveTab } from '@/context/AppContext';
 import { InvestorQuizFlow } from '@/components/quiz/InvestorQuizFlow';
 import { FloatingAdvisor } from '@/components/advisor/FloatingAdvisor';
 import { TopNav } from '@/components/navigation/TopNav';
@@ -15,7 +16,21 @@ import { ProfileScreen } from '@/components/profile/ProfileScreen';
 import { StoreScreen } from '@/components/store/StoreScreen';
 
 function StocksContent() {
-  const { currentScreen } = useApp();
+  const { currentScreen, setCurrentScreen, setActiveTab } = useApp();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Handle URL params for initial screen/tab (e.g., from quiz completion)
+  useEffect(() => {
+    const screenParam = searchParams.get('screen') as Screen | null;
+    const tabParam = searchParams.get('tab') as ActiveTab | null;
+
+    if (screenParam && tabParam) {
+      setActiveTab(tabParam);
+      setCurrentScreen(screenParam);
+      // Clear the params after setting the screen
+      setSearchParams({});
+    }
+  }, [searchParams, setCurrentScreen, setActiveTab, setSearchParams]);
 
   const renderScreen = () => {
     switch (currentScreen) {
@@ -58,10 +73,8 @@ function StocksContent() {
 
 export default function StocksApp() {
   return (
-    <InvestorQuizProvider>
-      <AppProvider>
-        <StocksContent />
-      </AppProvider>
-    </InvestorQuizProvider>
+    <AppProvider>
+      <StocksContent />
+    </AppProvider>
   );
 }
