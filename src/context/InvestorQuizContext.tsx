@@ -126,29 +126,19 @@ export function InvestorQuizProvider({ children }: { children: ReactNode }) {
 
   // Restore state from localStorage on mount
   useEffect(() => {
-    console.log('InvestorQuizContext - Attempting to restore state from localStorage');
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        console.log('InvestorQuizContext - Found saved state:', {
-          isComplete: parsed.isComplete,
-          hasScores: !!parsed.calculatedScores,
-          persona: parsed.persona?.type
-        });
 
         // Detect old format (has archetypeCounts) - force retake
         if (parsed.calculatedScores?.archetypeCounts) {
-          console.log('InvestorQuizContext - Old format detected, removing');
           localStorage.removeItem(STORAGE_KEY);
           return;
         }
 
         // Restore both complete and incomplete quizzes
         dispatch({ type: 'RESTORE_STATE', state: parsed });
-        console.log('InvestorQuizContext - State restored');
-      } else {
-        console.log('InvestorQuizContext - No saved state found');
       }
     } catch (e) {
       console.error('Failed to restore quiz state:', e);
@@ -159,12 +149,6 @@ export function InvestorQuizProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      console.log('InvestorQuizContext - State saved:', {
-        isComplete: state.isComplete,
-        hasScores: !!state.calculatedScores,
-        persona: state.persona?.type,
-        currentStep: state.currentStep
-      });
     } catch (e) {
       console.error('Failed to save quiz state:', e);
     }

@@ -16,7 +16,7 @@ import { ProfileScreen } from '@/components/profile/ProfileScreen';
 import { StoreScreen } from '@/components/store/StoreScreen';
 
 function StocksContent() {
-  const { currentScreen, setCurrentScreen, setActiveTab } = useApp();
+  const { currentScreen, setCurrentScreen, setActiveTab, selectedPlaylist } = useApp();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Handle URL params for initial screen/tab (e.g., from quiz completion)
@@ -39,7 +39,7 @@ function StocksContent() {
       case 'theme-list':
         return <ThemeListScreen />;
       case 'company-list':
-        return <CompanyListScreen />;
+        return <CompanyListScreen key={selectedPlaylist?.id || 'no-playlist'} />;
       case 'company-profile':
         return <CompanyProfileScreen />;
       case 'market':

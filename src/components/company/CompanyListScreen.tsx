@@ -5,9 +5,9 @@ import { useApp } from '@/context/AppContext';
 import { supabase } from '@/integrations/supabase/client';
 
 export function CompanyListScreen() {
-  const { 
-    selectedPlaylist, 
-    setCurrentScreen, 
+  const {
+    selectedPlaylist,
+    setCurrentScreen,
     setSelectedStock,
     navigateBack,
     isCompanyWatchlisted,
@@ -16,21 +16,26 @@ export function CompanyListScreen() {
     isThemeWatchlisted,
     toggleWatchlistTheme
   } = useApp();
-  
+
   const [ytdData, setYtdData] = useState<Record<string, number | null>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchYTDData() {
       if (!selectedPlaylist) return;
-      
+
       try {
         const tickers = selectedPlaylist.stocks.map(s => s.ticker);
+
         const { data, error } = await supabase
           .from('stock_quotes')
           .select('ticker, ytd_change')
           .in('ticker', tickers);
-        
+
+        if (error) {
+          console.error('Error fetching stock quotes:', error);
+        }
+
         if (data) {
           const ytdMap: Record<string, number | null> = {};
           data.forEach(item => {
@@ -44,7 +49,7 @@ export function CompanyListScreen() {
         setLoading(false);
       }
     }
-    
+
     fetchYTDData();
   }, [selectedPlaylist]);
 
@@ -161,7 +166,7 @@ export function CompanyListScreen() {
                 <p className="text-sm text-muted-foreground truncate">{stock.name}</p>
                 
                 {/* YTD Change */}
-                {!loading && ytdChange !== null && (
+                {!loading && ytdChange != null && typeof ytdChange === 'number' && (
                   <div className={`flex items-center gap-1 mt-1 ${ytdChange >= 0 ? 'text-primary' : 'text-destructive'}`}>
                     {ytdChange >= 0 ? (
                       <TrendingUp className="w-3 h-3" />
