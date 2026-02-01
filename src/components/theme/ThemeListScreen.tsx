@@ -11,6 +11,7 @@ import { convertToUserProfile } from '@/utils/investorScoring';
 import { MatchPercentageBadge } from './MatchPercentageBadge';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export function ThemeListScreen() {
   const {
@@ -25,6 +26,8 @@ export function ThemeListScreen() {
   const { toast } = useToast();
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [ytdData, setYtdData] = useState<Record<string, number | null>>({});
+  const [ytdLoading, setYtdLoading] = useState(true);
 
   // Calculate match scores if user has completed quiz
   const playlistsWithScores = useMemo(() => {
@@ -73,6 +76,54 @@ export function ThemeListScreen() {
       localStorage.setItem('quiz_celebration_shown', 'true');
     }
   }, [state.isComplete, filteredThemes.length, state.persona?.type, toast]);
+
+  // Fetch YTD data for all playlists
+  useEffect(() => {
+    async function fetchYTDData() {
+      try {
+        // Get all unique tickers from all playlists
+        const allTickers = [...new Set(playlists.flatMap(p => p.stocks.map(s => s.ticker)))];
+
+        const { data, error } = await supabase
+          .from('stock_quotes')
+          .select('ticker, ytd_change')
+          .in('ticker', allTickers);
+
+        if (error) {
+          console.error('Error fetching stock quotes:', error);
+        }
+
+        if (data) {
+          const ytdMap: Record<string, number | null> = {};
+
+          // For each playlist, calculate average YTD
+          playlists.forEach(playlist => {
+            const playlistYTDs = playlist.stocks
+              .map(stock => {
+                const quote = data.find(d => d.ticker === stock.ticker);
+                return quote?.ytd_change ? Number(quote.ytd_change) : null;
+              })
+              .filter((ytd): ytd is number => ytd !== null);
+
+            if (playlistYTDs.length > 0) {
+              const avgYTD = playlistYTDs.reduce((sum, ytd) => sum + ytd, 0) / playlistYTDs.length;
+              ytdMap[playlist.id] = avgYTD;
+            } else {
+              ytdMap[playlist.id] = null;
+            }
+          });
+
+          setYtdData(ytdMap);
+        }
+      } catch (error) {
+        console.error('Error fetching YTD data:', error);
+      } finally {
+        setYtdLoading(false);
+      }
+    }
+
+    fetchYTDData();
+  }, []);
 
   const handleThemeClick = (theme: typeof playlists[0]) => {
     setSelectedPlaylist(theme);
@@ -169,6 +220,8 @@ export function ThemeListScreen() {
             index={index}
             isWatchlisted={isThemeWatchlisted(theme.id)}
             completedCount={theme.stocks.filter(s => completedCompanies.includes(s.ticker)).length}
+            ytdChange={ytdData[theme.id] ?? null}
+            ytdLoading={ytdLoading}
             onThemeClick={() => handleThemeClick(theme)}
             onStarClick={(e) => handleStarClick(e, theme.id)}
           />
@@ -185,6 +238,8 @@ interface UniformThemeCardProps {
   index: number;
   isWatchlisted: boolean;
   completedCount: number;
+  ytdChange: number | null;
+  ytdLoading: boolean;
   onThemeClick: () => void;
   onStarClick: (e: React.MouseEvent) => void;
 }
@@ -195,6 +250,8 @@ function UniformThemeCard({
   index,
   isWatchlisted,
   completedCount,
+  ytdChange,
+  ytdLoading,
   onThemeClick,
   onStarClick
 }: UniformThemeCardProps) {
@@ -209,26 +266,75 @@ function UniformThemeCard({
         className="w-full flex items-center gap-4 p-4 bg-card rounded-xl border border-border hover:bg-secondary/50 transition-colors"
       >
         {/* Content */}
-        <div className="flex-1 text-left min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-foreground truncate flex-1">
+        <div className="flex-1 text-left min-w-0 flex gap-3">
+          {/* Left: Title, Tags, Company Count */}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-foreground truncate mb-1">
               {theme.title}
             </h3>
+            <p className="text-sm text-muted-foreground truncate">
+              {theme.tags.join(', ')}
+            </p>
+            <div className="flex items-center gap-3 mt-1">
+              <span className="text-xs text-muted-foreground">
+                {theme.stocks.length} companies
+              </span>
+              {completedCount > 0 && (
+                <span className="text-xs text-primary">
+                  {completedCount} completed
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Right: Match Badge & YTD Column */}
+          <div className="flex flex-col items-end justify-start gap-1.5">
             {matchScore !== undefined && (
               <MatchPercentageBadge score={matchScore} size="sm" />
             )}
-          </div>
-          <p className="text-sm text-muted-foreground truncate">
-            {theme.tags.join(', ')}
-          </p>
-          <div className="flex items-center gap-3 mt-1">
-            <span className="text-xs text-muted-foreground">
-              {theme.stocks.length} companies
-            </span>
-            {completedCount > 0 && (
-              <span className="text-xs text-primary">
-                {completedCount} completed
-              </span>
+            {/* YTD Visual Indicator */}
+            {!ytdLoading && ytdChange != null && typeof ytdChange === 'number' && (
+              <div className="flex flex-col items-center gap-1">
+                {/* Signal Bars */}
+                {(() => {
+                  const absYtd = Math.abs(ytdChange);
+                  const isPositive = ytdChange >= 0;
+                  const isZero = ytdChange === 0;
+
+                  // Calculate filled bars: 0% = 1 neutral, 1-100% = 1-5 colored
+                  let filledBars;
+                  if (isZero) {
+                    filledBars = 1;
+                  } else {
+                    filledBars = Math.max(1, Math.ceil((Math.min(absYtd, 100) / 100) * 5));
+                  }
+
+                  const baseHeight = 3; // Base height in pixels
+
+                  return (
+                    <div className="flex items-end gap-0.5">
+                      {[1, 2, 3, 4, 5].map((barIndex) => (
+                        <div
+                          key={barIndex}
+                          className={`w-1 rounded-sm ${
+                            barIndex <= filledBars
+                              ? isZero
+                                ? 'bg-gray-300 dark:bg-gray-600'  // Neutral color for 0%
+                                : isPositive ? 'bg-emerald-500' : 'bg-red-500'
+                              : 'bg-gray-200 dark:bg-gray-700'
+                          }`}
+                          style={{ height: `${baseHeight * barIndex}px` }}
+                        />
+                      ))}
+                    </div>
+                  );
+                })()}
+
+                {/* Percentage */}
+                <span className={`text-xs font-semibold whitespace-nowrap ${ytdChange >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                  {ytdChange >= 0 ? '+' : ''}{ytdChange.toFixed(1)}% YTD
+                </span>
+              </div>
             )}
           </div>
         </div>
