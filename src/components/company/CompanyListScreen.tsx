@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Star, ChevronRight, TrendingUp, TrendingDown, Check } from 'lucide-react';
+import { ArrowLeft, Star, ChevronRight, Check } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { supabase } from '@/integrations/supabase/client';
 
 export function CompanyListScreen() {
-  const { 
-    selectedPlaylist, 
-    setCurrentScreen, 
+  const {
+    selectedPlaylist,
+    setCurrentScreen,
     setSelectedStock,
     navigateBack,
     isCompanyWatchlisted,
@@ -16,21 +16,26 @@ export function CompanyListScreen() {
     isThemeWatchlisted,
     toggleWatchlistTheme
   } = useApp();
-  
+
   const [ytdData, setYtdData] = useState<Record<string, number | null>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchYTDData() {
       if (!selectedPlaylist) return;
-      
+
       try {
         const tickers = selectedPlaylist.stocks.map(s => s.ticker);
+
         const { data, error } = await supabase
           .from('stock_quotes')
           .select('ticker, ytd_change')
           .in('ticker', tickers);
-        
+
+        if (error) {
+          console.error('Error fetching stock quotes:', error);
+        }
+
         if (data) {
           const ytdMap: Record<string, number | null> = {};
           data.forEach(item => {
@@ -44,7 +49,7 @@ export function CompanyListScreen() {
         setLoading(false);
       }
     }
-    
+
     fetchYTDData();
   }, [selectedPlaylist]);
 
@@ -159,22 +164,53 @@ export function CompanyListScreen() {
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground truncate">{stock.name}</p>
-                
-                {/* YTD Change */}
-                {!loading && ytdChange !== null && (
-                  <div className={`flex items-center gap-1 mt-1 ${ytdChange >= 0 ? 'text-primary' : 'text-destructive'}`}>
-                    {ytdChange >= 0 ? (
-                      <TrendingUp className="w-3 h-3" />
-                    ) : (
-                      <TrendingDown className="w-3 h-3" />
-                    )}
-                    <span className="text-xs font-medium">
-                      {ytdChange >= 0 ? '+' : ''}{ytdChange.toFixed(1)}% YTD
-                    </span>
-                  </div>
-                )}
               </div>
-              
+
+              {/* YTD Visual Indicator */}
+              {!loading && ytdChange != null && typeof ytdChange === 'number' && (
+                <div className="flex flex-col items-center gap-1 self-center">
+                  {/* Signal Bars */}
+                  {(() => {
+                    const absYtd = Math.abs(ytdChange);
+                    const isPositive = ytdChange >= 0;
+                    const isZero = ytdChange === 0;
+
+                    // Calculate filled bars: 0% = 1 neutral, 1-100% = 1-5 colored
+                    let filledBars;
+                    if (isZero) {
+                      filledBars = 1;
+                    } else {
+                      filledBars = Math.max(1, Math.ceil((Math.min(absYtd, 100) / 100) * 5));
+                    }
+
+                    const baseHeight = 3; // Base height in pixels
+
+                    return (
+                      <div className="flex items-end gap-0.5">
+                        {[1, 2, 3, 4, 5].map((barIndex) => (
+                          <div
+                            key={barIndex}
+                            className={`w-1 rounded-sm ${
+                              barIndex <= filledBars
+                                ? isZero
+                                  ? 'bg-gray-300 dark:bg-gray-600'  // Neutral color for 0%
+                                  : isPositive ? 'bg-emerald-500' : 'bg-red-500'
+                                : 'bg-gray-200 dark:bg-gray-700'
+                            }`}
+                            style={{ height: `${baseHeight * barIndex}px` }}
+                          />
+                        ))}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Percentage */}
+                  <span className={`text-xs font-semibold ${ytdChange >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                    {ytdChange >= 0 ? '+' : ''}{ytdChange.toFixed(1)}% YTD
+                  </span>
+                </div>
+              )}
+
               {/* Star Button */}
               <button
                 onClick={(e) => handleStarClick(e, stock)}

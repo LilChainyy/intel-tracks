@@ -102,9 +102,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [navigationHistory, setNavigationHistory] = useState<{ tab: ActiveTab; screen: Screen }[]>([]);
   
   // Selected entities
-  const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
+  const [selectedPlaylistState, setSelectedPlaylistState] = useState<Playlist | null>(null);
   const [selectedStock, setSelectedStock] = useState<{ ticker: string; playlist: Playlist } | null>(null);
   const [selectedCatalyst, setSelectedCatalyst] = useState<Catalyst | null>(null);
+
+  const setSelectedPlaylist = useCallback((playlist: Playlist | null) => {
+    setSelectedPlaylistState(playlist);
+  }, []);
   
   // Quiz
   const [quizCompleted, setQuizCompleted] = useState(false);
@@ -238,7 +242,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         navigateBack,
         
         // Selected entities
-        selectedPlaylist,
+        selectedPlaylist: selectedPlaylistState,
         setSelectedPlaylist,
         selectedStock,
         setSelectedStock,

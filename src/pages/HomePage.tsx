@@ -1,9 +1,19 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useInvestorQuiz } from '@/context/InvestorQuizContext';
 import { categories } from '@/data/categories';
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { state } = useInvestorQuiz();
+
+  // Redirect to quiz onboarding if user hasn't completed or skipped the quiz
+  useEffect(() => {
+    if (!state.isComplete && !state.hasSkipped) {
+      navigate('/quiz-onboarding', { replace: true });
+    }
+  }, [state.isComplete, state.hasSkipped, navigate]);
 
   const handleCategoryClick = (categoryId: string) => {
     if (categoryId === 'stocks') {

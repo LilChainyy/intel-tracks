@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { InvestorQuizState, QuizAnswer, QuizScores, Archetype } from '@/types/investorQuiz';
+import { InvestorQuizState, QuizAnswer, QuizScores, Persona } from '@/types/investorQuiz';
 import { investorQuestions } from '@/data/investorQuizData';
-import { calculateScores, determineArchetype, shouldShowReveal } from '@/utils/investorScoring';
+import { calculateScores, generatePersona, shouldShowReveal } from '@/utils/investorScoring';
 
 const STORAGE_KEY = 'investor_quiz_state';
 
@@ -10,8 +10,9 @@ const initialState: InvestorQuizState = {
   currentQuestionIndex: 0,
   answers: {},
   calculatedScores: null,
-  archetype: null,
+  persona: null,
   isComplete: false,
+  hasSkipped: false,
   showReveal: false
 };
 
@@ -22,7 +23,8 @@ type QuizAction =
   | { type: 'HIDE_REVEAL' }
   | { type: 'NEXT_QUESTION' }
   | { type: 'PREV_QUESTION' }
-  | { type: 'COMPLETE_QUIZ'; scores: QuizScores; archetype: Archetype }
+  | { type: 'COMPLETE_QUIZ'; scores: QuizScores; persona: Persona }
+  | { type: 'SKIP_QUIZ' }
   | { type: 'RESET_QUIZ' }
   | { type: 'RESTORE_STATE'; state: InvestorQuizState };
 
@@ -75,15 +77,21 @@ function quizReducer(state: InvestorQuizState, action: QuizAction): InvestorQuiz
       };
     
     case 'COMPLETE_QUIZ':
-      return { 
-        ...state, 
+      return {
+        ...state,
         currentStep: 'results',
         isComplete: true,
         calculatedScores: action.scores,
-        archetype: action.archetype,
+        persona: action.persona,
         showReveal: false
       };
-    
+
+    case 'SKIP_QUIZ':
+      return {
+        ...initialState,
+        hasSkipped: true
+      };
+
     case 'RESET_QUIZ':
       return initialState;
     
@@ -102,9 +110,11 @@ interface InvestorQuizContextType {
   progress: number;
   startQuiz: () => void;
   selectAnswer: (questionId: number, answerId: string) => void;
+  selectMultipleAnswers: (questionId: number, answerIds: string[]) => void;
   nextQuestion: () => void;
   prevQuestion: () => void;
   completeQuiz: () => void;
+  skipQuiz: () => void;
   resetQuiz: () => void;
   continueAfterReveal: () => void;
 }
@@ -120,10 +130,15 @@ export function InvestorQuizProvider({ children }: { children: ReactNode }) {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Only restore if not complete (allow resuming incomplete quizzes)
-        if (!parsed.isComplete) {
-          dispatch({ type: 'RESTORE_STATE', state: parsed });
+
+        // Detect old format (has archetypeCounts) - force retake
+        if (parsed.calculatedScores?.archetypeCounts) {
+          localStorage.removeItem(STORAGE_KEY);
+          return;
         }
+
+        // Restore both complete and incomplete quizzes
+        dispatch({ type: 'RESTORE_STATE', state: parsed });
       }
     } catch (e) {
       console.error('Failed to restore quiz state:', e);
@@ -172,13 +187,42 @@ export function InvestorQuizProvider({ children }: { children: ReactNode }) {
           // Last question - complete quiz
           const allAnswers = { ...state.answers, [questionId]: answer };
           const scores = calculateScores(allAnswers);
-          const archetype = determineArchetype(scores);
-          dispatch({ type: 'COMPLETE_QUIZ', scores, archetype });
+          const persona = generatePersona(scores);
+          dispatch({ type: 'COMPLETE_QUIZ', scores, persona });
         } else {
           dispatch({ type: 'NEXT_QUESTION' });
         }
       }, 300);
     }
+  };
+
+  const selectMultipleAnswers = (questionId: number, answerIds: string[]) => {
+    const question = investorQuestions.find(q => q.id === questionId);
+    if (!question) return;
+
+    const selectedOptions = question.options.filter(o => answerIds.includes(o.id));
+    const allScores = selectedOptions.map(o => o.scores);
+
+    const answer: QuizAnswer = {
+      questionId,
+      answerId: answerIds,
+      scores: allScores
+    };
+
+    dispatch({ type: 'SELECT_ANSWER', answer });
+
+    // Auto-advance after short delay
+    setTimeout(() => {
+      if (state.currentQuestionIndex >= investorQuestions.length - 1) {
+        // Last question - complete quiz
+        const allAnswers = { ...state.answers, [questionId]: answer };
+        const scores = calculateScores(allAnswers);
+        const persona = generatePersona(scores);
+        dispatch({ type: 'COMPLETE_QUIZ', scores, persona });
+      } else {
+        dispatch({ type: 'NEXT_QUESTION' });
+      }
+    }, 300);
   };
 
   const nextQuestion = () => {
@@ -193,8 +237,12 @@ export function InvestorQuizProvider({ children }: { children: ReactNode }) {
 
   const completeQuiz = () => {
     const scores = calculateScores(state.answers);
-    const archetype = determineArchetype(scores);
-    dispatch({ type: 'COMPLETE_QUIZ', scores, archetype });
+    const persona = generatePersona(scores);
+    dispatch({ type: 'COMPLETE_QUIZ', scores, persona });
+  };
+
+  const skipQuiz = () => {
+    dispatch({ type: 'SKIP_QUIZ' });
   };
 
   const resetQuiz = () => {
@@ -220,9 +268,11 @@ export function InvestorQuizProvider({ children }: { children: ReactNode }) {
         progress,
         startQuiz,
         selectAnswer,
+        selectMultipleAnswers,
         nextQuestion,
         prevQuestion,
         completeQuiz,
+        skipQuiz,
         resetQuiz,
         continueAfterReveal
       }}

@@ -7,8 +7,8 @@ export default function LandingPage() {
   const navigate = useNavigate();
 
   const handleLoginClick = () => {
-    // Direct navigation to app - no authentication required
-    navigate('/home');
+    // Direct navigation to quiz onboarding - first step after login
+    navigate('/quiz-onboarding');
   };
   return (
     <div className="min-h-screen bg-white text-slate-900">
