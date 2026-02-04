@@ -1,13 +1,13 @@
-import { Home, Compass, Newspaper, Star, User } from 'lucide-react';
+import { Compass, Newspaper, Brain, Star, User } from 'lucide-react';
 import { useApp, ActiveTab } from '@/context/AppContext';
 
 export function BottomNav() {
   const { activeTab, setActiveTab } = useApp();
 
-  const tabs: { id: ActiveTab; icon: typeof Home; label: string; hasNotification?: boolean }[] = [
-    { id: 'home', icon: Home, label: 'Home' },
+  const tabs: { id: ActiveTab; icon: typeof Compass; label: string; hasNotification?: boolean }[] = [
     { id: 'theme', icon: Compass, label: 'Theme' },
     { id: 'market', icon: Newspaper, label: 'Market', hasNotification: true },
+    { id: 'advisor', icon: Brain, label: 'Advisor' },
     { id: 'watchlist', icon: Star, label: 'Watchlist' },
     { id: 'profile', icon: User, label: 'You' },
   ];

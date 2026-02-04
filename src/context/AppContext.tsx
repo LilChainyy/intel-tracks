@@ -2,17 +2,17 @@ import React, { createContext, useContext, useState, ReactNode, useCallback } fr
 import { Playlist, Stock } from '@/types/playlist';
 
 // Navigation types
-export type ActiveTab = 'home' | 'theme' | 'market' | 'watchlist' | 'profile';
+export type ActiveTab = 'theme' | 'market' | 'advisor' | 'watchlist' | 'profile';
 
 // Screen types - includes both new and legacy screen names for compatibility
-export type Screen = 
-  | 'home' 
-  | 'theme-list' 
-  | 'company-list' 
-  | 'company-profile' 
-  | 'market' 
-  | 'catalyst-detail' 
-  | 'watchlist' 
+export type Screen =
+  | 'theme-list'
+  | 'company-list'
+  | 'company-profile'
+  | 'market'
+  | 'advisor'
+  | 'catalyst-detail'
+  | 'watchlist'
   | 'profile'
   | 'quiz'
   | 'store'
@@ -97,8 +97,8 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   // Navigation state
-  const [activeTab, setActiveTabState] = useState<ActiveTab>('home');
-  const [currentScreen, setCurrentScreenState] = useState<Screen>('home');
+  const [activeTab, setActiveTabState] = useState<ActiveTab>('theme');
+  const [currentScreen, setCurrentScreenState] = useState<Screen>('theme-list');
   const [navigationHistory, setNavigationHistory] = useState<{ tab: ActiveTab; screen: Screen }[]>([]);
   
   // Selected entities
@@ -138,14 +138,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } else {
       // Default back behavior based on current tab
       switch (activeTab) {
-        case 'home':
-          setCurrentScreenState('home');
-          break;
         case 'theme':
           setCurrentScreenState('theme-list');
           break;
         case 'market':
           setCurrentScreenState('market');
+          break;
+        case 'advisor':
+          setCurrentScreenState('advisor');
           break;
         case 'watchlist':
           setCurrentScreenState('watchlist');
@@ -162,14 +162,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveTabState(tab);
     setNavigationHistory([]);
     switch (tab) {
-      case 'home':
-        setCurrentScreenState('home');
-        break;
       case 'theme':
         setCurrentScreenState('theme-list');
         break;
       case 'market':
         setCurrentScreenState('market');
+        break;
+      case 'advisor':
+        setCurrentScreenState('advisor');
         break;
       case 'watchlist':
         setCurrentScreenState('watchlist');

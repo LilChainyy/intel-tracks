@@ -2,10 +2,9 @@ import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AppProvider, useApp, type Screen, type ActiveTab } from '@/context/AppContext';
 import { InvestorQuizFlow } from '@/components/quiz/InvestorQuizFlow';
-import { FloatingAdvisor } from '@/components/advisor/FloatingAdvisor';
 import { TopNav } from '@/components/navigation/TopNav';
 import { BottomNav } from '@/components/navigation/BottomNav';
-import { HomeScreen } from '@/components/home/HomeScreen';
+import { AdvisorScreen } from '@/components/advisor/AdvisorScreen';
 import { ThemeListScreen } from '@/components/theme/ThemeListScreen';
 import { CompanyListScreen } from '@/components/company/CompanyListScreen';
 import { CompanyProfileScreen } from '@/components/company/CompanyProfileScreen';
@@ -34,8 +33,6 @@ function StocksContent() {
 
   const renderScreen = () => {
     switch (currentScreen) {
-      case 'home':
-        return <HomeScreen />;
       case 'theme-list':
         return <ThemeListScreen />;
       case 'company-list':
@@ -44,6 +41,8 @@ function StocksContent() {
         return <CompanyProfileScreen />;
       case 'market':
         return <MarketScreen />;
+      case 'advisor':
+        return <AdvisorScreen />;
       case 'catalyst-detail':
         return <CatalystDetailScreen />;
       case 'watchlist':
@@ -55,7 +54,7 @@ function StocksContent() {
       case 'store':
         return <StoreScreen />;
       default:
-        return <HomeScreen />;
+        return <ThemeListScreen />;
     }
   };
 
@@ -64,7 +63,6 @@ function StocksContent() {
       <TopNav />
       <main className="relative pt-14">
         {renderScreen()}
-        <FloatingAdvisor />
       </main>
       <BottomNav />
     </div>
