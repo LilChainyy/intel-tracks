@@ -7,6 +7,7 @@ export type ActiveTab = 'theme' | 'market' | 'advisor' | 'watchlist' | 'profile'
 // Screen types - includes both new and legacy screen names for compatibility
 export type Screen =
   | 'theme-list'
+  | 'all-companies'
   | 'company-list'
   | 'company-profile'
   | 'market'
@@ -53,6 +54,7 @@ interface AppContextType {
   setCurrentScreen: (screen: Screen) => void;
   navigationHistory: { tab: ActiveTab; screen: Screen }[];
   navigateBack: () => void;
+  navigateTo: (screen: Screen) => void;
   
   // Selected entities
   selectedPlaylist: Playlist | null;
@@ -128,6 +130,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setCurrentScreen = useCallback((screen: Screen) => {
     setCurrentScreenState(screen);
   }, []);
+
+  // navigateTo pushes current screen onto history before switching
+  const navigateTo = useCallback((screen: Screen) => {
+    setNavigationHistory(prev => [...prev, { tab: activeTab, screen: currentScreen }]);
+    setCurrentScreenState(screen);
+  }, [activeTab, currentScreen]);
 
   const navigateBack = useCallback(() => {
     if (navigationHistory.length > 0) {
@@ -240,6 +248,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setCurrentScreen,
         navigationHistory,
         navigateBack,
+        navigateTo,
         
         // Selected entities
         selectedPlaylist: selectedPlaylistState,

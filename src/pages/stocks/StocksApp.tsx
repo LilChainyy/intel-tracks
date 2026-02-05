@@ -13,6 +13,7 @@ import { CatalystDetailScreen } from '@/components/market/CatalystDetailScreen';
 import { WatchlistScreen } from '@/components/watchlist/WatchlistScreen';
 import { ProfileScreen } from '@/components/profile/ProfileScreen';
 import { StoreScreen } from '@/components/store/StoreScreen';
+import { AllCompaniesScreen } from '@/components/company/AllCompaniesScreen';
 
 function StocksContent() {
   const { currentScreen, setCurrentScreen, setActiveTab, selectedPlaylist } = useApp();
@@ -35,6 +36,8 @@ function StocksContent() {
     switch (currentScreen) {
       case 'theme-list':
         return <ThemeListScreen />;
+      case 'all-companies':
+        return <AllCompaniesScreen />;
       case 'company-list':
         return <CompanyListScreen key={selectedPlaylist?.id || 'no-playlist'} />;
       case 'company-profile':
