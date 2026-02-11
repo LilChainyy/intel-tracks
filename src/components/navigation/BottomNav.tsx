@@ -48,21 +48,30 @@ export function BottomNav() {
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           const isTheme = tab.id === 'theme';
+          const isAdvisor = tab.id === 'advisor';
 
           const button = (
             <button
               onClick={() => handleTabClick(tab.id)}
               className={`flex flex-col items-center gap-1 py-2 px-3 transition-colors ${
-                isActive ? 'text-primary' : 'text-muted-foreground'
+                isActive ? 'text-primary' : isAdvisor ? 'text-primary' : 'text-muted-foreground'
               }`}
             >
               <div className="relative">
-                <tab.icon className="w-5 h-5" />
-                {tab.hasNotification && (
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full" />
+                {isAdvisor ? (
+                  <div className={`rounded-full p-1.5 ${isActive ? 'bg-primary/20' : 'bg-primary/10'}`}>
+                    <tab.icon className="w-5 h-5" />
+                  </div>
+                ) : (
+                  <>
+                    <tab.icon className="w-5 h-5" />
+                    {tab.hasNotification && (
+                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full" />
+                    )}
+                  </>
                 )}
               </div>
-              <span className="text-[10px] font-medium">{tab.label}</span>
+              <span className={`text-[10px] ${isAdvisor ? 'font-semibold' : 'font-medium'}`}>{tab.label}</span>
             </button>
           );
 

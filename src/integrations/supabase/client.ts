@@ -2,8 +2,9 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+// Supabase requires non-empty URL and key. Use fallbacks so app loads without .env (API calls will 401).
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://joafocyskbvvfltwfefu.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder";
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";

@@ -4,11 +4,16 @@ interface InvestorQuizProgressProps {
   currentStep: number;
   totalSteps: number;
   progress: number;
+  /** When true, renders inline instead of fixed (for use inside Advisor-style header) */
+  inline?: boolean;
 }
 
-export function InvestorQuizProgress({ currentStep, totalSteps, progress }: InvestorQuizProgressProps) {
+export function InvestorQuizProgress({ currentStep, totalSteps, progress, inline }: InvestorQuizProgressProps) {
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
+    <div className={inline
+      ? "px-4 py-3 bg-transparent"
+      : "fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border"
+    }>
       <div className="max-w-2xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-foreground">

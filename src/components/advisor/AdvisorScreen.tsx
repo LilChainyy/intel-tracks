@@ -2,7 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Brain, Send, Bot, User, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
+import { useInvestorQuiz } from '@/context/InvestorQuizContext';
+import { useApp } from '@/context/AppContext';
+import { playlists } from '@/data/playlists';
+import { calculateMatchScore } from '@/utils/matchScore';
+import { convertToUserProfile } from '@/utils/investorScoring';
+import type { Playlist } from '@/types/playlist';
 
 interface Message {
   id: string;
@@ -27,11 +32,36 @@ const STARTER_CHIPS = [
 const ADVISOR_SYSTEM_PROMPT = `You are a knowledgeable investment advisor built into the Adamsmyth app. Users come to you to learn about companies, industries, and investment opportunities. Give substantive, helpful answers in accessible language — avoid heavy jargon, but don't oversimplify. Be concise but thorough: 3-5 sentences per response. You can reference specific ticker symbols when relevant. Be honest about uncertainty and remind users that this is not financial advice when appropriate.`;
 
 export function AdvisorScreen() {
+  const { state } = useInvestorQuiz();
+  const { setSelectedPlaylist, setCurrentScreen, setActiveTab } = useApp();
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
+  const [topPlaylists, setTopPlaylists] = useState<Playlist[] | null>(null);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const handlePlaylistClick = (playlist: Playlist) => {
+    setSelectedPlaylist(playlist);
+    setCurrentScreen('company-list');
+    setActiveTab('theme');
+  };
+
+  // Show post-quiz welcome with top 3 playlists when landing from quiz completion
+  useEffect(() => {
+    if (sessionStorage.getItem('advisor_from_quiz') !== '1') return;
+    if (!state.isComplete || !state.calculatedScores) return;
+
+    const userProfile = convertToUserProfile(state.calculatedScores);
+    const scored = playlists.map((p) => ({
+      ...p,
+      matchScore: calculateMatchScore(userProfile, { ...p, id: p.id }),
+    }));
+    const top3 = scored.sort((a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0)).slice(0, 3);
+    setTopPlaylists(top3);
+    setMessages([{ id: 'welcome', role: 'assistant', content: 'Do these sound interesting to you?' }]);
+    sessionStorage.removeItem('advisor_from_quiz');
+  }, [state.isComplete, state.calculatedScores]);
 
   // Auto-scroll to bottom whenever messages change
   useEffect(() => {
@@ -194,6 +224,19 @@ export function AdvisorScreen() {
               }`}
             >
               <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              {message.id === 'welcome' && topPlaylists && topPlaylists.length > 0 && (
+                <div className="flex flex-col gap-2 mt-3">
+                  {topPlaylists.map((playlist) => (
+                    <button
+                      key={playlist.id}
+                      onClick={() => handlePlaylistClick(playlist)}
+                      className="w-full text-left px-3 py-2 rounded-lg border border-border bg-background text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+                    >
+                      {playlist.title}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         ))}

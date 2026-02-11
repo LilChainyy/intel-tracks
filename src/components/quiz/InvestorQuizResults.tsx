@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Check, AlertTriangle, Share2, RotateCcw, ArrowRight } from 'lucide-react';
+import { Check, AlertTriangle, Share2, RotateCcw, ArrowRight, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useInvestorQuiz } from '@/context/InvestorQuizContext';
 import { useNavigate } from 'react-router-dom';
@@ -13,8 +13,8 @@ export function InvestorQuizResults() {
   if (!persona) return null;
 
   const handleContinue = () => {
-    // Navigate to browse themes after completing quiz
-    navigate('/stocks?screen=theme-list&tab=theme');
+    sessionStorage.setItem('advisor_from_quiz', '1');
+    navigate('/stocks?screen=advisor&tab=advisor');
   };
 
   const handleShare = async () => {
@@ -51,14 +51,24 @@ export function InvestorQuizResults() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 py-8 md:py-12 px-4 md:px-8">
-      <motion.div 
-        className="max-w-lg md:max-w-3xl mx-auto space-y-8"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {/* Persona Header */}
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Advisor-style header */}
+      <div className="flex flex-col items-center gap-1 py-4 px-4 border-b border-border bg-muted/30">
+        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+          <Brain className="w-5 h-5 text-primary" />
+        </div>
+        <h2 className="font-semibold text-foreground">Discover Your Investor DNA</h2>
+        <p className="text-xs text-muted-foreground">Quiz complete</p>
+      </div>
+
+      <div className="flex-1 py-8 md:py-12 px-4 md:px-8">
+        <motion.div
+          className="max-w-lg md:max-w-3xl mx-auto space-y-8"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Persona Header */}
         <motion.div variants={itemVariants} className="text-center space-y-3 md:space-y-4">
           <p className="text-sm md:text-base font-medium text-primary uppercase tracking-wide">
             Your Investor Type
@@ -140,6 +150,7 @@ export function InvestorQuizResults() {
           </div>
         </motion.div>
       </motion.div>
+      </div>
     </div>
   );
 }
