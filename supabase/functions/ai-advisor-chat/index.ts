@@ -80,6 +80,10 @@ serve(async (req) => {
       }
     }
 
+    // Extract optional overrides (backward compatible — omitting these preserves current behavior)
+    const customSystemPrompt = requestBody?.systemPrompt || null;
+    const customMaxTokens = requestBody?.maxTokens || null;
+
     // Extract messages with fallback
     const messages = requestBody?.messages || []
     
@@ -156,9 +160,9 @@ Tone: Like a smart friend giving quick advice. Be direct, casual, and super brie
         },
         body: JSON.stringify({
           model: "claude-3-haiku-20240307",
-          system: systemPrompt,
+          system: customSystemPrompt ?? systemPrompt,
           messages: claudeMessages,
-          max_tokens: 150,
+          max_tokens: customMaxTokens ?? 150,
           stream: true,
         }),
       });
