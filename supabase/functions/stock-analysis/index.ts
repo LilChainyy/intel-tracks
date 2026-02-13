@@ -105,10 +105,10 @@ serve(async (req) => {
 
     const safeTicker = encodeURIComponent(ticker.toUpperCase().trim());
     
-    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-    if (!ANTHROPIC_API_KEY) {
-      console.error('ANTHROPIC_API_KEY is not configured in environment variables.');
-      return createErrorResponse("ANTHROPIC_API_KEY is not configured", 500);
+    const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
+    if (!GROQ_API_KEY) {
+      console.error('GROQ_API_KEY is not configured in environment variables.');
+      return createErrorResponse("GROQ_API_KEY is not configured", 500);
     }
 
     // Fetch real stock data from Yahoo Finance
@@ -118,108 +118,109 @@ serve(async (req) => {
     const systemPrompt = buildSystemPrompt(question, followUp);
     const userPrompt = buildUserPrompt(ticker, companyName, question, stockData, followUp);
 
-    console.log('Calling Claude API with:', {
-      model: "claude-3-haiku-20240307",
-      hasApiKey: !!ANTHROPIC_API_KEY,
-      apiKeyPrefix: ANTHROPIC_API_KEY ? ANTHROPIC_API_KEY.substring(0, 10) + '...' : 'missing'
+    console.log('Calling Groq API with:', {
+      model: "llama-3.1-8b-instant",
+      hasApiKey: !!GROQ_API_KEY,
     });
 
     let response: Response;
     try {
-      response = await fetch("https://api.anthropic.com/v1/messages", {
+      response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
-          "x-api-key": ANTHROPIC_API_KEY,
-          "anthropic-version": "2023-06-01",
+          "Authorization": `Bearer ${GROQ_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "claude-3-haiku-20240307",
-          system: systemPrompt,
+          model: "llama-3.1-8b-instant",
           messages: [
+            { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt },
           ],
           tools: [
             {
-              name: "analyze_stock",
-              description: "Return structured stock analysis data",
-              input_schema: {
-                type: "object",
-                properties: {
-                  headline: { type: "string", description: "One-line summary answer" },
-                  simpleAnswer: { type: "string", description: "MAXIMUM 2-3 sentences. Simple yes/no explanation for 15-year-olds. Be super brief and direct." },
-                  details: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        point: { type: "string" },
-                        metric: { type: "string" },
-                        value: { type: "string" }
-                      },
-                      required: ["point", "metric", "value"]
-                    }
-                  },
-                  metrics: {
-                    type: "object",
-                    properties: {
-                      primary: { type: "string" },
-                      primaryValue: { type: "string" },
-                      secondary: { type: "string" },
-                      secondaryValue: { type: "string" },
-                      comparison: { type: "string" },
-                      comparisonValue: { type: "string" }
-                    }
-                  },
-                  analogy: { type: "string", description: "Simple analogy to explain the concept" },
-                  competitorComparison: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        name: { type: "string" },
-                        value: { type: "number" },
-                        label: { type: "string" }
+              type: "function",
+              function: {
+                name: "analyze_stock",
+                description: "Return structured stock analysis data",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    headline: { type: "string", description: "One-line summary answer" },
+                    simpleAnswer: { type: "string", description: "MAXIMUM 2-3 sentences. Simple yes/no explanation for 15-year-olds. Be super brief and direct." },
+                    details: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          point: { type: "string" },
+                          metric: { type: "string" },
+                          value: { type: "string" }
+                        },
+                        required: ["point", "metric", "value"]
                       }
-                    }
+                    },
+                    metrics: {
+                      type: "object",
+                      properties: {
+                        primary: { type: "string" },
+                        primaryValue: { type: "string" },
+                        secondary: { type: "string" },
+                        secondaryValue: { type: "string" },
+                        comparison: { type: "string" },
+                        comparisonValue: { type: "string" }
+                      }
+                    },
+                    analogy: { type: "string", description: "Simple analogy to explain the concept" },
+                    competitorComparison: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          name: { type: "string" },
+                          value: { type: "number" },
+                          label: { type: "string" }
+                        }
+                      }
+                    },
+                    summaryTag: { type: "string", description: "Emoji + short tag like '💰 Very profitable'" }
                   },
-                  summaryTag: { type: "string", description: "Emoji + short tag like '💰 Very profitable'" }
+                  required: ["headline", "simpleAnswer", "details", "metrics", "summaryTag"]
                 },
-                required: ["headline", "simpleAnswer", "details", "metrics", "summaryTag"]
-              }
+              },
             }
           ],
-          tool_choice: { type: "tool", name: "analyze_stock" },
-          max_tokens: 200,
+          tool_choice: { type: "function", function: { name: "analyze_stock" } },
+          max_tokens: 500,
         }),
       });
     } catch (fetchError) {
-      console.error('Fetch to Anthropic API failed:', fetchError);
+      console.error('Fetch to Groq API failed:', fetchError);
       return createErrorResponse(`Failed to connect to AI API: ${fetchError instanceof Error ? fetchError.message : 'Unknown fetch error'}`, 500, fetchError);
     }
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Claude API error:", response.status, errorText);
+      console.error("Groq API error:", response.status, errorText);
 
       if (response.status === 401) {
-        return createErrorResponse("Invalid Anthropic API key. Please check your ANTHROPIC_API_KEY secret.", 500, errorText);
+        return createErrorResponse("Invalid Groq API key. Please check your GROQ_API_KEY secret.", 500, errorText);
       } else if (response.status === 429) {
-        return createErrorResponse("Rate limits exceeded for Claude API, please try again later.", 429, errorText);
+        return createErrorResponse("Rate limits exceeded, please try again later.", 429, errorText);
       } else if (response.status === 404) {
-        return createErrorResponse(`Claude API model not found: ${errorText}. Please check the model name.`, 500, errorText);
+        return createErrorResponse(`Model not found: ${errorText}. Please check the model name.`, 500, errorText);
       } else if (response.status === 400) {
-        return createErrorResponse(`Bad request to Claude API: ${errorText}. Check message format.`, 400, errorText);
+        return createErrorResponse(`Bad request: ${errorText}. Check message format.`, 400, errorText);
       }
       return createErrorResponse(`AI API error (${response.status}): ${errorText}`, 500, errorText);
     }
 
     const data = await response.json();
-    // Claude returns tool_use blocks in content array
-    const toolUse = data.content?.find((block: any) => block.type === 'tool_use' && block.name === 'analyze_stock');
+    // Groq (OpenAI format) returns tool_calls in choices[0].message
+    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     
-    if (toolUse?.input) {
-      const analysis = toolUse.input;
+    if (toolCall?.function?.arguments) {
+      const analysis = JSON.parse(toolCall.function.arguments);
       return new Response(JSON.stringify({ 
         analysis,
         rawData: stockData 

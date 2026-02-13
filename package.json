@@ -9,7 +9,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "index-playlists": "tsx scripts/index-playlists.ts"
+    "index-playlists": "tsx scripts/index-playlists.ts",
+    "create-pinecone-index": "./scripts/create-pinecone-index.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -77,10 +78,11 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
     "postcss": "^8.5.6",
+    "supabase": "^2.76.8",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.2",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
-    "tsx": "^4.19.2",
     "vite": "^5.4.19"
   }
 }

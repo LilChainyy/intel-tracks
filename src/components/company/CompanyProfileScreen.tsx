@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Star, TrendingUp, TrendingDown, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Star, TrendingUp, TrendingDown, ChevronRight, Sparkles } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { playlists } from '@/data/playlists';
 import { useCatalysts } from '@/hooks/useCatalysts';
 import { getCatalystsForCompany } from '@/data/catalysts';
 import { supabase } from '@/integrations/supabase/client';
 import { StockPriceChart } from '@/components/stock/StockPriceChart';
-import { AIAdvisorChat } from '@/components/stock/advisor/AIAdvisorChat';
 export function CompanyProfileScreen() {
   const { 
     selectedStock, 
@@ -16,6 +15,8 @@ export function CompanyProfileScreen() {
     setCurrentScreen,
     setSelectedPlaylist,
     setSelectedStock,
+    setActiveTab,
+    setAdvisorFocusedTicker,
     isCompanyWatchlisted,
     toggleWatchlistCompany,
     markCompanyCompleted
@@ -205,20 +206,24 @@ export function CompanyProfileScreen() {
           </motion.div>
         )}
 
-        {/* AI Advisor - Thinking Framework */}
+        {/* Ask AI Button - navigates to Advisor tab with ticker pre-filled */}
         {!stock.isPrivate && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <AIAdvisorChat
-              open={true}
-              onOpenChange={() => {}}
-              ticker={stock.ticker}
-              companyName={stock.name}
-              embedded={true}
-            />
+            <button
+              onClick={() => {
+                setAdvisorFocusedTicker(stock.ticker);
+                setCurrentScreen('advisor');
+                setActiveTab('advisor');
+              }}
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/10 to-purple-500/10 hover:from-primary/20 hover:to-purple-500/20 transition-colors"
+            >
+              <Sparkles className="w-5 h-5 text-primary" />
+              <span className="font-medium text-foreground">Research {stock.name} with AI Advisor</span>
+            </button>
           </motion.div>
         )}
 

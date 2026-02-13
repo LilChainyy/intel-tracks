@@ -45,7 +45,7 @@ npm run preview     # Preview production build locally
 - `src/types/` - TypeScript type definitions
 - `src/utils/` - Utility functions (matchScore, investorScoring)
 - `src/integrations/supabase/` - Supabase client and auto-generated types
-- `supabase/functions/` - Deno Edge Functions (ai-advisor-chat, fetch-catalysts, stock-chart, etc.)
+- `supabase/functions/` - Deno Edge Functions (advisor-chat, fetch-catalysts, stock-chart, etc.)
 - `supabase/migrations/` - PostgreSQL migration files
 
 ### Key Patterns
@@ -101,15 +101,14 @@ Key tables with Row Level Security (RLS) enabled:
 - `user_profiles` - User data with referral tracking
 - `catalysts` - Market catalyst events (public read access)
 
-**Edge Functions** (Deno runtime):
-- `ai-advisor-chat` - AI chat for investment advice
-- `company-advisor-chat` - Company-specific AI advisor
+**Edge Functions** (Deno runtime, powered by Groq Llama):
+- `advisor-chat` - AI chat for investment advice (streaming + learning analysis)
 - `fetch-catalysts` - Retrieve market catalyst data
 - `fetch-stock-data` - Pull stock information
 - `refresh-stock-data` - Update cached stock data
 - `stock-analysis` - Analyze stock fundamentals
 - `stock-chart` - Generate stock chart data
-- `test-claude-model` - Test AI model integration
-- `analyze-learning` - User learning analytics
+- `index-playlists` - Index playlists to Pinecone for RAG
+- `index-documents` - Index documents to Pinecone for RAG
 
 Note: Most edge functions have `verify_jwt = false` in `supabase/config.toml` for easier development access.

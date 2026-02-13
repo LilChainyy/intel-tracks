@@ -15,7 +15,7 @@ verify_jwt = false
 [functions.fetch-catalysts]
 verify_jwt = false
 
-[functions.ai-advisor-chat]
+[functions.advisor-chat]
 verify_jwt = false
 
 [functions.index-playlists]

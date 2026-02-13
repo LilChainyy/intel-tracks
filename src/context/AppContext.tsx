@@ -83,6 +83,10 @@ interface AppContextType {
   toggleSaveStock: (stock: SavedStock) => void;
   isStockSaved: (ticker: string) => boolean;
   
+  // Advisor: pre-filled ticker when navigating from company page
+  advisorFocusedTicker: string | null;
+  setAdvisorFocusedTicker: (ticker: string | null) => void;
+  
   // Progress tracking
   completedCompanies: string[];
   markCompanyCompleted: (ticker: string) => void;
@@ -118,6 +122,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Watchlist
   const [watchlistThemes, setWatchlistThemes] = useState<string[]>([]);
   const [watchlistCompanies, setWatchlistCompanies] = useState<SavedStock[]>([]);
+  
+  // Advisor: ticker pre-filled when navigating from company page
+  const [advisorFocusedTicker, setAdvisorFocusedTicker] = useState<string | null>(null);
   
   // Progress tracking
   const [completedCompanies, setCompletedCompanies] = useState<string[]>([]);
@@ -276,6 +283,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         savedStocks,
         toggleSaveStock,
         isStockSaved,
+        
+        // Advisor
+        advisorFocusedTicker,
+        setAdvisorFocusedTicker,
         
         // Progress
         completedCompanies,

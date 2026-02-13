@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Brain, Send, Bot, User, Loader2 } from 'lucide-react';
+import { Brain, Send, Bot, User, Loader2, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useInvestorQuiz } from '@/context/InvestorQuizContext';
@@ -7,6 +7,10 @@ import { useApp } from '@/context/AppContext';
 import { playlists } from '@/data/playlists';
 import { calculateMatchScore } from '@/utils/matchScore';
 import { convertToUserProfile } from '@/utils/investorScoring';
+import { supabase } from '@/integrations/supabase/client';
+import { SummaryPanel } from '@/components/stock/advisor/SummaryPanel';
+import { ThesisBuilder } from '@/components/stock/advisor/ThesisBuilder';
+import { calculateOverallProgress, type LearningProgress, type ThesisChoice, INITIAL_PROGRESS } from '@/components/stock/advisor/types';
 import type { Playlist } from '@/types/playlist';
 
 interface Message {
@@ -29,23 +33,67 @@ const STARTER_CHIPS = [
   'Explain an industry',
 ];
 
-const ADVISOR_SYSTEM_PROMPT = `You are a knowledgeable investment advisor built into the Adamsmyth app. Users come to you to learn about companies, industries, and investment opportunities. Give substantive, helpful answers in accessible language — avoid heavy jargon, but don't oversimplify. Be concise but thorough: 3-5 sentences per response. You can reference specific ticker symbols when relevant. Be honest about uncertainty and remind users that this is not financial advice when appropriate.`;
-
 export function AdvisorScreen() {
   const { state } = useInvestorQuiz();
-  const { setSelectedPlaylist, setCurrentScreen, setActiveTab } = useApp();
+  const { setSelectedPlaylist, setCurrentScreen, setActiveTab, advisorFocusedTicker, setAdvisorFocusedTicker, selectedStock, selectedPlaylist } = useApp();
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [topPlaylists, setTopPlaylists] = useState<Playlist[] | null>(null);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
+  const [progress, setProgress] = useState<LearningProgress>(INITIAL_PROGRESS);
+  const [showThesisBuilder, setShowThesisBuilder] = useState(false);
+  const [showSummary, setShowSummary] = useState(true);
+  const [savedThesis, setSavedThesis] = useState<ThesisChoice | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const ticker = advisorFocusedTicker ?? null;
+  const companyName = ticker ? (selectedPlaylist?.stocks.find((s) => s.ticker === ticker)?.name ?? ticker) : '';
 
   const handlePlaylistClick = (playlist: Playlist) => {
     setSelectedPlaylist(playlist);
     setCurrentScreen('company-list');
     setActiveTab('theme');
   };
+
+  const overallProgress = calculateOverallProgress(progress);
+
+  // Fetch progress from progress_state when ticker is set
+  useEffect(() => {
+    if (!ticker) return;
+    let cancelled = false;
+    async function loadProgress() {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.user?.id || cancelled) return;
+      const { data } = await supabase
+        .from('progress_state')
+        .select('understanding, risks, valuation')
+        .eq('user_id', session.session.user.id)
+        .eq('ticker', ticker)
+        .single();
+      if (!cancelled && data) {
+        setProgress({
+          understanding: data.understanding ?? INITIAL_PROGRESS.understanding,
+          risks: data.risks ?? INITIAL_PROGRESS.risks,
+          valuation: data.valuation ?? INITIAL_PROGRESS.valuation,
+        });
+      }
+    }
+    loadProgress();
+    return () => { cancelled = true; };
+  }, [ticker]);
+
+  // Company-mode welcome when ticker pre-filled
+  useEffect(() => {
+    if (ticker && companyName && messages.length === 1 && messages[0].id === 'welcome') {
+      setMessages([{
+        id: 'welcome',
+        role: 'assistant',
+        content: `Hi! I'm your investment advisor. Let's explore **${companyName} (${ticker})** together. Click a question below or ask anything!`,
+      }]);
+    }
+  }, [ticker, companyName]);
 
   // Show post-quiz welcome with top 3 playlists when landing from quiz completion
   useEffect(() => {
@@ -83,77 +131,85 @@ export function AdvisorScreen() {
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
+    setSuggestedQuestions([]);
 
     try {
-      // Build the full message history (excluding the welcome message for the API)
       const apiMessages = [...messages, userMessage]
         .filter((m) => m.id !== 'welcome')
         .map((m) => ({ role: m.role, content: m.content }));
 
+      const { data: session } = await supabase.auth.getSession();
+      const token = session?.session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      const body: Record<string, unknown> = { messages: apiMessages };
+      if (ticker) body.ticker = ticker;
+      if (companyName) body.companyName = companyName;
+
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-advisor-chat`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/advisor-chat`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            messages: apiMessages,
-            systemPrompt: ADVISOR_SYSTEM_PROMPT,
-            maxTokens: 600,
-          }),
+          body: JSON.stringify(body),
         }
       );
 
       if (!response.ok) {
-        if (response.status === 429) {
-          throw new Error('Too many requests. Please try again later.');
-        }
+        if (response.status === 429) throw new Error('Too many requests. Please try again later.');
         throw new Error('An error occurred. Please try again.');
       }
 
-      // Stream the response
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let assistantContent = '';
       const assistantId = (Date.now() + 1).toString();
 
-      setMessages((prev) => [
-        ...prev,
-        { id: assistantId, role: 'assistant', content: '' },
-      ]);
+      setMessages((prev) => [...prev, { id: assistantId, role: 'assistant', content: '' }]);
 
       if (reader) {
         let buffer = '';
-
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-
           buffer += decoder.decode(value, { stream: true });
-
           let newlineIndex: number;
           while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
             let line = buffer.slice(0, newlineIndex);
             buffer = buffer.slice(newlineIndex + 1);
-
             if (line.endsWith('\r')) line = line.slice(0, -1);
             if (line.startsWith(':') || line.trim() === '') continue;
             if (!line.startsWith('data: ')) continue;
-
             const jsonStr = line.slice(6).trim();
             if (jsonStr === '[DONE]') break;
-
             try {
               const parsed = JSON.parse(jsonStr);
+              if (parsed.type === 'advisor_metadata') {
+                if (Array.isArray(parsed.suggested_questions)) setSuggestedQuestions(parsed.suggested_questions);
+                if (parsed.classification && ticker) {
+                  setProgress((prev) => {
+                    const next = JSON.parse(JSON.stringify(prev)) as LearningProgress;
+                    const cat = parsed.classification.category as keyof typeof next;
+                    const subcat = parsed.classification.subcategory as string;
+                    if (cat in next && subcat in next[cat]) {
+                      const sub = next[cat][subcat];
+                      sub.questionsAsked += 1;
+                      if (parsed.classification.summary && !sub.summaryPoints.includes(parsed.classification.summary)) {
+                        sub.summaryPoints.push(parsed.classification.summary);
+                      }
+                    }
+                    return next;
+                  });
+                }
+                continue;
+              }
               const chunk = parsed.choices?.[0]?.delta?.content;
               if (chunk) {
                 assistantContent += chunk;
                 setMessages((prev) =>
-                  prev.map((m) =>
-                    m.id === assistantId ? { ...m, content: assistantContent } : m
-                  )
+                  prev.map((m) => (m.id === assistantId ? { ...m, content: assistantContent } : m))
                 );
               }
             } catch {
@@ -161,6 +217,23 @@ export function AdvisorScreen() {
               break;
             }
           }
+        }
+      }
+
+      if (ticker) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData?.session?.user?.id) {
+          const { data: prog } = await supabase
+            .from('progress_state')
+            .select('understanding, risks, valuation')
+            .eq('user_id', sessionData.session.user.id)
+            .eq('ticker', ticker)
+            .single();
+          if (prog) setProgress({
+            understanding: prog.understanding ?? INITIAL_PROGRESS.understanding,
+            risks: prog.risks ?? INITIAL_PROGRESS.risks,
+            valuation: prog.valuation ?? INITIAL_PROGRESS.valuation,
+          });
         }
       }
     } catch (error) {
@@ -178,6 +251,22 @@ export function AdvisorScreen() {
     }
   };
 
+  const handleSaveThesis = async (thesis: ThesisChoice) => {
+    setSavedThesis(thesis);
+    if (!ticker) return;
+    const { data: session } = await supabase.auth.getSession();
+    if (!session?.session?.user?.id) return;
+    await supabase.from('active_saves').upsert(
+      {
+        user_id: session.session.user.id,
+        ticker,
+        thesis_stance: thesis.stance,
+        custom_text: thesis.customText ?? null,
+      },
+      { onConflict: 'user_id,ticker' }
+    );
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -188,14 +277,40 @@ export function AdvisorScreen() {
   const showChips = messages.length === 1 && messages[0].id === 'welcome';
 
   return (
-    <div className="flex flex-col h-[calc(100vh-7rem)] pb-16">
+    <div className="flex flex-col h-[calc(100vh-7rem)] pb-16 md:flex-row">
+      <div className="flex-1 flex flex-col min-w-0">
       {/* Header */}
-      <div className="flex flex-col items-center gap-1 py-4 px-4 border-b border-border bg-muted/30">
-        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-          <Brain className="w-5 h-5 text-primary" />
+      <div className="flex flex-col items-center gap-1 py-4 px-4 border-b border-border bg-muted/30 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <Brain className="w-5 h-5 text-primary" />
+          </div>
+          {ticker && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowSummary((s) => !s)}
+              className="gap-1.5"
+            >
+              <BarChart3 className="w-4 h-4" />
+              <span className="text-xs font-medium">{Math.round(overallProgress)}% Research</span>
+            </Button>
+          )}
+          {ticker && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setAdvisorFocusedTicker(null)}
+              className="text-xs"
+            >
+              Clear
+            </Button>
+          )}
         </div>
         <h2 className="font-semibold text-foreground">AI Advisor</h2>
-        <p className="text-xs text-muted-foreground">Ask me anything about investing</p>
+        <p className="text-xs text-muted-foreground">
+          {ticker ? `${companyName || ticker} (${ticker})` : 'Ask me anything about investing'}
+        </p>
       </div>
 
       {/* Messages */}
@@ -257,10 +372,10 @@ export function AdvisorScreen() {
         )}
       </div>
 
-      {/* Starter chips — only shown before the first user message */}
+      {/* Starter chips or QuickPrompts */}
       {showChips && (
         <div className="px-4 pb-2 flex flex-wrap gap-2">
-          {STARTER_CHIPS.map((chip) => (
+          {(suggestedQuestions.length > 0 ? suggestedQuestions : STARTER_CHIPS).map((chip) => (
             <button
               key={chip}
               onClick={() => sendMessage(chip)}
@@ -268,6 +383,20 @@ export function AdvisorScreen() {
               className="px-3 py-1.5 rounded-full border border-border bg-background text-sm text-foreground hover:bg-muted transition-colors disabled:opacity-50"
             >
               {chip}
+            </button>
+          ))}
+        </div>
+      )}
+      {!showChips && suggestedQuestions.length > 0 && (
+        <div className="px-4 pb-2 flex flex-wrap gap-2">
+          {suggestedQuestions.map((q) => (
+            <button
+              key={q}
+              onClick={() => sendMessage(q)}
+              disabled={isLoading}
+              className="px-3 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-sm text-foreground hover:bg-primary/10 transition-colors disabled:opacity-50"
+            >
+              {q}
             </button>
           ))}
         </div>
@@ -281,7 +410,7 @@ export function AdvisorScreen() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask me anything about investing..."
+            placeholder={ticker ? `Ask about ${companyName || ticker}...` : 'Ask me anything about investing...'}
             className="flex-1 rounded-full bg-background"
             disabled={isLoading}
           />
@@ -295,6 +424,30 @@ export function AdvisorScreen() {
           </Button>
         </div>
       </div>
+      </div>
+
+      {/* SummaryPanel + ThesisFlow — when ticker focused and progress >= 60% */}
+      {ticker && showSummary && (
+        <div className="hidden md:block w-80 border-l border-border flex-shrink-0">
+          <SummaryPanel
+            progress={progress}
+            onAskAbout={(topic) => sendMessage(`Tell me about ${topic} for ${companyName || ticker}`)}
+            onBuildThesis={() => setShowThesisBuilder(true)}
+            companyName={companyName || ticker}
+          />
+        </div>
+      )}
+
+      {ticker && (
+        <ThesisBuilder
+          open={showThesisBuilder}
+          onOpenChange={setShowThesisBuilder}
+          companyName={companyName || ticker}
+          ticker={ticker}
+          progress={progress}
+          onSaveThesis={handleSaveThesis}
+        />
+      )}
     </div>
   );
 }
