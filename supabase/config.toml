@@ -23,3 +23,9 @@ verify_jwt = false
 
 [functions.index-documents]
 verify_jwt = false
+
+[functions.advisor-chat-v3]
+verify_jwt = false
+
+[functions.fetch-enhanced-stock]
+verify_jwt = false

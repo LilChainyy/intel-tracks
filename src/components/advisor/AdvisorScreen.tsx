@@ -12,11 +12,13 @@ import { SummaryPanel } from '@/components/stock/advisor/SummaryPanel';
 import { ThesisBuilder } from '@/components/stock/advisor/ThesisBuilder';
 import { calculateOverallProgress, type LearningProgress, type ThesisChoice, INITIAL_PROGRESS } from '@/components/stock/advisor/types';
 import type { Playlist } from '@/types/playlist';
+import { FollowUpButtons, type FollowUpOption } from '@/components/advisor/FollowUpButtons';
 
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  followUps?: FollowUpOption[];
 }
 
 const WELCOME_MESSAGE: Message = {
@@ -146,7 +148,7 @@ export function AdvisorScreen() {
       if (companyName) body.companyName = companyName;
 
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/advisor-chat`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/advisor-chat-v3`,
         {
           method: 'POST',
           headers: {
@@ -186,6 +188,15 @@ export function AdvisorScreen() {
             if (jsonStr === '[DONE]') break;
             try {
               const parsed = JSON.parse(jsonStr);
+
+              // Handle follow-up options from advisor-chat-v3
+              if (parsed.type === 'follow_ups') {
+                setMessages((prev) =>
+                  prev.map((m) => (m.id === assistantId ? { ...m, followUps: parsed.options } : m))
+                );
+                continue;
+              }
+
               if (parsed.type === 'advisor_metadata') {
                 if (Array.isArray(parsed.suggested_questions)) setSuggestedQuestions(parsed.suggested_questions);
                 if (parsed.classification && ticker) {
@@ -267,6 +278,35 @@ export function AdvisorScreen() {
     );
   };
 
+  const handleFollowUpClick = (action: any) => {
+    switch (action.type) {
+      case 'news':
+        sendMessage(`Show me recent news for ${action.ticker}`);
+        break;
+      case 'compare':
+        sendMessage(`Compare ${action.ticker} to its competitors`);
+        break;
+      case 'theme':
+        sendMessage(`Tell me about the ${action.theme} investment theme`);
+        break;
+      case 'learn':
+        sendMessage(`Explain ${action.topic} in simple terms`);
+        break;
+      case 'browse_themes':
+        sendMessage('Show me investment themes to explore');
+        break;
+      case 'search':
+        // Could open a search modal here
+        break;
+      case 'popular':
+        sendMessage('What are some popular stocks right now?');
+        break;
+      case 'company':
+        sendMessage(`Tell me about ${action.ticker}`);
+        break;
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -332,25 +372,42 @@ export function AdvisorScreen() {
               )}
             </div>
             <div
-              className={`max-w-[80%] rounded-2xl px-4 py-2 ${
+              className={`max-w-[80%] ${
                 message.role === 'user'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-foreground'
+                  ? ''
+                  : 'w-full max-w-none'
               }`}
             >
-              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-              {message.id === 'welcome' && topPlaylists && topPlaylists.length > 0 && (
-                <div className="flex flex-col gap-2 mt-3">
-                  {topPlaylists.map((playlist) => (
-                    <button
-                      key={playlist.id}
-                      onClick={() => handlePlaylistClick(playlist)}
-                      className="w-full text-left px-3 py-2 rounded-lg border border-border bg-background text-sm font-medium text-foreground hover:bg-secondary transition-colors"
-                    >
-                      {playlist.title}
-                    </button>
-                  ))}
-                </div>
+              <div
+                className={`rounded-2xl px-4 py-2 ${
+                  message.role === 'user'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-foreground'
+                }`}
+              >
+                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                {message.id === 'welcome' && topPlaylists && topPlaylists.length > 0 && (
+                  <div className="flex flex-col gap-2 mt-3">
+                    {topPlaylists.map((playlist) => (
+                      <button
+                        key={playlist.id}
+                        onClick={() => handlePlaylistClick(playlist)}
+                        className="w-full text-left px-3 py-2 rounded-lg border border-border bg-background text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+                      >
+                        {playlist.title}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Follow-up buttons (only for assistant messages with followUps) */}
+              {message.role === 'assistant' && message.followUps && message.followUps.length > 0 && (
+                <FollowUpButtons
+                  options={message.followUps}
+                  onSelect={handleFollowUpClick}
+                  disabled={isLoading}
+                />
               )}
             </div>
           </div>
