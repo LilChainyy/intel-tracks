@@ -44,6 +44,7 @@ export function AdvisorScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
   const [progress, setProgress] = useState<LearningProgress>(INITIAL_PROGRESS);
+  const [stockMilestones, setStockMilestones] = useState<Record<string, boolean>>({});
   const [showThesisBuilder, setShowThesisBuilder] = useState(false);
   const [showSummary, setShowSummary] = useState(true);
   const [savedThesis, setSavedThesis] = useState<ThesisChoice | null>(null);
@@ -194,6 +195,12 @@ export function AdvisorScreen() {
                 setMessages((prev) =>
                   prev.map((m) => (m.id === assistantId ? { ...m, followUps: parsed.options } : m))
                 );
+                continue;
+              }
+
+              // Real-time milestone update from keyword detection
+              if (parsed.type === 'milestone_update') {
+                setStockMilestones(parsed.milestones ?? {});
                 continue;
               }
 

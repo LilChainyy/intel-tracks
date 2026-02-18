@@ -1,6 +1,8 @@
 // Enhanced advisor-chat with structured responses and conversation flow
 // @ts-ignore
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// @ts-ignore
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 declare const Deno: { env: { get(key: string): string | undefined } };
 
@@ -8,6 +10,53 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const SUMMARIZE_EVERY = 10;
+const DEFAULT_MILESTONES: Record<string, boolean> = {
+  understands_business: false,
+  understands_revenue: false,
+  explored_risks: false,
+  discussed_valuation: false,
+  identified_catalyst: false,
+  has_thesis: false,
+};
+
+// Keyword patterns for each milestone — tested against the user's message only,
+// no LLM call needed. Order matches DEFAULT_MILESTONES.
+const MILESTONE_PATTERNS: Record<string, RegExp> = {
+  understands_business:
+    /product|business model|what (they|it) do|customers?|\bmarket\b|segment|operates?/i,
+  understands_revenue:
+    /revenue|margins?|profit|makes? money|\bgross\b|ebitda|earnings|\bsales\b/i,
+  explored_risks:
+    /\brisk|bear case|\bwrong\b|competition|competitors?|threat|headwind|downside|concern/i,
+  discussed_valuation:
+    /p\/e|dcf|multiple|valuation|cheap|expensive|overvalued|undervalued|price target|comps/i,
+  identified_catalyst:
+    /catalyst|why now|earnings|tailwind|upcoming|growth driver|inflection/i,
+  has_thesis:
+    /i think|my view|i believe|\bbull|\bbear|\bthesis\b|conviction|\bposition\b/i,
+};
+
+// Scans a single user message against MILESTONE_PATTERNS.
+// Returns the updated milestones object if at least one false→true flip occurred,
+// or null if nothing changed (caller skips the DB write).
+function detectMilestonesFromMessage(
+  userMessage: string,
+  current: Record<string, boolean>
+): Record<string, boolean> | null {
+  const updated: Record<string, boolean> = { ...current };
+  let changed = false;
+
+  for (const [key, pattern] of Object.entries(MILESTONE_PATTERNS)) {
+    if (!current[key] && pattern.test(userMessage)) {
+      updated[key] = true;
+      changed = true;
+    }
+  }
+
+  return changed ? updated : null;
+}
 
 //========================================
 // CURATED STOCK KNOWLEDGE
@@ -88,6 +137,110 @@ CRITICAL RULES:
 
 FOLLOW-UP OPTIONS:
 The system will automatically show 4 clickable buttons after your response. Don't mention them - just end with "What would you like to explore next?"`;
+
+//========================================
+// STOCK PROGRESS TRACKING
+//========================================
+async function handleStockProgress({
+  ticker,
+  userId,
+  chatHistory,
+  GROQ_API_KEY,
+}: {
+  ticker: string;
+  userId: string;
+  chatHistory: Array<{ role: string; content: string }>;
+  GROQ_API_KEY: string;
+}): Promise<void> {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !supabaseServiceKey) return;
+
+  const db = createClient(supabaseUrl, supabaseServiceKey);
+
+  // Read current row (may not exist yet)
+  const { data: existing } = await db
+    .from("stock_progress")
+    .select("message_count, milestones, conversation_summary")
+    .eq("user_id", userId)
+    .eq("ticker", ticker)
+    .maybeSingle();
+
+  const currentCount = (existing as any)?.message_count ?? 0;
+  const newCount = currentCount + 1;
+  const shouldSummarize = newCount % SUMMARIZE_EVERY === 0;
+
+  const currentMilestones: Record<string, boolean> =
+    (existing as any)?.milestones ?? { ...DEFAULT_MILESTONES };
+  const priorSummary: string | null = (existing as any)?.conversation_summary ?? null;
+
+  if (!shouldSummarize) {
+    // Just persist the incremented counter, preserving everything else
+    await db.from("stock_progress").upsert(
+      { user_id: userId, ticker, message_count: newCount, milestones: currentMilestones, conversation_summary: priorSummary },
+      { onConflict: "user_id,ticker" }
+    );
+    return;
+  }
+
+  // Build rolling-summary prompt from the last 20 messages + prior summary.
+  // Milestones are now handled exclusively by keyword detection — this call
+  // only produces a plain-text conversation_summary.
+  const recentMessages = chatHistory
+    .slice(-20)
+    .map((m: any) => `${m.role === "user" ? "User" : "Advisor"}: ${m.content}`)
+    .join("\n");
+
+  const summaryPrompt =
+    (priorSummary ? `Prior summary of earlier conversation: ${priorSummary}\n\n` : "") +
+    `Recent conversation about ${ticker}:\n${recentMessages}\n\n` +
+    `Write a 2-3 sentence rolling summary of the key topics the user has explored so far.\n` +
+    `Return ONLY valid JSON, no markdown fences:\n` +
+    `{"summary": "..."}`;
+
+  try {
+    const summaryRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${GROQ_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "llama-3.1-8b-instant",
+        messages: [{ role: "user", content: summaryPrompt }],
+        max_tokens: 200,
+        temperature: 0.1,
+      }),
+    });
+
+    if (!summaryRes.ok) throw new Error(`Groq summarize HTTP ${summaryRes.status}`);
+
+    const summaryData = await summaryRes.json();
+    const raw: string = summaryData.choices?.[0]?.message?.content ?? "";
+    const cleaned = raw.replace(/```json\n?|\n?```/g, "").trim();
+    const parsed = JSON.parse(cleaned);
+
+    // Milestones are owned by keyword detection — read the latest from DB and preserve as-is
+    await db.from("stock_progress").upsert(
+      {
+        user_id: userId,
+        ticker,
+        message_count: newCount,
+        conversation_summary: parsed.summary ?? priorSummary,
+        milestones: currentMilestones,
+        last_summarized_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id,ticker" }
+    );
+  } catch (err) {
+    console.error("Summarization error:", err);
+    // Non-fatal: still persist the incremented counter with unchanged milestones
+    await db.from("stock_progress").upsert(
+      { user_id: userId, ticker, message_count: newCount, milestones: currentMilestones, conversation_summary: priorSummary },
+      { onConflict: "user_id,ticker" }
+    );
+  }
+}
 
 //========================================
 // CONVERSATION FLOW LOGIC
@@ -272,6 +425,82 @@ function extractLastTickerFromHistory(messages: any[]): string | null {
 }
 
 //========================================
+// PROMPT CONTEXT HELPERS
+//========================================
+
+// Human-readable labels that map to the DB milestone keys
+const MILESTONE_LABELS: Record<string, string> = {
+  understands_business: "Business model understood",
+  understands_revenue: "Revenue and financials reviewed",
+  explored_risks: "Key risks explored",
+  discussed_valuation: "Valuation discussed",
+  identified_catalyst: "Catalysts identified",
+  has_thesis: "Investment thesis formed",
+};
+
+// Reads the current summary + milestones for a user+ticker from stock_progress.
+// Returns null if the row doesn't exist or the read fails (non-fatal).
+async function fetchStockProgressForPrompt(
+  userId: string,
+  ticker: string
+): Promise<{ conversation_summary: string | null; milestones: Record<string, boolean> } | null> {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !supabaseServiceKey) return null;
+  try {
+    const db = createClient(supabaseUrl, supabaseServiceKey);
+    const { data } = await db
+      .from("stock_progress")
+      .select("conversation_summary, milestones")
+      .eq("user_id", userId)
+      .eq("ticker", ticker)
+      .maybeSingle();
+    return (data as any) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// Converts a stock_progress row into a prompt section that tells the model
+// what the user already knows and what gaps remain.
+// Returns an empty string when there's nothing meaningful to inject yet.
+function buildLearnerContext(
+  stockProgress: { conversation_summary: string | null; milestones: Record<string, boolean> } | null,
+  ticker: string
+): string {
+  if (!stockProgress) return "";
+
+  const summary = stockProgress.conversation_summary ?? null;
+  const milestones: Record<string, boolean> = stockProgress.milestones ?? {};
+
+  const done = Object.entries(MILESTONE_LABELS).filter(([k]) => milestones[k] === true);
+  const open = Object.entries(MILESTONE_LABELS).filter(([k]) => milestones[k] !== true);
+
+  // Nothing meaningful yet — don't pollute the prompt
+  if (!summary && done.length === 0) return "";
+
+  let ctx = `\n\n---\nLEARNER CONTEXT FOR ${ticker}:\n`;
+
+  if (summary) {
+    ctx += `What this user already understands:\n${summary}\n\n`;
+  }
+
+  if (done.length > 0) {
+    ctx += `Topics already covered — do NOT re-explain unless directly asked:\n`;
+    ctx += done.map(([, label]) => `  ✓ ${label}`).join("\n") + "\n\n";
+  }
+
+  if (open.length > 0) {
+    ctx += `Topics still to explore — steer toward these naturally:\n`;
+    ctx += open.map(([, label]) => `  ○ ${label}`).join("\n") + "\n\n";
+  }
+
+  ctx += `Use this to guide your focus. Do not read out or mention this checklist to the user.`;
+
+  return ctx;
+}
+
+//========================================
 // MAIN HANDLER
 //========================================
 serve(async (req) => {
@@ -288,6 +517,25 @@ serve(async (req) => {
         JSON.stringify({ error: "AI service unavailable" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Extract authenticated user ID from the JWT
+    let userId: string | null = null;
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      try {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL");
+        const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+        if (supabaseUrl && supabaseAnonKey) {
+          const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+            global: { headers: { Authorization: authHeader } },
+          });
+          const { data: { user } } = await authClient.auth.getUser();
+          if (user?.id) userId = user.id;
+        }
+      } catch (e) {
+        console.warn("Auth extraction failed:", e);
+      }
     }
 
     // Build chat history
@@ -325,18 +573,27 @@ serve(async (req) => {
       );
     }
 
-    // Fetch stock data if ticker provided
-    let stockContext = SYSTEM_PROMPT;
-    let liveData = null;
+    // Fetch live stock data and existing learner progress in parallel
+    const hasValidTicker = !!(ticker && /^[A-Z]{1,5}$/.test(ticker));
+    const [liveData, stockProgressData] = await Promise.all([
+      hasValidTicker ? fetchStockData(ticker) : Promise.resolve(null),
+      (hasValidTicker && userId) ? fetchStockProgressForPrompt(userId, ticker) : Promise.resolve(null),
+    ]);
 
-    if (ticker && /^[A-Z]{1,5}$/.test(ticker)) {
-      liveData = await fetchStockData(ticker);
+    let stockContext = SYSTEM_PROMPT;
+    if (hasValidTicker) {
       if (liveData) {
-        const context = buildContext(ticker, liveData);
-        stockContext = SYSTEM_PROMPT + `\n\n---\nCONTEXT:\n${context}`;
+        stockContext = SYSTEM_PROMPT + `\n\n---\nCONTEXT:\n${buildContext(ticker, liveData)}`;
       } else {
         stockContext = SYSTEM_PROMPT + `\n\n---\nUser asked about ${ticker}, but we couldn't find data. Politely say we don't have info on that ticker.`;
       }
+    }
+
+    // Prepend what the user already knows and which gaps remain so the model
+    // can steer toward uncovered ground instead of repeating itself
+    const learnerCtx = buildLearnerContext(stockProgressData, ticker ?? "");
+    if (learnerCtx) {
+      stockContext += learnerCtx;
     }
 
     // Call Groq
@@ -416,7 +673,42 @@ serve(async (req) => {
           };
 
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(followUpMessage)}\n\n`));
+
+          // ── Keyword milestone detection ──────────────────────────────────────
+          // Scan only the user's last message. No LLM call — pure regex.
+          // Runs before [DONE] so the frontend receives the update in this response.
+          if (hasValidTicker && userId) {
+            const currentMilestonesForScan: Record<string, boolean> =
+              (stockProgressData?.milestones as Record<string, boolean>) ?? { ...DEFAULT_MILESTONES };
+            const updatedMilestones = detectMilestonesFromMessage(lastUserMessage, currentMilestonesForScan);
+
+            if (updatedMilestones) {
+              // Write the milestone flip(s) to the DB immediately
+              const sbUrl = Deno.env.get("SUPABASE_URL");
+              const sbKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+              if (sbUrl && sbKey) {
+                const db = createClient(sbUrl, sbKey);
+                await db.from("stock_progress").upsert(
+                  { user_id: userId, ticker, milestones: updatedMilestones },
+                  { onConflict: "user_id,ticker" }
+                );
+              }
+              // Tell the frontend which milestones are now active
+              controller.enqueue(encoder.encode(
+                `data: ${JSON.stringify({ type: "milestone_update", milestones: updatedMilestones })}\n\n`
+              ));
+            }
+          }
+          // ── End keyword milestone detection ──────────────────────────────────
+
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+
+          // Increment message_count; summarize when it hits a multiple of SUMMARIZE_EVERY.
+          // handleStockProgress re-reads milestones from DB so it picks up anything
+          // the keyword scan just wrote above.
+          if (hasValidTicker && userId && fullResponse) {
+            await handleStockProgress({ ticker, userId, chatHistory, GROQ_API_KEY });
+          }
         } catch (e) {
           console.error("Stream error:", e);
         } finally {
